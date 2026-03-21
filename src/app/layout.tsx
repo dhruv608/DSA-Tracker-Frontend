@@ -12,7 +12,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.getItem('theme') === 'dark') {
+                  document.documentElement.classList.add('dark');
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
+      <body>
         {children}
       </body>
     </html>

@@ -65,52 +65,40 @@ export default function SuperAdminDashboard() {
   return (
     <div className="space-y-8 pb-10">
       
-      <div className="grid gap-6 md:grid-cols-3">
-        <div onClick={() => router.push('/superadmin/cities')} className="cursor-pointer group relative overflow-hidden bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:border-border/80">
-          <div className="absolute right-0 top-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -z-10 group-hover:bg-primary/10 transition-colors" />
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">Total Cities</h3>
-            <div className="p-3 bg-primary/10 rounded-xl group-hover:scale-110 transition-transform text-primary">
-              <Building2 size={24} />
-            </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        <div onClick={() => router.push('/superadmin/cities')} className="cursor-pointer bg-card border rounded-xl p-6 transition-colors hover:bg-muted/50">
+          <div className="flex items-center justify-between space-y-0 text-muted-foreground pb-2">
+            <h3 className="tracking-tight text-sm font-medium">Total Cities</h3>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="text-4xl font-mono font-medium text-foreground">{stats?.totalCities || 0}</div>
-          <div className="text-xs font-mono text-primary mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">View details &rarr;</div>
+          <div className="text-2xl font-bold text-foreground">{stats?.totalCities || 0}</div>
         </div>
 
-        <div onClick={() => router.push('/superadmin/batches')} className="cursor-pointer group relative overflow-hidden bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:border-border/80">
-          <div className="absolute right-0 top-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -z-10 group-hover:bg-primary/10 transition-colors" />
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">Total Batches</h3>
-            <div className="p-3 bg-primary/10 rounded-xl group-hover:scale-110 transition-transform text-primary">
-              <Layers size={24} />
-            </div>
+        <div onClick={() => router.push('/superadmin/batches')} className="cursor-pointer bg-card border rounded-xl p-6 transition-colors hover:bg-muted/50">
+          <div className="flex items-center justify-between space-y-0 text-muted-foreground pb-2">
+            <h3 className="tracking-tight text-sm font-medium">Total Batches</h3>
+            <Layers className="h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="text-4xl font-mono font-medium text-foreground">{stats?.totalBatches || 0}</div>
-          <div className="text-xs font-mono text-primary mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">View details &rarr;</div>
+          <div className="text-2xl font-bold text-foreground">{stats?.totalBatches || 0}</div>
         </div>
 
-        <div onClick={() => router.push('/superadmin/admins')} className="cursor-pointer group relative overflow-hidden bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:border-border/80">
-          <div className="absolute right-0 top-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -z-10 group-hover:bg-primary/10 transition-colors" />
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">Total Admins</h3>
-            <div className="p-3 bg-primary/10 rounded-xl group-hover:scale-110 transition-transform text-primary">
-              <Users size={24} />
-            </div>
+        <div onClick={() => router.push('/superadmin/admins')} className="cursor-pointer bg-card border rounded-xl p-6 transition-colors hover:bg-muted/50">
+          <div className="flex items-center justify-between space-y-0 text-muted-foreground pb-2">
+            <h3 className="tracking-tight text-sm font-medium">Total Admins</h3>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="text-4xl font-mono font-medium text-foreground">{stats?.totalAdmins || 0}</div>
-          <div className="text-xs font-mono text-primary mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">View details &rarr;</div>
+          <div className="text-2xl font-bold text-foreground">{stats?.totalAdmins || 0}</div>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 items-start">
         {/* City Breakdown Panel */}
-        <div className="lg:col-span-2 bg-card border border-border rounded-2xl p-6 shadow-sm">
-          <h2 className="text-[14px] font-semibold text-foreground mb-6 flex items-center justify-between">
-            City Breakdown
-            <span className="text-xs font-normal text-muted-foreground bg-accent/50 px-2 py-1 rounded">Top Active</span>
-          </h2>
-          <div className="space-y-5">
+        <div className="lg:col-span-2 bg-card border rounded-xl p-6">
+          <div className="flex items-center justify-between space-y-0 pb-6 text-foreground">
+            <h3 className="tracking-tight text-sm font-semibold">City Breakdown</h3>
+            <span className="text-xs font-normal text-muted-foreground">Top Active</span>
+          </div>
+          <div className="space-y-6">
             {cityBreakdown.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4">No batch data available yet.</p>
             ) : (
@@ -118,15 +106,17 @@ export default function SuperAdminDashboard() {
                 const max = Math.max(...cityBreakdown.map(c => c.count)) || 1;
                 const percentage = (item.count / max) * 100;
                 return (
-                  <div key={idx} className="flex items-center gap-4 text-sm group">
-                    <span className="w-24 text-muted-foreground font-medium truncate group-hover:text-foreground transition-colors">{item.name}</span>
-                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div key={idx} className="flex flex-col gap-2 group">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-foreground">{item.name}</span>
+                      <span className="text-muted-foreground">{item.count} batches</span>
+                    </div>
+                    <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" 
+                        className="h-full bg-primary transition-all duration-500" 
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
-                    <span className="w-20 text-right font-mono text-primary font-medium">{item.count} batches</span>
                   </div>
                 );
               })
@@ -135,17 +125,17 @@ export default function SuperAdminDashboard() {
         </div>
 
         {/* Quick Actions Panel */}
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-          <h2 className="text-[14px] font-semibold text-foreground mb-4">Quick Actions</h2>
-          <div className="flex flex-col gap-2">
-            <button onClick={() => router.push('/superadmin/admins')} className="flex items-center gap-2 w-full px-4 py-3 bg-background hover:bg-muted border border-transparent hover:border-border rounded-xl text-[13.5px] font-semibold transition-all">
-              <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm shrink-0">+</span> Add Admin
+        <div className="bg-card border rounded-xl p-6">
+          <h3 className="tracking-tight text-sm font-semibold text-foreground mb-6">Quick Actions</h3>
+          <div className="flex flex-col gap-3">
+            <button onClick={() => router.push('/superadmin/admins')} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full">
+              Add Admin
             </button>
-            <button onClick={() => router.push('/superadmin/cities')} className="flex items-center gap-2 w-full px-4 py-3 bg-background hover:bg-muted border border-transparent hover:border-border rounded-xl text-[13.5px] font-semibold transition-all">
-              <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm shrink-0">+</span> Add City
+            <button onClick={() => router.push('/superadmin/cities')} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full">
+              Add City
             </button>
-            <button onClick={() => router.push('/superadmin/batches')} className="flex items-center gap-2 w-full px-4 py-3 bg-background hover:bg-muted border border-transparent hover:border-border rounded-xl text-[13.5px] font-semibold transition-all">
-              <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm shrink-0">+</span> Add Batch
+            <button onClick={() => router.push('/superadmin/batches')} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full">
+              Add Batch
             </button>
           </div>
         </div>

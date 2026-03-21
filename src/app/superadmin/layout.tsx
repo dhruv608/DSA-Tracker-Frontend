@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutDashboard, Users, Building2, Layers, LogOut, ChevronRight } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -63,8 +64,13 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       <aside className="w-[240px] flex-shrink-0 bg-sidebar border-r border-border flex flex-col z-20 shadow-sm relative animate-in slide-in-from-left duration-500">
         <div className="p-6 border-b border-border/50">
           <div className="text-[10px] uppercase tracking-[0.15em] text-primary font-mono mb-1.5 font-bold">SuperAdmin</div>
-          <div className="text-xl font-bold italic tracking-tight bg-gradient-to-br from-primary to-accent-foreground text-transparent bg-clip-text">
-            DSA Tracker
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center p-1.5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-full h-full text-primary-foreground"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <div className="text-xl font-bold tracking-tight text-foreground">
+              BruteForce
+            </div>
           </div>
         </div>
 
@@ -86,17 +92,14 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                   </div>
                   <Link 
                     href={item.href}
-                    className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-200 relative overflow-hidden ${
+                    className={`group flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       isActive 
-                        ? 'text-primary bg-primary/10 border border-primary/20 shadow-sm' 
-                        : 'text-sidebar-foreground/80 hover:text-primary hover:bg-muted border border-transparent'
+                        ? 'text-primary bg-muted/60 font-semibold' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
                     }`}
                   >
-                    <Icon className={`w-[18px] h-[18px] transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110 group-hover:-rotate-6'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
                     {item.label}
-                    {isActive && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full animate-in slide-in-from-left-1" />
-                    )}
                   </Link>
                 </React.Fragment>
               );
@@ -106,17 +109,14 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
               <Link 
                 key={item.href}
                 href={item.href}
-                className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-200 relative overflow-hidden ${
+                className={`group flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive 
-                    ? 'text-primary bg-primary/10 border border-primary/20 shadow-sm' 
-                    : 'text-sidebar-foreground/80 hover:text-primary hover:bg-muted border border-transparent'
+                    ? 'text-primary bg-muted/60 font-semibold' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
                 }`}
               >
-                <Icon className={`w-[18px] h-[18px] transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110 group-hover:-rotate-6'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
                 {item.label}
-                {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full animate-in slide-in-from-left-1" />
-                )}
               </Link>
             );
           })}
@@ -125,16 +125,16 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         <div className="p-4 border-t border-border/50">
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors group"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors group"
           >
-            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 uppercase">
+            <div className="w-8 h-8 rounded-md bg-muted text-muted-foreground flex items-center justify-center font-bold text-sm shrink-0 uppercase">
               {user.name.charAt(0) || 'S'}
             </div>
             <div className="text-left flex-1 min-w-0">
-              <div className="text-sm font-semibold truncate text-foreground">{user.name || 'Super Admin'}</div>
-              <div className="text-[10px] font-mono text-muted-foreground truncate">Logout Session</div>
+              <div className="text-sm font-medium truncate text-foreground">{user.name || 'Super Admin'}</div>
+              <div className="text-xs text-muted-foreground truncate">Logout Session</div>
             </div>
-            <LogOut className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            <LogOut className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-all" />
           </button>
         </div>
       </aside>
@@ -143,13 +143,13 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       <main className="flex-1 flex flex-col relative z-10 min-w-0">
         
         {/* Topbar */}
-        <header className="h-[70px] bg-card/80 backdrop-blur-xl border-b border-border flex items-center justify-between px-8 flex-shrink-0 z-10 animate-in slide-in-from-top duration-500">
+        <header className="h-14 bg-card/80 backdrop-blur border-b flex items-center justify-between px-6 shrink-0 z-10 w-full">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground transition-all">{title}</h1>
             <p className="text-xs font-mono text-muted-foreground mt-0.5">{sub}</p>
           </div>
           <div className="flex items-center gap-4">
-            {/* Action buttons will be injected by individual pages using a portal/state if needed, but we can just render them in pages for simplicity. */}
+            <ThemeToggle />
           </div>
         </header>
 

@@ -4,8 +4,13 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { getAllAdmins, createAdmin, updateAdmin, deleteAdmin, Admin } from '@/services/admin.service';
 import { getAllCities, City } from '@/services/city.service';
 import { getAllBatches, Batch } from '@/services/batch.service';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Modal } from '@/components/Modal';
-import { Search, Users, Trash2, Edit } from 'lucide-react';
+import { Select } from '@/components/Select';
+import { Pagination } from '@/components/Pagination';
+import { Search, Users, Trash2, Edit, Filter } from 'lucide-react';
 
 export default function AdminsPage() {
   const [admins, setAdmins] = useState<Admin[]>([]);
@@ -16,6 +21,10 @@ export default function AdminsPage() {
   // Filters
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState('');
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 10;
 
   // Modals
   const [isModalOpen, setModalOpen] = useState(false);
@@ -140,6 +149,10 @@ export default function AdminsPage() {
     });
   }, [admins, search, filterRole]);
 
+  const paginatedAdmins = useMemo(() => {
+    return filtered.slice((currentPage - 1) * limit, currentPage * limit);
+  }, [filtered, currentPage]);
+
   // Derived arrays for dynamic dropdowns
   const availableYears = useMemo(() => {
     if (!selectedCity) return [];
@@ -158,135 +171,124 @@ export default function AdminsPage() {
   return (
     <div className="space-y-6">
       
-      {/* Banner matching wireframe style indirectly via Tailwind classes */}
-      <div className="bg-gradient-to-br from-accent/50 to-background border border-border/80 rounded-2xl p-6 mb-8 flex items-center gap-5 overflow-hidden relative shadow-sm">
-        <div className="flex-1 relative z-10">
-          <h2 className="text-xl font-bold font-serif italic text-foreground mb-1">Admin Management</h2>
-          <p className="text-[13px] text-muted-foreground">Create and manage all administrators · assign cities and batches</p>
-        </div>
-        <div className="relative z-10 p-4 bg-background/50 backdrop-blur rounded-full shrink-0 animate-bounce transition-all duration-3000 border border-border">
-          <Users className="w-8 h-8 text-primary" />
-        </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold tracking-tight mb-1">Admin Management</h2>
+        <p className="text-sm text-muted-foreground">Create and manage all administrators, assign cities and batches.</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-8">
-        <div className="w-full flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
           <div className="relative w-full sm:max-w-xs group">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
               <Search className="w-4 h-4" />
             </div>
-            <input 
-              type="text"
+            <Input 
               placeholder="Search by name, email..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-background border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary text-[13px] shadow-sm font-sans"
+              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              className="w-full pl-9"
             />
           </div>
-          <select 
-            value={filterRole} onChange={e => setFilterRole(e.target.value)}
-            className="w-full sm:max-w-[150px] px-3 py-2 bg-background border border-border rounded-xl text-[13px] cursor-pointer focus:border-primary outline-none"
-          >
-            <option value="">All Roles</option>
-            <option value="SUPERADMIN">SUPERADMIN</option>
-            <option value="TEACHER">TEACHER</option>
-            <option value="INTERN">INTERN</option>
-          </select>
+          <Select 
+            value={filterRole} 
+            onChange={v => { setFilterRole(String(v)); setCurrentPage(1); }}
+            options={[
+              { label: 'All Roles', value: '' },
+              { label: 'SUPERADMIN', value: 'SUPERADMIN' },
+              { label: 'ADMIN', value: 'ADMIN' },
+              { label: 'TEACHER', value: 'TEACHER' },
+              { label: 'INTERN', value: 'INTERN' },
+            ]}
+            className="w-full sm:max-w-[150px]"
+            icon={<Filter className="w-4 h-4" />}
+          />
           {(filterRole || search) && (
-            <button onClick={() => {setFilterRole(''); setSearch('');}} className="text-xs text-muted-foreground hover:text-foreground ml-2 underline underline-offset-4">Clear</button>
+             <button onClick={() => {setFilterRole(''); setSearch('');}} className="text-xs text-muted-foreground hover:text-foreground ml-2 underline underline-offset-4">Clear</button>
           )}
         </div>
         
-        <button 
-          onClick={openCreate}
-          className="w-full sm:w-auto px-5 py-2.5 bg-primary hover:bg-primary/90 text-[13px] text-primary-foreground font-semibold rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 shrink-0"
-        >
-          <Users className="w-4 h-4" />
+        <Button onClick={openCreate} className="w-full sm:w-auto shrink-0">
+          <Users className="w-4 h-4 mr-2" />
           Create Admin
-        </button>
+        </Button>
       </div>
 
-      <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm animate-in fade-in duration-300">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-muted/20">
-          <h2 className="text-sm font-semibold text-foreground">Admins</h2>
-          <span className="text-[11px] font-mono font-medium tracking-wide bg-background border border-border px-2.5 py-1 rounded-full text-muted-foreground">
+      <div className="bg-card border rounded-xl overflow-hidden shadow-sm animate-in fade-in duration-300">
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-muted/30">
+          <h2 className="font-semibold">Admins</h2>
+          <span className="text-xs font-medium text-muted-foreground px-2 py-1 bg-background border rounded-md">
             {filtered.length} found
           </span>
         </div>
         
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-background text-[10px] uppercase font-mono tracking-[0.1em] text-muted-foreground border-b border-border">
-                <th className="px-6 py-4 font-medium min-w-[200px]">Admin Name</th>
-                <th className="px-6 py-4 font-medium">Email</th>
-                <th className="px-6 py-4 font-medium">Role</th>
-                <th className="px-6 py-4 font-medium">City &amp; Batch</th>
-                <th className="px-6 py-4 font-medium right-0">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm">
-              {loading ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground animate-pulse">Loading admins...</td>
-                </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">No matches found.</td>
-                </tr>
-              ) : (
-                filtered.map((admin) => {
-                  let badgeClass = "bg-accent/30 text-accent-foreground border-accent/60";
-                  if (admin.role === 'TEACHER') badgeClass = "bg-primary/20 text-primary-foreground border-primary/40 text-primary";
-                  else if (admin.role === 'INTERN') badgeClass = "bg-chart-5/20 text-chart-5 border-chart-5/40";
-                  else if (admin.role === 'SUPERADMIN') badgeClass = "bg-destructive/10 text-destructive border-destructive/20";
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Admin Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>City &amp; Batch</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground animate-pulse">Loading admins...</TableCell>
+              </TableRow>
+            ) : filtered.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">No matches found.</TableCell>
+              </TableRow>
+            ) : (
+              paginatedAdmins.map((admin) => {
+                let badgeClass = "bg-accent/30 text-accent-foreground border-accent/60";
+                if (admin.role === 'TEACHER') badgeClass = "bg-primary/20 text-primary-foreground border-primary/40 text-primary";
+                else if (admin.role === 'INTERN') badgeClass = "bg-chart-5/20 text-chart-5 border-chart-5/40";
+                else if (admin.role === 'SUPERADMIN') badgeClass = "bg-destructive/10 text-destructive border-destructive/20";
 
-                  const adminBatch = batches.find(b => b.id === admin.batch_id);
-                  const adminCity = cities.find(c => c.id === adminBatch?.city_id);
+                const adminBatch = batches.find(b => b.id === admin.batch_id);
+                const adminCity = cities.find(c => c.id === adminBatch?.city_id);
 
-                  return (
-                    <tr key={admin.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors group">
-                      <td className="px-6 py-4">
-                        <span className="font-semibold text-foreground truncate max-w-[200px] block">{admin.name}</span>
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground text-[12px] truncate max-w-[200px]">
-                        {admin.email}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border ${badgeClass}`}>
-                          {admin.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-[12px] text-muted-foreground whitespace-nowrap">
-                        {adminCity ? `${adminCity.city_name} — ` : ''} 
-                        {adminBatch ? adminBatch.batch_name : 'No batch'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <button 
-                            onClick={() => openEdit(admin)}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-transparent text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-                            title="Edit"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button 
-                            onClick={() => { setTargetAdmin(admin); setDelOpen(true); }}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-transparent text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                return (
+                  <TableRow key={admin.id}>
+                    <TableCell>
+                      <span className="font-semibold text-foreground truncate max-w-[200px] block">{admin.name}</span>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-xs truncate max-w-[200px]">
+                      {admin.email}
+                    </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium border ${badgeClass}`}>
+                        {admin.role}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {adminCity ? `${adminCity.city_name} — ` : ''} 
+                      {adminBatch ? adminBatch.batch_name : 'No batch'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(admin)}>
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => { setTargetAdmin(admin); setDelOpen(true); }} className="text-destructive hover:bg-destructive/10 hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
+            )}
+          </TableBody>
+        </Table>
+        {!loading && filtered.length > 0 && (
+          <Pagination 
+            currentPage={currentPage} 
+            totalItems={filtered.length} 
+            limit={limit} 
+            onPageChange={setCurrentPage} 
+          />
+        )}
       </div>
 
       <Modal 
@@ -296,21 +298,19 @@ export default function AdminsPage() {
         subtitle={modalMode === 'create' ? "Assign city and batch to determine data access permissions" : "Name and email are read-only when editing."}
       >
         <div className="space-y-4">
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1 block">Full Name {modalMode==='create'&&'*'}</label>
-              <input 
-                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:border-primary outline-none transition-all disabled:opacity-60 disabled:bg-muted/50"
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none">Full Name {modalMode==='create'&&'*'}</label>
+              <Input 
                 placeholder="e.g. Priya Sharma"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 disabled={submitting || modalMode === 'edit'}
               />
             </div>
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1 block">Email {modalMode==='create'&&'*'}</label>
-              <input 
-                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:border-primary outline-none transition-all disabled:opacity-60 disabled:bg-muted/50"
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none">Email {modalMode==='create'&&'*'}</label>
+              <Input 
                 type="email"
                 placeholder="admin@dsa.in"
                 value={formData.email}
@@ -319,10 +319,9 @@ export default function AdminsPage() {
               />
             </div>
             {modalMode === 'create' && (
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Password *</label>
-                <input 
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:border-primary outline-none transition-all"
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none">Password *</label>
+                <Input 
                   type="password"
                   placeholder="Min. 8 characters"
                   value={formData.password}
@@ -331,101 +330,88 @@ export default function AdminsPage() {
                 />
               </div>
             )}
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1 block">Role *</label>
-              <select 
-                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:border-primary outline-none cursor-pointer"
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none">Role *</label>
+              <Select 
                 value={formData.role}
-                onChange={(e) => setFormData({...formData, role: e.target.value})}
+                onChange={v => setFormData({...formData, role: String(v)})}
+                options={[
+                  { label: 'TEACHER', value: 'TEACHER' },
+                  { label: 'INTERN', value: 'INTERN' },
+                  { label: 'ADMIN', value: 'ADMIN' },
+                  { label: 'SUPERADMIN', value: 'SUPERADMIN' }
+                ]}
                 disabled={submitting}
-              >
-                <option value="TEACHER">TEACHER</option>
-                <option value="INTERN">INTERN</option>
-                <option value="ADMIN">ADMIN</option>
-                <option value="SUPERADMIN">SUPERADMIN</option>
-              </select>
+              />
             </div>
           </div>
           
-          <div className="border-t border-border pt-4 mt-2">
-            <h3 className="text-xs font-semibold text-foreground mb-3 tracking-wide">ASSIGNMENT</h3>
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div>
-                <label className="text-[11px] font-semibold text-muted-foreground mb-1 block">City Filter (Optional)</label>
-                <select 
-                  className="w-full px-3 py-2 bg-background border border-border rounded-xl text-xs focus:border-primary outline-none cursor-pointer"
+          <div className="border-t pt-4 mt-2">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3">Assignment</h3>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-xs font-medium leading-none text-muted-foreground">City Filter (Optional)</label>
+                <Select 
                   value={selectedCity}
-                  onChange={(e) => {
-                    setSelectedCity(e.target.value);
+                  onChange={(v) => {
+                    setSelectedCity(String(v));
                     setSelectedYear(''); // reset dependencies
                     setFormData({...formData, batch_id: ''});
                   }}
+                  options={[{ label: 'Any City', value: '' }, ...cities.map(c => ({ label: c.city_name, value: String(c.id) }))]}
+                  className="w-full"
                   disabled={submitting}
-                >
-                  <option value="">Any City</option>
-                  {cities.map(c => <option key={c.id} value={c.id}>{c.city_name}</option>)}
-                </select>
+                />
               </div>
-              <div>
-                <label className="text-[11px] font-semibold text-muted-foreground mb-1 block">Year Filter (Optional)</label>
-                <select 
-                  className="w-full px-3 py-2 bg-background border border-border rounded-xl text-xs focus:border-primary outline-none cursor-pointer disabled:opacity-50"
+              <div className="space-y-2">
+                <label className="text-xs font-medium leading-none text-muted-foreground">Year Filter (Optional)</label>
+                <Select 
                   value={selectedYear}
-                  onChange={(e) => {
-                    setSelectedYear(e.target.value);
+                  onChange={(v) => {
+                    setSelectedYear(String(v));
                     setFormData({...formData, batch_id: ''});
                   }}
+                  options={[{ label: 'Any Year', value: '' }, ...availableYears.map(y => ({ label: String(y), value: String(y) }))]}
+                  className="w-full"
                   disabled={submitting || !selectedCity || availableYears.length === 0}
-                >
-                  <option value="">Any Year</option>
-                  {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
+                />
               </div>
             </div>
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1 block">Batch Assignment</label>
-              <select 
-                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:border-primary outline-none cursor-pointer disabled:opacity-50 appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyBmaWxsPSdib25lJyBoZWlnaHQ9JzIwJyBzdHJva2U9J2N1cnJlbnRDb2xvcicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2UtbGluZWpvaW49J3JvdW5kJyBzdHJva2Utd2lkdGg9JzInIHZpZXdCb3g9JzAgMCAyNCAyNCcgd2lkdGg9JzIwJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxwb2x5bGluZSBwb2ludHM9JzYgOSAxMiAxNSAxOCA5Jy8+PC9zdmc+')] bg-no-repeat bg-[position:calc(100%-12px)_center]"
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none">Batch Assignment</label>
+              <Select 
                 value={formData.batch_id}
-                onChange={(e) => setFormData({...formData, batch_id: e.target.value})}
+                onChange={v => setFormData({...formData, batch_id: String(v)})}
+                options={[
+                  { label: availableBatches.length === 0 ? "No batches match filters" : "Select Batch (Optional)", value: '' },
+                  ...availableBatches.map(b => ({ label: `${b.batch_name} (${b.year})`, value: String(b.id) }))
+                ]}
                 disabled={submitting || availableBatches.length === 0}
-              >
-                <option value="">{availableBatches.length === 0 ? "No batches match filters" : "Select Batch (Optional)"}</option>
-                {availableBatches.map(b => (
-                  <option key={b.id} value={b.id}>{b.batch_name} ({b.year})</option>
-                ))}
-              </select>
+              />
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border mt-4">
-            <button onClick={() => setModalOpen(false)} className="px-4 py-2 text-[13px] font-semibold rounded-xl border border-border bg-background hover:bg-muted transition-colors">Cancel</button>
-            <button 
+          <div className="flex items-center justify-end gap-2 pt-4 border-t mt-4">
+            <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button 
               onClick={handleSubmit} 
-              disabled={submitting || (modalMode === 'create' && (!formData.name || !formData.email || !formData.password || !formData.role))} 
-              className="px-4 py-2 text-[13px] font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl transition-colors disabled:opacity-50"
+              disabled={submitting || (modalMode === 'create' && (!formData.name || !formData.email || !formData.password || !formData.role))}
             >
               {modalMode === 'create' ? 'Create Admin' : 'Update Admin'}
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>
 
-      <Modal 
-        isOpen={isDelOpen} 
-        onClose={() => setDelOpen(false)} 
-        title="Delete Admin?" 
-        subtitle="This action cannot be undone." 
-        icon={<Trash2 className="text-destructive w-8 h-8" />}
-      >
+      <Modal isOpen={isDelOpen} onClose={() => setDelOpen(false)} title="Delete Admin?" subtitle="This action cannot be undone." icon={<Trash2 className="text-destructive w-6 h-6" />}>
         <div className="space-y-4">
           <p className="text-sm font-medium text-foreground">Are you sure you want to delete <span className="text-destructive font-bold">{targetAdmin?.name}</span>?</p>
-          <div className="bg-destructive/10 border border-destructive/20 text-destructive text-xs p-3 rounded-xl font-medium mt-2">
+          <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm p-3 rounded-md mt-2">
             ⚠️ The admin will lose access immediately to all system platforms.
           </div>
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border mt-6">
-            <button onClick={() => setDelOpen(false)} className="px-4 py-2 text-[13px] font-semibold rounded-xl border border-border bg-background hover:bg-muted transition-colors">Cancel</button>
-            <button onClick={handleDelete} disabled={submitting} className="px-4 py-2 text-[13px] font-semibold bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl transition-colors disabled:opacity-50">Delete Admin</button>
+          <div className="flex items-center justify-end gap-2 pt-4 border-t mt-4">
+            <Button variant="outline" onClick={() => setDelOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={submitting}>Delete Admin</Button>
           </div>
         </div>
       </Modal>
