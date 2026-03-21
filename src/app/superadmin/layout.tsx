@@ -1,14 +1,165 @@
-import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
+"use client";
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-jakarta' });
-const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains' });
+import React, { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { LayoutDashboard, Users, Building2, Layers, LogOut, ChevronRight } from 'lucide-react';
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<{name: string, role: string} | null>(null);
+
+  useEffect(() => {
+    if (pathname === '/superadmin/login') return;
+    
+    // Check auth
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+      router.push('/superadmin/login');
+      return;
+    }
+    const parsedUser = JSON.parse(userStr);
+    if (parsedUser.role !== 'SUPERADMIN') {
+      router.push('/superadmin/login');
+      return;
+    }
+    setUser(parsedUser);
+  }, [router, pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    router.push('/superadmin/login');
+  };
+
+  const navItems = [
+    { label: 'Dashboard', href: '/superadmin', icon: LayoutDashboard },
+    { label: 'Admins', href: '/superadmin/admins', icon: Users },
+    { label: 'Cities', href: '/superadmin/cities', icon: Building2 },
+    { label: 'Batches', href: '/superadmin/batches', icon: Layers },
+  ];
+
+  const getPageTitle = () => {
+    if (pathname === '/superadmin') return { title: 'Dashboard', sub: 'System Overview' };
+    if (pathname.includes('/admins')) return { title: 'Admin Management', sub: 'Manage all administrators' };
+    if (pathname.includes('/cities')) return { title: 'City Management', sub: 'Manage all cities' };
+    if (pathname.includes('/batches')) return { title: 'Batch Management', sub: 'Manage all batches' };
+    return { title: '', sub: '' };
+  };
+
+  const { title, sub } = getPageTitle();
+
+  if (pathname === '/superadmin/login') {
+    return <>{children}</>;
+  }
+
+  if (!user) return null;
+
   return (
-    <div className={`${inter.variable} ${jakarta.variable} ${jetbrains.variable} antialiased min-h-screen bg-background text-on-surface font-body`}>
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-      {children}
+    <div className="flex min-h-screen bg-background text-foreground overflow-hidden selection:bg-primary/20">
+      
+      {/* Sidebar - mapped exactly from theme */}
+      <aside className="w-[240px] flex-shrink-0 bg-sidebar border-r border-border flex flex-col z-20 shadow-sm relative animate-in slide-in-from-left duration-500">
+        <div className="p-6 border-b border-border/50">
+          <div className="text-[10px] uppercase tracking-[0.15em] text-primary font-mono mb-1.5 font-bold">SuperAdmin</div>
+          <div className="text-xl font-bold italic tracking-tight bg-gradient-to-br from-primary to-accent-foreground text-transparent bg-clip-text">
+            DSA Tracker
+          </div>
+        </div>
+
+        <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono px-3 py-2 mb-1">
+            Overview
+          </div>
+          
+          {navItems.map((item, idx) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
+            
+            // For visual section break
+            if (idx === 1) {
+              return (
+                <React.Fragment key={item.href}>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono px-3 pt-5 pb-2">
+                    Management
+                  </div>
+                  <Link 
+                    href={item.href}
+                    className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-200 relative overflow-hidden ${
+                      isActive 
+                        ? 'text-primary bg-primary/10 border border-primary/20 shadow-sm' 
+                        : 'text-sidebar-foreground/80 hover:text-primary hover:bg-muted border border-transparent'
+                    }`}
+                  >
+                    <Icon className={`w-[18px] h-[18px] transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110 group-hover:-rotate-6'}`} />
+                    {item.label}
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full animate-in slide-in-from-left-1" />
+                    )}
+                  </Link>
+                </React.Fragment>
+              );
+            }
+
+            return (
+              <Link 
+                key={item.href}
+                href={item.href}
+                className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-200 relative overflow-hidden ${
+                  isActive 
+                    ? 'text-primary bg-primary/10 border border-primary/20 shadow-sm' 
+                    : 'text-sidebar-foreground/80 hover:text-primary hover:bg-muted border border-transparent'
+                }`}
+              >
+                <Icon className={`w-[18px] h-[18px] transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110 group-hover:-rotate-6'}`} />
+                {item.label}
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full animate-in slide-in-from-left-1" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-border/50">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 uppercase">
+              {user.name.charAt(0) || 'S'}
+            </div>
+            <div className="text-left flex-1 min-w-0">
+              <div className="text-sm font-semibold truncate text-foreground">{user.name || 'Super Admin'}</div>
+              <div className="text-[10px] font-mono text-muted-foreground truncate">Logout Session</div>
+            </div>
+            <LogOut className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col relative z-10 min-w-0">
+        
+        {/* Topbar */}
+        <header className="h-[70px] bg-card/80 backdrop-blur-xl border-b border-border flex items-center justify-between px-8 flex-shrink-0 z-10 animate-in slide-in-from-top duration-500">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-foreground transition-all">{title}</h1>
+            <p className="text-xs font-mono text-muted-foreground mt-0.5">{sub}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            {/* Action buttons will be injected by individual pages using a portal/state if needed, but we can just render them in pages for simplicity. */}
+          </div>
+        </header>
+
+        {/* Scrollable Page Wrapper */}
+        <div className="flex-1 overflow-y-auto p-8 relative">
+          <div className="max-w-[1200px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {children}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
