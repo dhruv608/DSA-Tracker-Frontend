@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Select } from '@/components/Select';
+import { logoutUser } from '@/services/auth.service';
 import { useAdminStore } from '@/store/adminStore';
 import { getAdminCities, getAdminBatches } from '@/services/admin.service';
 
@@ -51,9 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   } = useAdminStore();
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
-    document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    logoutUser();
     router.push('/admin/login');
   };
 

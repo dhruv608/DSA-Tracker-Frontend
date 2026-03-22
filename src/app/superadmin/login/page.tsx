@@ -3,10 +3,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
-import { loginAdmin } from '@/services/auth.service';
+import { loginSuperAdmin } from '@/services/auth.service';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function SuperAdminLoginPage() {
+  
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,7 +26,7 @@ export default function SuperAdminLoginPage() {
 
     setLoading(true);
     try {
-      const data = await loginAdmin({ email, password });
+      const data = await loginSuperAdmin({ email, password });
       
       const { accessToken, user } = data;
       

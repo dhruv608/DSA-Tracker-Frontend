@@ -25,9 +25,14 @@ api.interceptors.response.use(
 
     // If 401 and we haven't already tried to refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Don't refresh on login failures
       if (originalRequest.url?.includes('/auth/admin/login')) {
         return Promise.reject(error);
       }
+      
+      // Check if request is from admin pages to redirect appropriately
+      const isAdminRequest = originalRequest.url?.includes('/api/admin/') || 
+                             (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin/'));
       
       originalRequest._retry = true;
 
@@ -35,7 +40,7 @@ api.interceptors.response.use(
         const res = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/refresh-token`,
           {},
-          { withCredentials: true }
+          { withCredentials: true } 
         );
 
         if (res.data?.accessToken) {
@@ -47,12 +52,19 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed, clear data and redirect
+        // Refresh failed, clear data and redirect to appropriate login
         if (typeof window !== 'undefined') {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('user');
           document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-          window.location.href = '/superadmin/login';
+          
+          // Redirect to appropriate login page based on current path
+          const currentPath = window.location.pathname;
+          if (currentPath.startsWith('/admin/')) {
+            window.location.href = '/admin/login';
+          } else {
+            window.location.href = '/superadmin/login';
+          }
         }
         return Promise.reject(refreshError);
       }

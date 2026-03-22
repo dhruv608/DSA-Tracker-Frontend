@@ -157,7 +157,7 @@ export default function BatchesPage() {
               value={filterCity || "all"} 
               onValueChange={v => { setFilterCity(v === 'all' ? '' : v); setCurrentPage(1); }}
             >
-              <SelectTrigger className="w-full sm:max-w-[150px] bg-background">
+              <SelectTrigger className="w-full sm:max-w-37.5 bg-background">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-muted-foreground" />
                   <SelectValue placeholder="All Cities" />
@@ -174,7 +174,7 @@ export default function BatchesPage() {
               value={filterYear || "all"} 
               onValueChange={v => { setFilterYear(v === 'all' ? '' : v); setCurrentPage(1); }}
             >
-              <SelectTrigger className="w-[140px] bg-background">
+              <SelectTrigger className="w-35 bg-background">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
                   <SelectValue placeholder="All Years" />
@@ -214,10 +214,10 @@ export default function BatchesPage() {
             {loading ? (
               <TableSkeleton row={
                 <TableRow>
-                  <TableCell><Skeleton className="h-5 w-[150px]" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-[60px] rounded-full" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-[100px]" /></TableCell>
-                  <TableCell className="text-center"><Skeleton className="h-5 w-[30px] mx-auto" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-37.5" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-15 rounded-full" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-25" /></TableCell>
+                  <TableCell className="text-center"><Skeleton className="h-5 w-7.5 mx-auto" /></TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <Skeleton className="h-8 w-8 rounded-md" />

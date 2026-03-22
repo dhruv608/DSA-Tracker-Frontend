@@ -1,38 +1,23 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import React from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Users, Building2, Layers, LogOut, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, Layers, LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useAuth } from '@/hooks/useAuth';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [user, setUser] = useState<{name: string, role: string} | null>(null);
 
-  useEffect(() => {
-    if (pathname === '/superadmin/login') return;
-    
-    // Check auth
-    const userStr = localStorage.getItem('user');
-    if (!userStr) {
-      router.push('/superadmin/login');
-      return;
-    }
-    const parsedUser = JSON.parse(userStr);
-    if (parsedUser.role !== 'SUPERADMIN') {
-      router.push('/superadmin/login');
-      return;
-    }
-    setUser(parsedUser);
-  }, [router, pathname]);
+  const pathname = usePathname();
+
+  const { getCurrentUser, logout } = useAuth();
+  
+  const user = getCurrentUser();
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
-    router.push('/superadmin/login');
+    logout('/superadmin/login');
   };
 
   const navItems = [
@@ -132,6 +117,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             {children}
           </div>
         </div>
+
+        
       </main>
     </div>
   );

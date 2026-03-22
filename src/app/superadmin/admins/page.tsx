@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getAllAdmins, createAdmin, updateAdmin, deleteAdmin, Admin, getAdminRoles } from '@/services/admin.service';
 import { getAllCities, City } from '@/services/city.service';
 import { getAllBatches, Batch } from '@/services/batch.service';
@@ -14,15 +14,18 @@ import { ActionButtons } from '@/components/ActionButtons';
 import { DeleteModal } from '@/components/DeleteModal';
 import { TableSkeleton } from '@/components/TableSkeleton';
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Users, Trash2, Edit, Filter } from 'lucide-react';
+import { Search, Users, Filter } from 'lucide-react';
+import { AdminFilters } from '@/components/superadmin/admins/AdminFilters';
+
 
 export default function AdminsPage() {
+
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filters
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState('');
@@ -38,22 +41,22 @@ export default function AdminsPage() {
   const [isDelOpen, setDelOpen] = useState(false);
 
   // Dynamic Form State for "Create Admin"
-  const [formData, setFormData] = useState({ 
-    name: '', email: '', password: '', role: 'TEACHER', batch_id: '' 
+  const [formData, setFormData] = useState({
+    name: '', email: '', password: '', role: 'TEACHER', batch_id: ''
   });
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
-  
+
   const [submitting, setSubmitting] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const [adminsRes, citiesRes, batchesRes, rolesRes] = await Promise.all([
-        getAllAdmins().catch(()=>[]),
-        getAllCities().catch(()=>[]),
-        getAllBatches().catch(()=>[]),
-        getAdminRoles().catch(()=>[])
+        getAllAdmins().catch(() => []),
+        getAllCities().catch(() => []),
+        getAllBatches().catch(() => []),
+        getAdminRoles().catch(() => [])
       ]);
       setAdmins(Array.isArray(adminsRes) ? adminsRes : []);
       setCities(Array.isArray(citiesRes) ? citiesRes : []);
@@ -83,14 +86,14 @@ export default function AdminsPage() {
     setModalMode('edit');
     setTargetAdmin(admin);
     // When editing, password is not updated here, name/email are readonly per wireframe.
-    setFormData({ 
-      name: admin.name, 
-      email: admin.email, 
-      password: '', 
-      role: admin.role, 
-      batch_id: admin.batch_id ? String(admin.batch_id) : '' 
+    setFormData({
+      name: admin.name,
+      email: admin.email,
+      password: '',
+      role: admin.role,
+      batch_id: admin.batch_id ? String(admin.batch_id) : ''
     });
-    
+
     // Auto-select city and year based on admin's batch information
     if (admin.batch) {
       // Use the nested batch object if available
@@ -129,7 +132,7 @@ export default function AdminsPage() {
           role: formData.role
         };
         if (formData.batch_id) payload.batch_id = Number(formData.batch_id);
-        
+
         await createAdmin(payload);
       } else if (targetAdmin) {
         // Edit mode (patch)
@@ -162,7 +165,7 @@ export default function AdminsPage() {
 
   const filtered = useMemo(() => {
     return admins.filter(a => {
-      const matchSearch = (a.name+a.email).toLowerCase().includes(search.toLowerCase());
+      const matchSearch = (a.name + a.email).toLowerCase().includes(search.toLowerCase());
       const matchRole = filterRole ? a.role === filterRole : true;
       return matchSearch && matchRole;
     });
@@ -177,7 +180,7 @@ export default function AdminsPage() {
     if (!selectedCity) return [];
     const cityBatches = batches.filter(b => b.city_id === Number(selectedCity));
     const years = new Set(cityBatches.map(b => b.year));
-    return Array.from(years).sort((a,b)=>b-a);
+    return Array.from(years).sort((a, b) => b - a);
   }, [selectedCity, batches]);
 
   const availableBatches = useMemo(() => {
@@ -189,54 +192,24 @@ export default function AdminsPage() {
 
   return (
     <div className="space-y-6">
-      
+
       <div className="mb-6">
         <h2 className="text-2xl font-bold tracking-tight mb-1">Admin Management</h2>
         <p className="text-sm text-muted-foreground">Create and manage all administrators, assign cities and batches.</p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-8">
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-          <div className="relative w-full sm:max-w-xs group">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
-              <Search className="w-4 h-4" />
-            </div>
-            <Input 
-              placeholder="Search by name, email..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-              className="w-full pl-9"
-            />
-          </div>
-          <Select 
-            value={filterRole || "all"} 
-            onValueChange={v => { setFilterRole(v === 'all' ? '' : v); setCurrentPage(1); }}
-          >
-            <SelectTrigger className="w-full sm:max-w-[150px] bg-background">
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-muted-foreground" />
-                <SelectValue placeholder="All Roles" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              {roles.filter(r => r !== 'SUPERADMIN').map(r => (
-                <SelectItem key={r} value={r}>{r}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {(filterRole || search) && (
-             <button onClick={() => {setFilterRole(''); setSearch('');}} className="text-xs text-muted-foreground hover:text-foreground ml-2 underline underline-offset-4">Clear</button>
-          )}
-        </div>
-        
-        <Button onClick={openCreate} className="w-full sm:w-auto shrink-0">
-          <Users className="w-4 h-4 mr-2" />
-          Create Admin
-        </Button>
-      </div>
+      <AdminFilters
+        search={search}
+        onSearchChange={setSearch}
+        filterRole={filterRole}
+        onRoleChange={v => { setFilterRole(v === 'all' ? '' : v); setCurrentPage(1); }}
+        onCreateAdmin={openCreate}
+        roles={roles}
+      />
 
       <div className="bg-card border rounded-xl overflow-hidden shadow-sm animate-in fade-in duration-300">
+
+
         <Table>
           <TableHeader>
             <TableRow>
@@ -250,6 +223,7 @@ export default function AdminsPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
+
               <TableSkeleton row={
                 <TableRow>
                   <TableCell><Skeleton className="h-5 w-[160px]" /></TableCell>
@@ -265,106 +239,111 @@ export default function AdminsPage() {
                   </TableCell>
                 </TableRow>
               } />
-            ) : filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No matches found.</TableCell>
-              </TableRow>
-            ) : (
-              paginatedAdmins.map((admin) => {
-                let badgeClass = "bg-accent/30 text-accent-foreground border-accent/60";
-                if (admin.role === 'TEACHER') badgeClass = "bg-primary/20 text-primary-foreground border-primary/40 text-primary";
-                else if (admin.role === 'INTERN') badgeClass = "bg-chart-5/20 text-chart-5 border-chart-5/40";
-                else if (admin.role === 'SUPERADMIN') badgeClass = "bg-destructive/10 text-destructive border-destructive/20";
+            )
+              : filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No matches found </TableCell>
+                </TableRow>
+              )
+                : (
+                  paginatedAdmins.map((admin) => {
+                    let badgeClass = "bg-accent/50 text-accent-foreground border-accent/60";
+                    if (admin.role === 'TEACHER') badgeClass = "bg-primary/20 text-primary-foreground border-primary/40 text-primary";
+                    else if (admin.role === 'INTERN') badgeClass = "bg-chart-5/20 text-chart-5 border-chart-5/40";
+                    else if (admin.role === 'SUPERADMIN') badgeClass = "bg-destructive/10 text-destructive border-destructive/20";
 
-                const adminBatch = admin.batch;
-                const adminCity = admin.city;
+                    const adminBatch = admin.batch;
+                    const adminCity = admin.city;
 
-                return (
-                  <TableRow key={admin.id}>
-                    <TableCell>
-                      <span className="font-semibold text-foreground truncate max-w-[200px] block">{admin.name}</span>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs truncate max-w-[200px]">
-                      {admin.email}
-                    </TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium border ${badgeClass}`}>
-                        {admin.role}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {admin.role === 'SUPERADMIN' ? <span className="opacity-50">—</span> : (adminCity?.city_name || <span className="opacity-50">Unassigned</span>)}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {admin.role === 'SUPERADMIN' ? <span className="opacity-50">—</span> : (adminBatch?.batch_name || <span className="opacity-50">Unassigned</span>)}
-                    </TableCell>
-                    <TableCell className="text-right flex justify-end gap-1">
-                      <ActionButtons 
-                        onEdit={() => openEdit(admin)} 
-                        onDelete={() => { setTargetAdmin(admin); setDelOpen(true); }} 
-                      />
-                    </TableCell>
-                  </TableRow>
-                )
-              })
-            )}
+                    return (
+                      <TableRow key={admin.id}>
+                        <TableCell>
+                          <span className="font-semibold text-foreground truncate max-w-[200px] block">{admin.name}</span>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-xs truncate max-w-[200px]">
+                          {admin.email}
+                        </TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/30 text-primary`}>
+                            {admin.role}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {admin.role === 'SUPERADMIN' ? <span className="opacity-50">—</span> : (adminCity?.city_name || <span className="opacity-50">Unassigned</span>)}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {admin.role === 'SUPERADMIN' ? <span className="opacity-50">—</span> : (adminBatch?.batch_name || <span className="opacity-50">Unassigned</span>)}
+                        </TableCell>
+                        <TableCell className="text-right flex justify-end gap-1">
+                          <ActionButtons
+                            onEdit={() => openEdit(admin)}
+                            onDelete={() => { setTargetAdmin(admin); setDelOpen(true); }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                )}
           </TableBody>
         </Table>
-        <Pagination 
-          currentPage={currentPage} 
-          totalItems={filtered.length} 
-          limit={limit} 
+
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filtered.length}
+          limit={limit}
           onPageChange={setCurrentPage}
           onLimitChange={setLimit}
           showLimitSelector={true}
           loading={loading}
         />
+
       </div>
 
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setModalOpen(false)} 
-        title={modalMode === 'create' ? "Create New Admin" : "Edit Admin"} 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalMode === 'create' ? "Create New Admin" : "Edit Admin"}
         subtitle={modalMode === 'create' ? "Assign city and batch to determine data access permissions" : "Name and email are read-only when editing."}
       >
         <div className="space-y-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">Full Name {modalMode==='create'&&'*'}</label>
-              <Input 
-                placeholder="e.g. Priya Sharma"
+              <label className="text-sm font-medium leading-none">Full Name {modalMode === 'create' && '*'}</label>
+              <Input
+                placeholder="e.g. Satya Sai"
                 value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 disabled={submitting || modalMode === 'edit'}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">Email {modalMode==='create'&&'*'}</label>
-              <Input 
+              <label className="text-sm font-medium leading-none">Email {modalMode === 'create' && '*'}</label>
+              <Input
                 type="email"
                 placeholder="admin@dsa.in"
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 disabled={submitting || modalMode === 'edit'}
               />
             </div>
             {modalMode === 'create' && (
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none">Password *</label>
-                <Input 
+                <Input
                   type="password"
                   placeholder="Min. 8 characters"
                   value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   disabled={submitting}
                 />
               </div>
             )}
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none">Role *</label>
-              <Select 
+              <Select
                 value={formData.role || "TEACHER"}
-                onValueChange={v => setFormData({...formData, role: v})}
+                onValueChange={v => setFormData({ ...formData, role: v })}
                 disabled={submitting}
               >
                 <SelectTrigger>
@@ -378,18 +357,18 @@ export default function AdminsPage() {
               </Select>
             </div>
           </div>
-          
+
           <div className="border-t pt-4 mt-2">
             <h3 className="text-sm font-semibold text-muted-foreground mb-3">Assignment</h3>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="space-y-2">
                 <label className="text-xs font-medium leading-none text-muted-foreground">City Filter (Optional)</label>
-                <Select 
+                <Select
                   value={selectedCity || "any"}
                   onValueChange={(v) => {
                     setSelectedCity(v === 'any' ? '' : v);
                     setSelectedYear(''); // reset dependencies
-                    setFormData({...formData, batch_id: ''});
+                    setFormData({ ...formData, batch_id: '' });
                   }}
                   disabled={submitting}
                 >
@@ -406,11 +385,11 @@ export default function AdminsPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium leading-none text-muted-foreground">Year Filter (Optional)</label>
-                <Select 
+                <Select
                   value={selectedYear || "any"}
                   onValueChange={(v) => {
                     setSelectedYear(v === 'any' ? '' : v);
-                    setFormData({...formData, batch_id: ''});
+                    setFormData({ ...formData, batch_id: '' });
                   }}
                   disabled={submitting || (!selectedCity && !selectedYear)}
                 >
@@ -428,9 +407,9 @@ export default function AdminsPage() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none">Batch Assignment</label>
-              <Select 
+              <Select
                 value={formData.batch_id || "none"}
-                onValueChange={v => setFormData({...formData, batch_id: v === 'none' ? '' : v})}
+                onValueChange={v => setFormData({ ...formData, batch_id: v === 'none' ? '' : v })}
                 disabled={submitting || (!selectedCity && !selectedYear && !formData.batch_id)}
               >
                 <SelectTrigger className="bg-background">
@@ -448,8 +427,8 @@ export default function AdminsPage() {
 
           <div className="flex items-center justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={handleSubmit} 
+            <Button
+              onClick={handleSubmit}
               disabled={submitting || (modalMode === 'create' && (!formData.name || !formData.email || !formData.password || !formData.role))}
             >
               {modalMode === 'create' ? 'Create Admin' : 'Update Admin'}
@@ -457,6 +436,7 @@ export default function AdminsPage() {
           </div>
         </div>
       </Modal>
+
 
       <DeleteModal
         isOpen={isDelOpen}

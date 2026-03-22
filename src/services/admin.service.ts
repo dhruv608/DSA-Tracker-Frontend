@@ -180,7 +180,7 @@ export const deleteAdminStudent = async (username: string) => {
 
 export const getAdminStudentProfile = async (username: string) => {
   // Using the public profiling route due to internal restructuring
-  const response = await api.get(`/api/student/profile/${username}`);
+  const response = await api.get(`/api/students/profile/${username}`);
   return response.data;
 };
 
