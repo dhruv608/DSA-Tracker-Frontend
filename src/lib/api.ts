@@ -41,6 +41,7 @@ api.interceptors.response.use(
         if (res.data?.accessToken) {
           if (typeof window !== 'undefined') {
             localStorage.setItem('accessToken', res.data.accessToken);
+            document.cookie = `accessToken=${res.data.accessToken}; path=/`;
           }
           originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
           return api(originalRequest);
@@ -50,6 +51,7 @@ api.interceptors.response.use(
         if (typeof window !== 'undefined') {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('user');
+          document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
           window.location.href = '/superadmin/login';
         }
         return Promise.reject(refreshError);
