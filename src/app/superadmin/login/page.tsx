@@ -29,6 +29,7 @@ export default function SuperAdminLoginPage() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('user', JSON.stringify(user));
+        document.cookie = `accessToken=${accessToken}; path=/`;
       }
       
       if (user.role === 'SUPERADMIN') {
