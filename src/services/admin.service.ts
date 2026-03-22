@@ -200,3 +200,14 @@ export const getAdminLeaderboard = async (query: { page?: number; limit?: number
     throw err;
   }
 };
+
+export const getAvailableYears = async () => {
+  try {
+    const response = await api.get('/api/admin/leaderboard/years');
+    return response.data.years;
+  } catch (err: any) {
+    console.error("Failed to fetch available years:", err);
+    // Return fallback years if API fails
+    return [2026, 2025, 2024, 2023];
+  }
+};

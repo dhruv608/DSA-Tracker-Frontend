@@ -1,240 +1,270 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAdminStore } from '@/store/adminStore';
-import { getAdminLeaderboard } from '@/services/admin.service';
-import { 
-  Trophy, 
-  Search, 
-  MapPin,
-  TrendingUp,
-  Award,
-  CalendarDays,
-  Flame,
-  Medal
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select } from '@/components/Select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import Link from 'next/link';
+import { getAdminLeaderboard, getAdminCities, getAvailableYears } from '@/services/admin.service';
+import { getAllBatches } from '@/services/batch.service';
+import { Trophy, Clock } from 'lucide-react';
+
+import ShimmerEffect from '@/components/ShimmerEffect';
+import { PodiumSection } from './components/PodiumSection';
+import { StatsSection } from './components/StatsSection';
+import { LeaderboardTable } from './components/LeaderboardTable';
+import { FilterBar } from './components/FilterBar';
+import { EvaluationModal } from './components/EvaluationModal';
+
+// Hook for Debounce
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 export default function AdminLeaderboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { selectedCity, selectedBatch, isLoadingContext } = useAdminStore();
 
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]); 
+  const [podiumData, setPodiumData] = useState<any[]>([]);   
+  
   const [loading, setLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
 
-  // URL States & Filters
+  // Query & Filters
   const [lSearch, setLSearch] = useState(searchParams.get('search') || '');
-  const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
+  const debouncedSearch = useDebounce(lSearch, 400); 
   
-  // POST body metrics
-  const defaultYear = new Date().getFullYear();
-  const [lType, setLType] = useState('all'); // alltime, monthly, weekly
-  // We'll let the Admin toggle between "All Cities" or their active City context
-  const [lCityMode, setLCityMode] = useState<'all' | 'context'>('all');
+  const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
+  const [limit, setLimit] = useState(Number(searchParams.get('limit')) || 5);
+  
+  const [lType, setLType] = useState('all'); 
+  const [lCity, setLCity] = useState<string>(''); 
+  const [lYear, setLYear] = useState<number>(0); 
+  
+  const [isInit, setIsInit] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const [allCities, setAllCities] = useState<string[]>([]);
+  const [allYears, setAllYears] = useState<number[]>([]);
+  const [cityYearMap, setCityYearMap] = useState<Record<string, Set<number>>>({});
+
+  // 1. Initialize Default Filters
+  useEffect(() => {
+    if (!isLoadingContext && !isInit && selectedCity && selectedBatch) {
+      const defaultCity = selectedCity.name;
+      const batchYearRaw = (selectedBatch as any).year;
+      const defaultYear = batchYearRaw ? Number(batchYearRaw) : Number(selectedBatch.name?.match(/\d{4}/)?.[0] || 2024);
+      
+      setLCity(defaultCity);
+      setLYear(defaultYear);
+      setLType('all');
+      setIsInit(true);
+    }
+  }, [isLoadingContext, selectedCity, selectedBatch, isInit]);
+
+  useEffect(() => {
+    getAdminCities().then(res => {
+      const cities = res.map((c: any) => c.city_name);
+      setAllCities(cities);
+    }).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    getAllBatches().then(res => {
+      // Step 3 & 5: Build City -> Year Map and derive options from original data
+      const map: Record<string, Set<number>> = {};
+      const globalYears = new Set<number>();
+      
+      res.forEach((item: any) => {
+        const city = item.city_name?.toLowerCase();
+        const year = item.year || item.batch_year;
+
+        if (city && year) {
+          if (!map[city]) {
+            map[city] = new Set();
+          }
+          map[city].add(Number(year));
+        }
+        if (year) {
+          globalYears.add(Number(year));
+        }
+      });
+
+      setCityYearMap(map);
+      setAllYears(Array.from(globalYears).sort((a, b) => b - a));
+    }).catch(console.error);
+  }, []);
+
+  // Step 3: Implement Superadmin dropdown logic (IF CITY = "all" vs SPECIFIC CITY)
+  const yearOptions = useMemo(() => {
+    if (lCity === "all" || !lCity) {
+      return allYears;
+    }
+    const cityKey = lCity.toLowerCase();
+    const cityYears = cityYearMap[cityKey] ? Array.from(cityYearMap[cityKey]).sort((a,b) => b-a) : [];
+    return cityYears;
+  }, [lCity, allYears, cityYearMap]);
+
+  // Step 4: Reset year on city change (handled deterministically now to avoid useEffect loops)
+  const handleCityChange = useCallback((newCity: string) => {
+    setLCity(newCity);
+    
+    // Preview the next yearOptions instantly
+    const cityKey = newCity.toLowerCase();
+    const cityYears = cityYearMap[cityKey] ? Array.from(cityYearMap[cityKey]).sort((a,b) => b-a) : [];
+    const nextYearOptions = (newCity === "all" || !newCity) ? allYears : cityYears;
+    
+    // Reset year immediately if current year isn't valid for the new city
+    if (nextYearOptions.length > 0 && !nextYearOptions.includes(lYear)) {
+      setLYear(nextYearOptions[0]);
+    } else if (nextYearOptions.length === 0) {
+      setLYear(0); // Explicit fallback if the city truly has no batches
+    }
+  }, [allYears, cityYearMap, lYear]);
 
   const updateUrl = useCallback(() => {
+    if (!isInit) return;
     const params = new URLSearchParams();
-    if (lSearch) params.set('search', lSearch);
+    if (debouncedSearch) params.set('search', debouncedSearch);
     if (page > 1) params.set('page', page.toString());
+    if (limit !== 5) params.set('limit', limit.toString());
     router.replace(`/admin/leaderboard?${params.toString()}`);
-  }, [lSearch, page, router]);
+  }, [debouncedSearch, page, limit, router, isInit]);
 
-  const fetchLeaderboard = useCallback(async () => {
-    setLoading(true);
-    try {
-      const query = { page, limit: 15, search: lSearch || undefined };
-      
-      const cityFilter = lCityMode === 'context' && selectedCity ? selectedCity.name : 'all';
-      const yearFilter = lCityMode === 'context' && selectedBatch ? (selectedBatch as any).year || 'all' : 'all';
+  useEffect(() => { updateUrl(); }, [updateUrl]);
 
-      const body = { city: cityFilter, type: lType, year: yearFilter };
-      
-      const res = await getAdminLeaderboard(query, body);
-      setLeaderboard(res.leaderboard || []);
-      setTotalPages(res.totalPages || 1);
-      setTotalRecords(res.total || 0);
-    } catch (err) {
-      console.error("Failed to load leaderboard", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [lSearch, page, lType, lCityMode, selectedCity, selectedBatch, defaultYear]);
-
+  // Step 1: Fix API trigger on filter change
+  // Step 6: Ensure filter -> data flow (Dropdown change -> map map -> useEffect -> API)
   useEffect(() => {
-    updateUrl();
-    if (!isLoadingContext) {
-      fetchLeaderboard();
-    }
-  }, [updateUrl, fetchLeaderboard, isLoadingContext]);
-  
-  useEffect(() => {
-    setPage(1); // Reset to page 1 when modifying primary body filters
-  }, [lType, lCityMode, selectedCity?.id]);
+    if (!isInit) return;
+    
+    // Step 7: Debugging
+    console.log("Filters:", { lCity, lYear, lType });
+    console.log("Request Body:", { city: lCity, year: lYear === 0 ? undefined : Number(lYear), type: lType });
+    
+    const fetchLeaderboard = async () => {
+      setLoading(true);
+      try {
+        const query = { page, limit, search: debouncedSearch || undefined };
+        const body = { city: lCity, type: lType, year: lYear === 0 ? undefined : Number(lYear) }; 
 
-  if (isLoadingContext) return <Skeletons />;
+        const [boardRes, podiumRes] = await Promise.all([
+          getAdminLeaderboard(query, body),
+          getAdminLeaderboard({ ...query, page: 1, limit: 3 }, body)
+        ]);
+
+        setLeaderboard(boardRes.leaderboard || []);
+        setTotalPages(boardRes.totalPages || 1);
+        setTotalRecords(boardRes.total || 0);
+
+        setPodiumData(podiumRes.leaderboard || []);
+        setErrorMsg(null);
+      } catch (err: any) {
+        console.error("Failed to load leaderboard", err);
+        setErrorMsg(err.message || 'Failed to fetch leaderboard data');
+        setLeaderboard([]);
+        setPodiumData([]);
+        setTotalPages(1);
+        setTotalRecords(0);
+      } finally {
+        setLoading(false);
+        setIsInitialLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
+  }, [lCity, lYear, lType, page, limit, debouncedSearch, isInit]);
+
+  // Global loading overlay if everything is refreshing
+  if (isLoadingContext || !isInit || isInitialLoading || loading) return <ShimmerEffect />;
+
+  const cityOptionsObj = [{ label: 'All Cities', value: 'all' }, ...allCities.map(c => ({ label: c, value: c }))];
+  const yearOptionsObj = yearOptions.map((y: number) => ({ label: y.toString(), value: y.toString() }));
+  const typeOptionsObj = [
+     {label: 'All-Time', value: 'all'},
+     {label: 'Monthly', value: 'monthly'},
+     {label: 'Weekly', value: 'weekly'},
+  ];
+
+  const lastUpdatedRaw = leaderboard.length > 0 ? leaderboard[0].last_calculated : (podiumData.length > 0 ? podiumData[0].last_calculated : null);
+  const lastUpdatedFormat = lastUpdatedRaw ? new Date(lastUpdatedRaw).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Unknown';
+
+  let avgCompletion = 0;
+  let highestCompletion = 0;
+  if (leaderboard.length > 0) {
+    let totalComp = 0;
+    leaderboard.forEach(s => {
+      const hc = Number(s.hard_completion || 0);
+      const mc = Number(s.medium_completion || 0);
+      const ec = Number(s.easy_completion || 0);
+      const comp = (hc + mc + ec) / 3;
+      totalComp += comp;
+      if (comp > highestCompletion) highestCompletion = comp;
+    });
+    avgCompletion = totalComp / leaderboard.length;
+  }
 
   return (
     <div className="flex flex-col space-y-6">
-      
       <div className="flex items-end justify-between">
-         <div>
-           <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-             <Trophy className="w-6 h-6 text-primary" /> Administrator Leaderboard
-           </h2>
-           <p className="text-muted-foreground mt-1 text-sm bg-muted inline-block px-2 py-0.5 rounded-md border border-border mt-2">
-             Rankings across overarching structural bounds.
+         <div className="flex flex-col gap-1.5">
+           <div className="flex items-center gap-3">
+             <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
+               <Trophy className="w-6 h-6 text-primary" /> 
+               Admin Leaderboard
+             </h2>
+             <EvaluationModal />
+           </div>
+           <p className="text-muted-foreground text-sm bg-muted inline-block px-2 py-0.5 rounded-md border border-border w-fit">
+             Analytics driven precisely by backend mapping constraints.
            </p>
          </div>
+         {lastUpdatedRaw && (
+            <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground bg-muted/30 px-3 py-1.5 border border-border rounded-full shadow-sm">
+               <Clock className="w-3.5 h-3.5"/> Last Updated: {lastUpdatedFormat}
+            </div>
+         )}
       </div>
 
-      <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden flex flex-col min-h-[600px]">
-         <div className="p-4 border-b border-border flex flex-wrap items-center gap-3 bg-muted/20">
-            <div className="relative flex-1 min-w-[200px] max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input 
-                 placeholder="Search student or username..." 
-                 value={lSearch}
-                 onChange={(e) => { setLSearch(e.target.value); setPage(1); }}
-                 className="pl-9 h-9 bg-background focus-visible:ring-1"
-              />
-            </div>
-            
-            <Select 
-               value={lType} 
-               onChange={(v) => { setLType(v as string); }}
-               options={[
-                 {label: 'All-Time Ranks', value: 'all'},
-                 {label: 'Monthly Standings', value: 'monthly'},
-                 {label: 'Weekly Pulse', value: 'weekly'},
-               ]}
-               className="w-[180px] h-9 text-sm"
-               icon={<TrendingUp className="w-3.5 h-3.5" />}
-               placeholder="Timeframe"
-            />
-            
-            <Select 
-               value={lCityMode} 
-               onChange={(v) => { setLCityMode(v as 'all' | 'context'); }}
-               options={[
-                 {label: 'Global Competition (All)', value: 'all'},
-                 {label: `Local Pool (${selectedCity?.name || 'Loading...'})`, value: 'context'},
-               ]}
-               className="w-[220px] h-9 text-sm"
-               icon={<MapPin className="w-3.5 h-3.5" />}
-               placeholder="Scope"
-               disabled={!selectedCity}
-            />
-         </div>
+      <PodiumSection 
+        leaderboard={podiumData} 
+        lType={lType} 
+        lCity={lCity} 
+      />
+
+      <StatsSection 
+        totalRecords={totalRecords}
+        avgCompletion={avgCompletion}
+        highestCompletion={highestCompletion}
+      />
+
+      <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden flex flex-col min-h-[500px]">
+         <FilterBar 
+            lSearch={lSearch} setLSearch={setLSearch}
+            lType={lType} setLType={setLType} typeOptionsObj={typeOptionsObj}
+            lCity={lCity} setLCity={handleCityChange} cityOptionsObj={cityOptionsObj} setLYear={setLYear}
+            lYear={lYear} yearOptionsObj={yearOptionsObj} allYears={allYears}
+         />
          
-         <div className="overflow-x-auto flex-1">
-            <Table>
-               <TableHeader>
-                 <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead className="w-[80px] text-center">Rank</TableHead>
-                    <TableHead>Competitor Details</TableHead>
-                    <TableHead>Location Bound</TableHead>
-                    <TableHead className="text-center">Complexity Span</TableHead>
-                    <TableHead className="text-center">Score Metric</TableHead>
-                 </TableRow>
-               </TableHeader>
-               <TableBody>
-                 {loading ? (
-                    <TableRow>
-                       <TableCell colSpan={5} className="h-[400px] text-center text-muted-foreground">
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-primary inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                          Calculating hierarchy...
-                       </TableCell>
-                    </TableRow>
-                 ) : leaderboard.length === 0 ? (
-                    <TableRow>
-                       <TableCell colSpan={5} className="h-[400px] text-center text-muted-foreground">
-                          No leaderboard metrics were identified for the current configuration.
-                       </TableCell>
-                    </TableRow>
-                 ) : (
-                    leaderboard.map((entry) => {
-                       const pos = entry.rank || '-';
-                       let rankClass = "text-muted-foreground font-semibold";
-                       if (pos === 1) rankClass = "text-yellow-500 font-bold drop-shadow-sm";
-                       else if (pos === 2) rankClass = "text-slate-400 font-bold drop-shadow-sm";
-                       else if (pos === 3) rankClass = "text-amber-700 font-bold drop-shadow-sm";
-
-                       return (
-                       <TableRow key={entry.student_id} className="group hover:bg-muted/30">
-                          <TableCell className="text-center">
-                             <div className="flex flex-col items-center justify-center">
-                               {pos <= 3 ? <Medal className={`w-6 h-6 ${rankClass} mb-1`} /> : null}
-                               <span className={`text-lg ${pos <= 3 ? rankClass : 'text-foreground font-medium'}`}>#{pos}</span>
-                             </div>
-                          </TableCell>
-                          <TableCell>
-                             <div className="flex flex-col">
-                                <Link href={`/admin/students/${entry.username}`} className="font-semibold text-foreground hover:text-primary transition-colors">
-                                   {entry.name}
-                                </Link>
-                                <span className="text-xs text-muted-foreground font-mono">@{entry.username}</span>
-                             </div>
-                          </TableCell>
-                          <TableCell>
-                             <div className="flex flex-col gap-0.5 items-start">
-                                <span className="text-xs font-semibold px-2 py-0.5 rounded border border-border bg-muted/60">{entry.city_name}</span>
-                                <span className="text-xs text-muted-foreground opacity-70 flex items-center gap-1 mt-1"><CalendarDays className="w-3 h-3"/> Batch {entry.batch_year}</span>
-                             </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                             <div className="inline-flex items-center gap-1.5 text-xs font-medium">
-                                <span className="bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded">{entry.easy_solved} E</span>
-                                <span className="bg-yellow-500/10 text-yellow-600 px-1.5 py-0.5 rounded">{entry.medium_solved} M</span>
-                                <span className="bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded">{entry.hard_solved} H</span>
-                             </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                             <div className="flex flex-col items-center gap-1">
-                                <span className="font-bold text-foreground text-base tracking-tight">{entry.total_solved}</span>
-                                {entry.max_streak > 0 && <span className="text-xs font-medium text-orange-500 flex items-center gap-1"><Flame className="w-3 h-3"/> {entry.max_streak} streak</span>}
-                             </div>
-                          </TableCell>
-                       </TableRow>
-                       );
-                    })
-                 )}
-               </TableBody>
-            </Table>
-         </div>
-
-         {/* Pagination Footer */}
-         <div className="p-4 border-t border-border flex items-center justify-between bg-muted/30 mt-auto">
-            <span className="text-sm text-muted-foreground font-medium">Total: {totalRecords} | Page {page} of {Math.max(1, totalPages)}</span>
-            <div className="flex gap-2">
-               <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1 || loading}>Previous</Button>
-               <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages || loading}>Next</Button>
-            </div>
-         </div>
+         <LeaderboardTable 
+            leaderboard={leaderboard}
+            errorMsg={errorMsg}
+            lCity={lCity}
+            page={page}
+            totalRecords={totalRecords}
+            limit={limit}
+            setPage={setPage}
+            setLimit={setLimit}
+         />
       </div>
-    </div>
-  );
-}
-
-function Skeletons() {
-  return (
-    <div className="space-y-6 animate-pulse mt-4">
-       <div className="h-10 w-48 bg-muted rounded-md shrink-0"></div>
-       <div className="h-[600px] w-full bg-card border border-border rounded-xl"></div>
     </div>
   );
 }
