@@ -1,46 +1,54 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
 });
 
+// Request Interceptor
+// Automatically attaches JWT access tokens from localStorage to all requests
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('accessToken');
+
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
+
+// Response Interceptor
+// Handles 401 errors by attempting token refresh
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+
     const originalRequest = error.config;
 
     // If 401 and we haven't already tried to refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Don't refresh on login failures
-      if (originalRequest.url?.includes('/auth/admin/login')) {
+      if (originalRequest.url?.includes('/auth/admin/login') || originalRequest.url?.includes('/auth/student/login')) {
         return Promise.reject(error);
       }
-      
+
       // Check if request is from admin pages to redirect appropriately
-      const isAdminRequest = originalRequest.url?.includes('/api/admin/') || 
-                             (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin/'));
-      
+      const isAdminRequest = originalRequest.url?.includes('/api/admin/') ||
+        (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin/'));
+
       originalRequest._retry = true;
 
       try {
         const res = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/refresh-token`,
           {},
-          { withCredentials: true } 
+          { withCredentials: true }
         );
 
         if (res.data?.accessToken) {
@@ -57,11 +65,13 @@ api.interceptors.response.use(
           localStorage.removeItem('accessToken');
           localStorage.removeItem('user');
           document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-          
+
           // Redirect to appropriate login page based on current path
           const currentPath = window.location.pathname;
           if (currentPath.startsWith('/admin/')) {
             window.location.href = '/admin/login';
+          } else if (currentPath === '/') {
+            window.location.href = '/';
           } else {
             window.location.href = '/superadmin/login';
           }

@@ -2,10 +2,13 @@ import api from '@/lib/api';
 
 export const studentLeaderboardService = {
   getLeaderboard: async (filters: { city?: string; year?: number; type?: string } = {}) => {
-    // Determine the query endpoint structure. Example uses query params or body:
-    // Here we pass 'type' as query string if backend expects, and city/year in body
-    const queryStr = filters.type ? `?type=${filters.type}` : '';
-    const res = await api.post(`/api/students/leaderboard${queryStr}`, filters);
-    return res.data;
+    try {
+      // Backend expects filters in request body, not query params
+      const res = await api.post('/api/students/leaderboard', filters);
+      return res.data;
+    } catch (error) {
+      console.error('Leaderboard error:', error);
+      throw error;
+    }
   }
 };

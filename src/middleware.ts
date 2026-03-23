@@ -47,7 +47,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/superadmin/login', request.url));
   }
 
-  if (isAdminRoute && !['TEACHER', 'INTERN', 'SUPERADMIN', 'ADMIN'].includes(role)) {
+  if (isAdminRoute && !['TEACHER', 'SUPERADMIN','ADMIN'].includes(role)) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 

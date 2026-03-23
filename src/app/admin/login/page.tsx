@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
         document.cookie = `accessToken=${accessToken}; path=/`;
       }
       
-      if (['TEACHER', 'INTERN', 'SUPERADMIN', 'ADMIN'].includes(user.role)) {
+      if (['TEACHER', 'SUPERADMIN', 'ADMIN'].includes(user.role)) {
         router.push('/admin');
       } else {
         setError('Unauthorized access: Admin privileges required');
@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4 animate-in fade-in duration-500">
       <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-lg p-8">
         <div className="mb-8 text-center space-y-3">
-          <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent-foreground flex items-center justify-center p-2.5 shadow-lg shadow-primary/20 mb-2">
+          <div className="mx-auto w-12 h-12 rounded-2xl bg-linear-to-br from-primary to-accent-foreground flex items-center justify-center p-2.5 shadow-lg shadow-primary/20 mb-2">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-full h-full text-primary-foreground"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">BruteForce</h1>
