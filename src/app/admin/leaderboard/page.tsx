@@ -3,10 +3,12 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAdminStore } from '@/store/adminStore';
-import { getAdminLeaderboard, getAdminCities, getAvailableYears } from '@/services/admin.service';
+import {  getAdminCities } from '@/services/admin.service';
 import { getAllBatches } from '@/services/batch.service';
 import { Trophy, Clock } from 'lucide-react';
-import ShimmerEffect from '@/components/ShimmerEffect';
+import PodiumShimmer from '@/components/shimmers/PodiumShimmer';
+import StatsShimmer from '@/components/shimmers/StatsShimmer';
+import TableShimmer from '@/components/shimmers/TableShimmer';
 import { PodiumSection } from './components/PodiumSection';
 import { StatsSection } from './components/StatsSection';
 import { LeaderboardTable } from './components/LeaderboardTable';
@@ -27,37 +29,28 @@ export default function AdminLeaderboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { selectedCity, selectedBatch, isLoadingContext } = useAdminStore();
-  const [leaderboard, setLeaderboard] = useState<any[]>([]); 
-  const [podiumData, setPodiumData] = useState<any[]>([]);   
-  const [loading, setLoading] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalRecords, setTotalRecords] = useState(0);
-  // Query & Filters
-  const [lSearch, setLSearch] = useState(searchParams.get('search') || '');
-  const debouncedSearch = useDebounce(lSearch, 400); 
-  
-  const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
-  const [limit, setLimit] = useState(Number(searchParams.get('limit')) || 5);
-  
-  const [lType, setLType] = useState('all'); 
-  const [lCity, setLCity] = useState<string>('all'); 
-  const [lYear, setLYear] = useState<number>(0); 
-  
   const [isInit, setIsInit] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [allCities, setAllCities] = useState<string[]>([]);
   const [allYears, setAllYears] = useState<number[]>([]);
   const [cityYearMap, setCityYearMap] = useState<Record<string, Set<number>>>({});
+  // Query & Filters
+  const [lSearch, setLSearch] = useState(searchParams.get('search') || '');
+  const debouncedSearch = useDebounce(lSearch, 400);
 
+  const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
+  const [limit, setLimit] = useState(Number(searchParams.get('limit')) || 5);
+
+  const [lType, setLType] = useState('all');
+  const [lCity, setLCity] = useState<string>('all');
+  const [lYear, setLYear] = useState<number>(0);
   // 1. Initialize Default Filters
   useEffect(() => {
     if (!isLoadingContext && !isInit && selectedCity && selectedBatch) {
       const defaultCity = selectedCity.name;
       const batchYearRaw = (selectedBatch as any).year;
       const defaultYear = batchYearRaw ? Number(batchYearRaw) : Number(selectedBatch.name?.match(/\d{4}/)?.[0] || 2024);
-      
       setLCity(defaultCity);
       setLYear(defaultYear);
       setLType('all');
@@ -77,11 +70,11 @@ export default function AdminLeaderboardPage() {
       // Step 3 & 5: Build City -> Year Map and derive options from original data
       const map: Record<string, Set<number>> = {};
       const globalYears = new Set<number>();
-      
+
       res.forEach((item: any) => {
         const city = item.city?.city_name?.toLowerCase();
         const year = item.year || item.batch_year;
-        
+
         if (city && year) {
           if (!map[city]) {
             map[city] = new Set();
@@ -104,19 +97,19 @@ export default function AdminLeaderboardPage() {
       return allYears;
     }
     const cityKey = lCity.toLowerCase();
-    const cityYears = cityYearMap[cityKey] ? Array.from(cityYearMap[cityKey]).sort((a,b) => b-a) : [];
+    const cityYears = cityYearMap[cityKey] ? Array.from(cityYearMap[cityKey]).sort((a, b) => b - a) : [];
     return cityYears;
   }, [lCity, allYears, cityYearMap]);
 
   // Step 4: Reset year on city change (handled deterministically now to avoid useEffect loops)
   const handleCityChange = useCallback((newCity: string) => {
     setLCity(newCity);
-    
+
     // Preview the next yearOptions instantly
     const cityKey = newCity.toLowerCase();
-    const cityYears = cityYearMap[cityKey] ? Array.from(cityYearMap[cityKey]).sort((a,b) => b-a) : [];
+    const cityYears = cityYearMap[cityKey] ? Array.from(cityYearMap[cityKey]).sort((a, b) => b - a) : [];
     const nextYearOptions = (newCity === "all" || !newCity) ? allYears : cityYears;
-    
+
     // Reset year immediately if current year isn't valid for the new city
     if (nextYearOptions.length > 0 && !nextYearOptions.includes(lYear)) {
       setLYear(nextYearOptions[0]);
@@ -126,139 +119,104 @@ export default function AdminLeaderboardPage() {
   }, [allYears, cityYearMap, lYear]);
 
   const updateUrl = useCallback(() => {
-    if (!isInit) return;
-    const params = new URLSearchParams();
-    if (debouncedSearch) params.set('search', debouncedSearch);
-    if (page > 1) params.set('page', page.toString());
-    if (limit !== 5) params.set('limit', limit.toString());
-    router.replace(`/admin/leaderboard?${params.toString()}`);
-  }, [debouncedSearch, page, limit, router, isInit]);
-
+  if (!isInit) return;
+  const params = new URLSearchParams();
+  if (debouncedSearch) params.set('search', debouncedSearch);
+  if (page > 1) params.set('page', page.toString());
+  if (limit !== 5) params.set('limit', limit.toString());
+  
+  // Use window.history instead of router.replace to avoid scroll to top
+  const newUrl = `/admin/leaderboard?${params.toString()}`;
+  window.history.replaceState({}, '', newUrl);
+}, [debouncedSearch, page, limit, isInit]);
   useEffect(() => { updateUrl(); }, [updateUrl]);
 
   // Step 1: Fix API trigger on filter change
-  // Step 6: Ensure filter -> data flow (Dropdown change -> map map -> useEffect -> API)
+  // Note: Components now handle their own fetching so we don't fetch globally.
+  // We just ensure filters flow properly down to children.
   useEffect(() => {
     if (!isInit) return;
-    
+
     // Step 7: Debugging
     console.log("Filters:", { lCity, lYear, lType });
     console.log("Request Body:", { city: lCity, year: lYear === 0 ? undefined : Number(lYear), type: lType });
-    
-    const fetchLeaderboard = async () => {
-      setLoading(true);
-      try {
-        const query = { page, limit, search: debouncedSearch || undefined };
-        const body = { city: lCity, type: lType, year: lYear === 0 ? undefined : Number(lYear) }; 
-
-        const [boardRes, podiumRes] = await Promise.all([
-          getAdminLeaderboard(query, body),
-          getAdminLeaderboard({ ...query, page: 1, limit: 3 }, body)
-        ]);
-
-        setLeaderboard(boardRes.leaderboard || []);
-        setTotalPages(boardRes.totalPages || 1);
-        setTotalRecords(boardRes.total || 0);
-
-        setPodiumData(podiumRes.leaderboard || []);
-        setErrorMsg(null);
-      } catch (err: any) {
-        console.error("Failed to load leaderboard", err);
-        setErrorMsg(err.message || 'Failed to fetch leaderboard data');
-        setLeaderboard([]);
-        setPodiumData([]);
-        setTotalPages(1);
-        setTotalRecords(0);
-      } finally {
-        setLoading(false);
-        setIsInitialLoading(false);
-      }
-    };
-
-    fetchLeaderboard();
   }, [lCity, lYear, lType, page, limit, debouncedSearch, isInit]);
 
-  // Global loading overlay if everything is refreshing
-  if (isLoadingContext || !isInit || isInitialLoading || loading) return <ShimmerEffect />;
+  // Global loading overlay if everything is refreshing Context
+  if (isLoadingContext || !isInit) {
+    return (
+      <div className="flex flex-col space-y-6">
+        <PodiumShimmer />
+        <StatsShimmer />
+        <TableShimmer />
+      </div>
+    );
+  }
 
   const cityOptionsObj = [{ label: 'All Cities', value: 'all' }, ...allCities.map(c => ({ label: c, value: c }))];
   const yearOptionsObj = yearOptions.map((y: number) => ({ label: y.toString(), value: y.toString() }));
   const typeOptionsObj = [
-     {label: 'All-Time', value: 'all'},
-     {label: 'Monthly', value: 'monthly'},
-     {label: 'Weekly', value: 'weekly'},
+    { label: 'All-Time', value: 'all' },
+    { label: 'Monthly', value: 'monthly' },
+    { label: 'Weekly', value: 'weekly' },
   ];
 
-  const lastUpdatedRaw = leaderboard.length > 0 ? leaderboard[0].last_calculated : (podiumData.length > 0 ? podiumData[0].last_calculated : null);
-  const lastUpdatedFormat = lastUpdatedRaw ? new Date(lastUpdatedRaw).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Unknown';
-
-  let avgCompletion = 0;
-  let highestCompletion = 0;
-  if (leaderboard.length > 0) {
-    let totalComp = 0;
-    leaderboard.forEach(s => {
-      const hc = Number(s.hard_completion || 0);
-      const mc = Number(s.medium_completion || 0);
-      const ec = Number(s.easy_completion || 0);
-      const comp = (hc + mc + ec) / 3;
-      totalComp += comp;
-      if (comp > highestCompletion) highestCompletion = comp;
-    });
-    avgCompletion = totalComp / leaderboard.length;
-  }
+  // Stats and Last Updated are now managed by StatsSection and children.
+  // We can just omit global last updated or fetch it inside Stats.
+  const lastUpdatedFormat = 'Live';
 
   return (
     <div className="flex flex-col space-y-6">
       <div className="flex items-end justify-between">
-         <div className="flex flex-col gap-1.5">
-           <div className="flex items-center gap-3">
-             <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-               <Trophy className="w-6 h-6 text-primary" /> 
-               Admin Leaderboard
-             </h2>
-             <EvaluationModal />
-           </div>
-           <p className="text-muted-foreground text-sm bg-muted inline-block px-2 py-0.5 rounded-md border border-border w-fit">
-             Analytics driven precisely by backend mapping constraints.
-           </p>
-         </div>
-         {lastUpdatedRaw && (
-            <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground bg-muted/30 px-3 py-1.5 border border-border rounded-full shadow-sm">
-               <Clock className="w-3.5 h-3.5"/> Last Updated: {lastUpdatedFormat}
-            </div>
-         )}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
+              <Trophy className="w-6 h-6 text-primary" />
+              Admin Leaderboard
+            </h2>
+            <EvaluationModal />
+          </div>
+          <p className="text-muted-foreground text-sm bg-muted inline-block px-2 py-0.5 rounded-md border border-border w-fit">
+            Analytics driven precisely by backend mapping constraints.
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground bg-muted/30 px-3 py-1.5 border border-border rounded-full shadow-sm">
+          <Clock className="w-3.5 h-3.5" /> Last Updated: {lastUpdatedFormat}
+        </div>
       </div>
 
-      <PodiumSection 
-        leaderboard={podiumData} 
-        lType={lType} 
-        lCity={lCity} 
+      <PodiumSection
+        lType={lType}
+        lCity={lCity}
+        lYear={lYear}
+        debouncedSearch={debouncedSearch}
       />
 
-      <StatsSection 
-        totalRecords={totalRecords}
-        avgCompletion={avgCompletion}
-        highestCompletion={highestCompletion}
+      <StatsSection
+        lType={lType}
+        lCity={lCity}
+        lYear={lYear}
+        debouncedSearch={debouncedSearch}
       />
 
       <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden flex flex-col min-h-[500px]">
-         <FilterBar 
-            lSearch={lSearch} setLSearch={setLSearch}
-            lType={lType} setLType={setLType} typeOptionsObj={typeOptionsObj}
-            lCity={lCity} setLCity={handleCityChange} cityOptionsObj={cityOptionsObj} setLYear={setLYear}
-            lYear={lYear} yearOptionsObj={yearOptionsObj} allYears={allYears}
-         />
-         
-         <LeaderboardTable 
-            leaderboard={leaderboard}
-            errorMsg={errorMsg}
-            lCity={lCity}
-            page={page}
-            totalRecords={totalRecords}
-            limit={limit}
-            setPage={setPage}
-            setLimit={setLimit}
-         />
+        <FilterBar
+          lSearch={lSearch} setLSearch={setLSearch}
+          lType={lType} setLType={setLType} typeOptionsObj={typeOptionsObj}
+          lCity={lCity} setLCity={handleCityChange} cityOptionsObj={cityOptionsObj} setLYear={setLYear}
+          lYear={lYear} yearOptionsObj={yearOptionsObj} allYears={allYears}
+        />
+
+        <LeaderboardTable
+          lCity={lCity}
+          lType={lType}
+          lYear={lYear}
+          debouncedSearch={debouncedSearch}
+          page={page}
+          limit={limit}
+          setPage={setPage}
+          setLimit={setLimit}
+        />
       </div>
     </div>
   );

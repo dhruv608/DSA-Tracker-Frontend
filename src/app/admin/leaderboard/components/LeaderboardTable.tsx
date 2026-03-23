@@ -4,21 +4,50 @@ import Link from 'next/link';
 import { CalendarDays, Flame, Trophy } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination } from '@/components/Pagination';
+import TableShimmer from '@/components/shimmers/TableShimmer';
+import { getAdminLeaderboard } from '@/services/admin.service';
+import { useEffect, useState } from 'react';
 
 export function LeaderboardTable({ 
-  leaderboard, 
-  errorMsg, 
-  lCity, 
-  page, 
-  totalRecords, 
-  limit, 
-  setPage, 
-  setLimit 
+  lCity, lType, lYear, debouncedSearch,
+  page, limit, setPage, setLimit 
 }: any) {
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTable = async () => {
+      setLoading(true);
+      try {
+        const query = { page, limit, search: debouncedSearch || undefined };
+        const body = { city: lCity, type: lType, year: lYear === 0 ? undefined : Number(lYear) }; 
+        const res = await getAdminLeaderboard(query, body);
+        
+        setLeaderboard(res.leaderboard || []);
+        setTotalRecords(res.total || 0);
+        setErrorMsg(null);
+      } catch (err: any) {
+        setErrorMsg(err.message || 'Failed to fetch leaderboard data');
+        setLeaderboard([]);
+        setTotalRecords(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTable();
+  }, [page, limit, lCity, lType, lYear, debouncedSearch]);
+
   return (
     <>
-      <div className="overflow-x-auto flex-1 p-0">
-        <Table>
+      {loading ? (
+        <div className="w-full flex-1 p-0">
+          <TableShimmer />
+        </div>
+      ) : (
+        <div className="overflow-x-auto flex-1 p-0 scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <Table>
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50 border-b border-border/80">
                 <TableHead className="w-[80px] text-center font-bold">Rank</TableHead>
@@ -144,7 +173,8 @@ export function LeaderboardTable({
               )}
             </TableBody>
         </Table>
-      </div>
+        </div>
+      )}
 
       <Pagination 
         currentPage={page}

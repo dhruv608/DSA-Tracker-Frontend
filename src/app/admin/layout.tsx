@@ -182,7 +182,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!user) return null;
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground overflow-hidden selection:bg-primary/20">
+    <div className="flex h-[100vh] bg-background text-foreground overflow-hidden selection:bg-primary/20">
       
       {/* Sidebar - mapped exactly from theme */}
       <aside className="w-[240px] flex-shrink-0 bg-sidebar border-r border-border flex flex-col z-20 shadow-sm relative animate-in slide-in-from-left duration-500">

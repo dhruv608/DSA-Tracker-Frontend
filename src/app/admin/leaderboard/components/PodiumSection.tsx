@@ -1,5 +1,7 @@
 "use client";
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
+import PodiumShimmer from '@/components/shimmers/PodiumShimmer';
+import { getAdminLeaderboard } from '@/services/admin.service';
 
 const PodiumItem = ({ student, rank, color, glow, height, isCenter, borderCol }: any) => {
 
@@ -36,18 +38,32 @@ const PodiumItem = ({ student, rank, color, glow, height, isCenter, borderCol }:
   );
 };
 
-export function PodiumSection({ leaderboard, lType, lCity }: any) {
+export function PodiumSection({ lType, lCity, lYear, debouncedSearch }: any) {
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPodium = async () => {
+      setLoading(true);
+      try {
+        const query = { page: 1, limit: 3, search: debouncedSearch || undefined };
+        const body = { city: lCity, type: lType, year: lYear === 0 ? undefined : Number(lYear) }; 
+        const res = await getAdminLeaderboard(query, body);
+        setLeaderboard(res.leaderboard || []);
+      } catch (err) {
+        setLeaderboard([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPodium();
+  }, [lCity, lType, lYear, debouncedSearch]);
 
   // Dynamic Rank logic mapping
-  const getRank = (entry: any) => {
-    if (lType === "weekly") {
-      return lCity === "all" ? entry.weekly_global_rank : entry.weekly_city_rank;
-    }
-    if (lType === "monthly") {
-      return lCity === "all" ? entry.monthly_global_rank : entry.monthly_city_rank;
-    }
-    return lCity === "all" ? entry.global_rank : entry.city_rank;
-  };
+const getRank = (entry: any) => {
+  // The backend already returns the correct rank based on type
+  return lCity === "all" ? entry.global_rank : entry.city_rank;
+};
 
   const top3 = useMemo(() => {
     if (!leaderboard) return [];
@@ -62,6 +78,8 @@ export function PodiumSection({ leaderboard, lType, lCity }: any) {
 
     return sorted.slice(0, 3);
   }, [leaderboard, lType, lCity]);
+
+  if (loading) return <PodiumShimmer />;
 
   return (
     <div className="relative pt-12 pb-8 bg-gradient-to-b from-primary/5 via-card to-card border border-border rounded-xl shadow-sm overflow-hidden flex items-end justify-center gap-4 md:gap-12 min-h-[350px]">

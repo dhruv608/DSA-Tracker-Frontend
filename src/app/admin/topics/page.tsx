@@ -43,6 +43,7 @@ import {
    SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { Pagination } from '@/components/Pagination';
 
 export default function AdminTopicsPage() {
    const { selectedBatch, isLoadingContext } = useAdminStore();
@@ -76,6 +77,8 @@ export default function AdminTopicsPage() {
    const [submitting, setSubmitting] = useState(false);
    const [formError, setFormError] = useState('');
 
+   //Pagination
+   const [limit, setLimit] = useState(10);
    // Debounce search
    useEffect(() => {
       const handler = setTimeout(() => {
@@ -90,6 +93,7 @@ export default function AdminTopicsPage() {
       const params = new URLSearchParams();
       if (debouncedSearch) params.set('search', debouncedSearch);
       if (page > 1) params.set('page', page.toString());
+      if (limit !== 10) params.set('limit', limit.toString());
       if (sortBy !== 'recent') params.set('sortBy', sortBy);
 
       const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
@@ -102,7 +106,7 @@ export default function AdminTopicsPage() {
       try {
          const data = await getAdminBatchTopics(selectedBatch.slug, {
             page,
-            limit: 12,
+            limit,
             search: debouncedSearch,
             sortBy
          });
@@ -121,7 +125,7 @@ export default function AdminTopicsPage() {
       } finally {
          setLoading(false);
       }
-   }, [selectedBatch, page, debouncedSearch, sortBy]);
+   }, [selectedBatch, page, debouncedSearch, sortBy, limit]);
 
    useEffect(() => {
       fetchTopics();
@@ -295,7 +299,7 @@ export default function AdminTopicsPage() {
             <div className="flex items-center gap-3 w-full sm:w-auto">
                <span className="text-sm text-muted-foreground font-medium whitespace-nowrap hidden sm:inline-block">Sort by:</span>
                <Select value={sortBy} onValueChange={(val) => setSortBy(val)}>
-                  <SelectTrigger className="w-full sm:w-45 bg-background/50">
+                  <SelectTrigger className="w-full sm:w-[180px] bg-background/50">
                      <SelectValue placeholder="Sort order" />
                   </SelectTrigger>
                   <SelectContent>
@@ -337,7 +341,7 @@ export default function AdminTopicsPage() {
                      className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50 border-border/40 bg-card rounded-xl flex flex-col h-full cursor-pointer"
                   >
                      {/* Aspect Ratio Cover */}
-                     <div className="aspect-video bg-muted/20 relative overflow-hidden flex items-center justify-center shrink-0 border-b border-border/30">
+                     <div className="aspect-[16/9] bg-muted/20 relative overflow-hidden flex items-center justify-center shrink-0 border-b border-border/30">
                         {topic.photo_url ? (
                            <img
                               src={topic.photo_url}
@@ -413,34 +417,22 @@ export default function AdminTopicsPage() {
                ))}
             </div>
          )}
-
-         {/* Pagination Container */}
-         {!loading && totalPages > 1 && (
-            <div className="flex items-center justify-center py-6 mt-4">
-               <div className="flex items-center gap-1 bg-card border border-border/60 p-1 rounded-xl shadow-sm">
-                  {getPaginationArray().map((p, i) => {
-                     if (p === -1) {
-                        return <div key={`dots-${i}`} className="px-3 py-2 text-muted-foreground">...</div>;
-                     }
-                     return (
-                        <Button
-                           key={p}
-                           variant={page === p ? "default" : "ghost"}
-                           size="icon"
-                           className={`h-9 w-9 text-sm font-medium rounded-lg ${page !== p ? 'hover:bg-muted text-muted-foreground' : 'shadow-sm'}`}
-                           onClick={() => setPage(p)}
-                        >
-                           {p}
-                        </Button>
-                     );
-                  })}
-               </div>
-            </div>
-         )}
+         <Pagination
+            currentPage={page}
+            totalItems={totalRecords}
+            limit={limit}
+            onPageChange={setPage}
+            onLimitChange={(newLimit: number) => {
+               setLimit(newLimit);
+               setPage(1);
+            }}
+            showLimitSelector={true}
+            loading={loading}
+         />
 
          {/* CREATE MODAL */}
          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-[425px]">
                <DialogHeader>
                   <DialogTitle>Create Global Topic</DialogTitle>
                   <DialogDescription>Add a new overarching topic layer to the curriculum.</DialogDescription>

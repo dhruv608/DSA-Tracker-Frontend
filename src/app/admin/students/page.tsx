@@ -3,16 +3,16 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAdminStore } from '@/store/adminStore';
-import { 
-  getAdminStudents, 
-  createAdminStudent, 
-  updateAdminStudent, 
-  deleteAdminStudent 
+import {
+  getAdminStudents,
+  createAdminStudent,
+  updateAdminStudent,
+  deleteAdminStudent
 } from '@/services/admin.service';
-import { 
-  Plus, 
-  Search, 
-  FolderEdit, 
+import {
+  Plus,
+  Search,
+  FolderEdit,
   Trash2,
   Users,
   Award,
@@ -36,6 +36,10 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Pagination } from '@/components/Pagination';
+
+
+
 
 export default function AdminStudentsPage() {
   const router = useRouter();
@@ -65,10 +69,12 @@ export default function AdminStudentsPage() {
   const [formEnrollmentId, setFormEnrollmentId] = useState('');
   const [formLeetcodeId, setFormLeetcodeId] = useState('');
   const [formGfgId, setFormGfgId] = useState('');
-  
+
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
 
+  // Pagination
+  const [limit, setLimit] = useState(10);
   const updateUrl = useCallback(() => {
     const params = new URLSearchParams();
     if (sSearch) params.set('search', sSearch);
@@ -80,7 +86,7 @@ export default function AdminStudentsPage() {
     if (!selectedBatch) return;
     setLoading(true);
     try {
-      const p: any = { page, limit: 10, batchSlug: selectedBatch.slug };
+      const p: any = { page, limit, batchSlug: selectedBatch.slug };
       if (sSearch) p.search = sSearch;
 
       const res = await getAdminStudents(p);
@@ -92,7 +98,7 @@ export default function AdminStudentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [sSearch, page, selectedBatch]);
+  }, [sSearch, page, limit, selectedBatch]);
 
   useEffect(() => {
     updateUrl();
@@ -100,7 +106,7 @@ export default function AdminStudentsPage() {
       fetchStudents();
     }
   }, [updateUrl, fetchStudents, isLoadingContext]);
-  
+
   // Whenever context changes, naturally reset pagination
   useEffect(() => {
     setPage(1);
@@ -124,7 +130,7 @@ export default function AdminStudentsPage() {
       setIsCreateOpen(false);
       resetForms();
       fetchStudents();
-    } catch(err: any) {
+    } catch (err: any) {
       setFormError(err.response?.data?.error || 'Failed to onboard student.');
     } finally {
       setSubmitting(false);
@@ -146,7 +152,7 @@ export default function AdminStudentsPage() {
       setIsEditOpen(false);
       resetForms();
       fetchStudents();
-    } catch(err: any) {
+    } catch (err: any) {
       setFormError(err.response?.data?.error || 'Failed to update student.');
     } finally {
       setSubmitting(false);
@@ -160,7 +166,7 @@ export default function AdminStudentsPage() {
       setIsDeleteOpen(false);
       resetForms();
       fetchStudents();
-    } catch(err: any) {
+    } catch (err: any) {
       setFormError(err.response?.data?.error || 'Operation failed.');
     } finally {
       setSubmitting(false);
@@ -204,126 +210,131 @@ export default function AdminStudentsPage() {
 
   return (
     <div className="flex flex-col space-y-6">
-      
+
       <div className="flex items-end justify-between">
-         <div>
-           <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-             <Users className="w-6 h-6 text-primary" /> Roster Management
-           </h2>
-           <p className="text-muted-foreground mt-1 text-sm bg-muted inline-block px-2 py-0.5 rounded-md border border-border mt-2">
-             {selectedBatch.name} - {totalRecords} Total Enrollments
-           </p>
-         </div>
-         <Button onClick={() => { resetForms(); setIsCreateOpen(true); }} className="gap-2">
-           <Plus className="w-4 h-4" /> Onboard Student
-         </Button>
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
+            <Users className="w-6 h-6 text-primary" /> Roster Management
+          </h2>
+          <p className="text-muted-foreground mt-1 text-sm bg-muted inline-block px-2 py-0.5 rounded-md border border-border mt-2">
+            {selectedBatch.name} - {totalRecords} Total Enrollments
+          </p>
+        </div>
+        <Button onClick={() => { resetForms(); setIsCreateOpen(true); }} className="gap-2">
+          <Plus className="w-4 h-4" /> Onboard Student
+        </Button>
       </div>
 
       <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden flex flex-col min-h-[600px]">
-         <div className="p-4 border-b border-border flex items-center bg-muted/20">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input 
-                 placeholder="Search by name, email, or enrollment ID..." 
-                 value={sSearch}
-                 onChange={(e) => { setSSearch(e.target.value); setPage(1); }}
-                 className="pl-9 h-9 bg-background focus-visible:ring-1"
-              />
-            </div>
-         </div>
-         
-         <div className="overflow-x-auto flex-1">
-            <Table>
-               <TableHeader>
-                 <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead>Student</TableHead>
-                    <TableHead>Username</TableHead>
-                    <TableHead className="text-center">Platforms</TableHead>
-                    <TableHead className="text-center">Total Solved</TableHead>
-                    <TableHead className="text-center">Difficulty</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                 </TableRow>
-               </TableHeader>
-               <TableBody>
-                 {loading ? (
-                    <TableRow>
-                       <TableCell colSpan={5} className="h-[400px] text-center text-muted-foreground">
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-primary inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                          Retrieving assignments...
-                       </TableCell>
-                    </TableRow>
-                 ) : students.length === 0 ? (
-                    <TableRow>
-                       <TableCell colSpan={5} className="h-[400px] text-center text-muted-foreground">
-                          No students found matching your query within this batch.
-                       </TableCell>
-                    </TableRow>
-                 ) : (
-                     students.map((student) => (
-                        <TableRow 
-                          key={student.id} 
-                          className="group hover:bg-muted/30 cursor-pointer transition-colors"
-                          onClick={() => router.push(`/admin/students/${student.username}`)}
-                        >
-                           <TableCell>
-                              <div className="font-bold text-foreground">{student.name}</div>
-                              <div className="text-xs text-muted-foreground font-mono">{student.email}</div>
-                           </TableCell>
-                           <TableCell>
-                              <span className="text-sm font-medium text-muted-foreground">@{student.username}</span>
-                           </TableCell>
-                           <TableCell className="text-center">
-                              <div className="flex items-center justify-center gap-2">
-                                {student.leetcode_id ? (
-                                   <span className="text-[10px] bg-amber-500/10 text-amber-500 font-bold px-1.5 py-0.5 rounded" title="LeetCode linked">LC</span>
-                                ) : null}
-                                {student.gfg_id ? (
-                                   <span className="text-[10px] bg-emerald-500/10 text-emerald-500 font-bold px-1.5 py-0.5 rounded" title="GFG linked">GFG</span>
-                                ) : null}
-                                {!student.leetcode_id && !student.gfg_id && <span className="text-xs text-muted-foreground italic">None</span>}
-                              </div>
-                           </TableCell>
-                           <TableCell className="text-center font-bold text-sm">
-                              <div className="flex items-center justify-center gap-1.5">
-                                 <Award className="w-4 h-4 text-primary opacity-60 flex-shrink-0" />
-                                 <span className="text-foreground text-base tracking-tight">{student.stats?.total_solved || student.totalSolved || 0}</span>
-                              </div>
-                           </TableCell>
-                           <TableCell className="text-center">
-                              <div className="flex items-center justify-center gap-1.5">
-                                 <span className="flex items-center justify-center text-[11px] font-bold bg-emerald-500/10 text-emerald-500 rounded px-1.5 py-[2px] min-w-[28px]" title="Easy Solved">{student.stats?.easy_solved || 0}</span>
-                                 <span className="flex items-center justify-center text-[11px] font-bold bg-amber-500/10 text-amber-500 rounded px-1.5 py-[2px] min-w-[28px]" title="Medium Solved">{student.stats?.medium_solved || 0}</span>
-                                 <span className="flex items-center justify-center text-[11px] font-bold bg-rose-500/10 text-rose-500 rounded px-1.5 py-[2px] min-w-[28px]" title="Hard Solved">{student.stats?.hard_solved || 0}</span>
-                              </div>
-                           </TableCell>
-                           <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                 <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); router.push(`/admin/students/${student.username}`); }} className="h-8 hover:bg-primary hover:text-white transition-colors">
-                                    View
-                                 </Button>
-                                 <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEdit(student); }} className="h-8 w-8 hover:bg-muted text-muted-foreground">
-                                    <FolderEdit className="w-4 h-4" />
-                                 </Button>
-                                 <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedStudent(student); setIsDeleteOpen(true); }} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive text-muted-foreground">
-                                    <Trash2 className="w-4 h-4" />
-                                 </Button>
-                              </div>
-                           </TableCell>
-                        </TableRow>
-                     ))
-                 )}
-               </TableBody>
-            </Table>
-         </div>
+        <div className="p-4 border-b border-border flex items-center bg-muted/20">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search by name, email, or enrollment ID..."
+              value={sSearch}
+              onChange={(e) => { setSSearch(e.target.value); setPage(1); }}
+              className="pl-9 h-9 bg-background focus-visible:ring-1"
+            />
+          </div>
+        </div>
 
-         {/* Pagination Footer */}
-         <div className="p-4 border-t border-border flex items-center justify-between bg-muted/30 mt-auto">
-            <span className="text-sm text-muted-foreground font-medium">Showing page {page} of {Math.max(1, totalPages)}</span>
-            <div className="flex gap-2">
-               <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1 || loading}>Previous</Button>
-               <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages || loading}>Next</Button>
-            </div>
-         </div>
+        <div className="overflow-x-auto flex-1">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50 hover:bg-muted/50">
+                <TableHead>Student</TableHead>
+                <TableHead>Username</TableHead>
+                <TableHead className="text-center">Platforms</TableHead>
+                <TableHead className="text-center">Total Solved</TableHead>
+                <TableHead className="text-center">Difficulty</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-[400px] text-center text-muted-foreground">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-primary inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Retrieving assignments...
+                  </TableCell>
+                </TableRow>
+              ) : students.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-[400px] text-center text-muted-foreground">
+                    No students found matching your query within this batch.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                students.map((student) => (
+                  <TableRow
+                    key={student.id}
+                    className="group hover:bg-muted/30 cursor-pointer transition-colors"
+                    onClick={() => router.push(`/admin/students/${student.username}`)}
+                  >
+                    <TableCell>
+                      <div className="font-bold text-foreground">{student.name}</div>
+                      <div className="text-xs text-muted-foreground font-mono">{student.email}</div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm font-medium text-muted-foreground">@{student.username}</span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        {student.leetcode_id ? (
+                          <span className="text-[10px] bg-amber-500/10 text-amber-500 font-bold px-1.5 py-0.5 rounded" title="LeetCode linked">LC</span>
+                        ) : null}
+                        {student.gfg_id ? (
+                          <span className="text-[10px] bg-emerald-500/10 text-emerald-500 font-bold px-1.5 py-0.5 rounded" title="GFG linked">GFG</span>
+                        ) : null}
+                        {!student.leetcode_id && !student.gfg_id && <span className="text-xs text-muted-foreground italic">None</span>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center font-bold text-sm">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Award className="w-4 h-4 text-primary opacity-60 flex-shrink-0" />
+                        <span className="text-foreground text-base tracking-tight">{student.stats?.total_solved || student.totalSolved || 0}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <span className="flex items-center justify-center text-[11px] font-bold bg-emerald-500/10 text-emerald-500 rounded px-1.5 py-[2px] min-w-[28px]" title="Easy Solved">{student.stats?.easy_solved || 0}</span>
+                        <span className="flex items-center justify-center text-[11px] font-bold bg-amber-500/10 text-amber-500 rounded px-1.5 py-[2px] min-w-[28px]" title="Medium Solved">{student.stats?.medium_solved || 0}</span>
+                        <span className="flex items-center justify-center text-[11px] font-bold bg-rose-500/10 text-rose-500 rounded px-1.5 py-[2px] min-w-[28px]" title="Hard Solved">{student.stats?.hard_solved || 0}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); router.push(`/admin/students/${student.username}`); }} className="h-8 hover:bg-primary hover:text-white transition-colors">
+                          View
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEdit(student); }} className="h-8 w-8 hover:bg-muted text-muted-foreground">
+                          <FolderEdit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedStudent(student); setIsDeleteOpen(true); }} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive text-muted-foreground">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Pagination Footer */}
+        <Pagination
+          currentPage={page}
+          totalItems={totalRecords}
+          limit={limit}
+          onPageChange={setPage}
+          onLimitChange={(newLimit: number) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
+          showLimitSelector={true}
+          loading={loading}
+        />
       </div>
 
       {/* CREATE / EDIT Modals */}
@@ -336,55 +347,55 @@ export default function AdminStudentsPage() {
             <DialogHeader>
               <DialogTitle>{modalProps.title}</DialogTitle>
               <DialogDescription>
-                 {modalProps.isEdit ? 'Updating student details directly overrides DB values.' : 'Manually bind a student directly into the active batch context.'}
+                {modalProps.isEdit ? 'Updating student details directly overrides DB values.' : 'Manually bind a student directly into the active batch context.'}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={modalProps.submit} className="space-y-4 tracking-tight">
-               {formError && <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-md font-medium">{formError}</div>}
-               <div className="grid grid-cols-2 gap-4">
-                 <div className="space-y-1.5">
-                    <label className="text-sm font-medium">Full Name <span className="text-destructive">*</span></label>
-                    <Input value={formName} onChange={e => setFormName(e.target.value)} required placeholder="John Doe" disabled={submitting} />
-                 </div>
-                 <div className="space-y-1.5">
-                    <label className="text-sm font-medium">Internal Username <span className="text-destructive">*</span></label>
-                    <Input value={formUsername} onChange={e => setFormUsername(e.target.value)} required placeholder="johndoe123" disabled={submitting} />
-                 </div>
-               </div>
-               <div className="grid grid-cols-2 gap-4">
-                 <div className="space-y-1.5">
-                    <label className="text-sm font-medium">Email Address <span className="text-destructive">*</span></label>
-                    <Input type="email" value={formEmail} onChange={e => setFormEmail(e.target.value)} required placeholder="john@example.com" disabled={submitting} />
-                 </div>
-                 <div className="space-y-1.5">
-                    <label className="text-sm font-medium">Enrollment ID</label>
-                    <Input value={formEnrollmentId} onChange={e => setFormEnrollmentId(e.target.value)} placeholder="BF-2024-..." disabled={submitting} />
-                 </div>
-               </div>
-               
-               {/* Separate credential logic block */}
-               {!modalProps.isEdit && (
-                 <div className="space-y-1.5 pt-2">
-                    <label className="text-sm font-medium">Account Password <span className="text-destructive">*</span></label>
-                    <Input type="password" value={formPassword} onChange={e => setFormPassword(e.target.value)} required placeholder="••••••••" disabled={submitting} />
-                 </div>
-               )}
+              {formError && <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-md font-medium">{formError}</div>}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Full Name <span className="text-destructive">*</span></label>
+                  <Input value={formName} onChange={e => setFormName(e.target.value)} required placeholder="John Doe" disabled={submitting} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Internal Username <span className="text-destructive">*</span></label>
+                  <Input value={formUsername} onChange={e => setFormUsername(e.target.value)} required placeholder="johndoe123" disabled={submitting} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Email Address <span className="text-destructive">*</span></label>
+                  <Input type="email" value={formEmail} onChange={e => setFormEmail(e.target.value)} required placeholder="john@example.com" disabled={submitting} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Enrollment ID</label>
+                  <Input value={formEnrollmentId} onChange={e => setFormEnrollmentId(e.target.value)} placeholder="BF-2024-..." disabled={submitting} />
+                </div>
+              </div>
 
-               <div className="grid grid-cols-2 gap-4 pt-2">
-                 <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-orange-500 flex items-center gap-1.5">LeetCode Username</label>
-                    <Input value={formLeetcodeId} onChange={e => setFormLeetcodeId(e.target.value)} placeholder="Required for Tracking" disabled={submitting} />
-                 </div>
-                 <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-green-500 flex items-center gap-1.5">GFG Username</label>
-                    <Input value={formGfgId} onChange={e => setFormGfgId(e.target.value)} placeholder="Required for Tracking" disabled={submitting} />
-                 </div>
-               </div>
-               
-               <DialogFooter className="pt-4">
-                  <Button type="button" variant="ghost" onClick={() => modalProps.setOpen(false)} disabled={submitting}>Cancel</Button>
-                  <Button type="submit" disabled={submitting}>{submitting ? 'Saving...' : modalProps.isEdit ? 'Save Changes' : 'Onboard User'}</Button>
-               </DialogFooter>
+              {/* Separate credential logic block */}
+              {!modalProps.isEdit && (
+                <div className="space-y-1.5 pt-2">
+                  <label className="text-sm font-medium">Account Password <span className="text-destructive">*</span></label>
+                  <Input type="password" value={formPassword} onChange={e => setFormPassword(e.target.value)} required placeholder="••••••••" disabled={submitting} />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-orange-500 flex items-center gap-1.5">LeetCode Username</label>
+                  <Input value={formLeetcodeId} onChange={e => setFormLeetcodeId(e.target.value)} placeholder="Required for Tracking" disabled={submitting} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-green-500 flex items-center gap-1.5">GFG Username</label>
+                  <Input value={formGfgId} onChange={e => setFormGfgId(e.target.value)} placeholder="Required for Tracking" disabled={submitting} />
+                </div>
+              </div>
+
+              <DialogFooter className="pt-4">
+                <Button type="button" variant="ghost" onClick={() => modalProps.setOpen(false)} disabled={submitting}>Cancel</Button>
+                <Button type="submit" disabled={submitting}>{submitting ? 'Saving...' : modalProps.isEdit ? 'Save Changes' : 'Onboard User'}</Button>
+              </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
@@ -401,18 +412,18 @@ export default function AdminStudentsPage() {
           <div className="mt-2 text-sm text-foreground space-y-3">
             <p>You are about to irreversibly delete this student profile from the database.</p>
             <div className="p-3 bg-muted/50 rounded-md font-mono text-xs border border-border">
-              NAME: {selectedStudent?.name}<br/>
-              EMAIL: {selectedStudent?.email}<br/>
+              NAME: {selectedStudent?.name}<br />
+              EMAIL: {selectedStudent?.email}<br />
               ENROLL: {selectedStudent?.enrollment_id}
             </div>
             <p className="font-semibold text-destructive mt-4">This action cannot be undone.</p>
           </div>
           {formError && <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm font-semibold rounded-md">{formError}</div>}
           <DialogFooter className="mt-6">
-             <Button type="button" variant="outline" onClick={() => setIsDeleteOpen(false)} disabled={submitting}>Cancel</Button>
-             <Button type="button" variant="destructive" onClick={handleDeleteSubmit} disabled={submitting}>
-                {submitting ? 'Terminating...' : 'Confirm Purge'}
-             </Button>
+            <Button type="button" variant="outline" onClick={() => setIsDeleteOpen(false)} disabled={submitting}>Cancel</Button>
+            <Button type="button" variant="destructive" onClick={handleDeleteSubmit} disabled={submitting}>
+              {submitting ? 'Terminating...' : 'Confirm Purge'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -423,14 +434,14 @@ export default function AdminStudentsPage() {
 function Skeletons() {
   return (
     <div className="space-y-6 animate-pulse">
-       <div className="flex justify-between items-end">
-          <div className="space-y-2">
-             <div className="h-8 w-64 bg-muted rounded-md shrink-0"></div>
-             <div className="h-5 w-48 bg-muted/60 rounded-md shrink-0 mt-2"></div>
-          </div>
-          <div className="h-10 w-32 bg-muted rounded-md shrink-0"></div>
-       </div>
-       <div className="h-[600px] w-full bg-card border border-border rounded-xl"></div>
+      <div className="flex justify-between items-end">
+        <div className="space-y-2">
+          <div className="h-8 w-64 bg-muted rounded-md shrink-0"></div>
+          <div className="h-5 w-48 bg-muted/60 rounded-md shrink-0 mt-2"></div>
+        </div>
+        <div className="h-10 w-32 bg-muted rounded-md shrink-0"></div>
+      </div>
+      <div className="h-[600px] w-full bg-card border border-border rounded-xl"></div>
     </div>
   );
 }
