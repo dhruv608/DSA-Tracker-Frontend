@@ -51,6 +51,11 @@ export const deleteAdmin = async (id: number) => {
 // ADMIN PANEL ENDPOINTS
 // ==========================================
 
+export const getCurrentAdmin = async () => {
+  const response = await api.get('/api/admin/me');
+  return response.data;
+};
+
 export const getAdminCities = async () => {
   const response = await api.get('/api/admin/cities');
   return response.data;

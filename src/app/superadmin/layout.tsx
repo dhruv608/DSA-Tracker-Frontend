@@ -5,19 +5,39 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutDashboard, Users, Building2, Layers, LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { useAuth } from '@/hooks/useAuth';
+import { getCurrentSuperAdmin } from '@/services/superadmin.service';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
 
   const pathname = usePathname();
+  const [user, setUser] = React.useState<{name: string, role: string, email?: string} | null>(null);
+  const [loading, setLoading] = React.useState(true);
 
-  const { getCurrentUser, logout } = useAuth();
-  
-  const user = getCurrentUser();
+  React.useEffect(() => {
+    const loadUser = async () => {
+      if (pathname === '/superadmin/login') return;
+      
+      try {
+        const userData = await getCurrentSuperAdmin();
+        setUser(userData.data); // Service returns unwrapped data directly
+      } catch (err) {
+        console.error('Failed to load superadmin user:', err);
+        window.location.href = '/superadmin/login';
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUser();
+  }, [pathname]);
 
   const handleLogout = () => {
-    logout('/superadmin/login');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    }
+    window.location.href = '/superadmin/login';
   };
 
   const navItems = [
@@ -31,7 +51,13 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     return <>{children}</>;
   }
 
-  if (!user) return null;
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background text-foreground overflow-hidden selection:bg-primary/20">

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { loginAdmin } from '@/services/auth.service';
+import { getCurrentAdmin } from '@/services/admin.service';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -24,18 +25,24 @@ export default function AdminLoginPage() {
     try {
       const data = await loginAdmin({ email, password });
       
-      const { accessToken, user } = data;
+      const { accessToken } = data;
       
       if (typeof window !== 'undefined') {
         localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('user', JSON.stringify(user));
         document.cookie = `accessToken=${accessToken}; path=/`;
       }
       
-      if (['TEACHER', 'SUPERADMIN', 'ADMIN'].includes(user.role)) {
-        router.push('/admin');
-      } else {
-        setError('Unauthorized access: Admin privileges required');
+      // Get fresh user data from /me endpoint
+      try {
+        const userData = await getCurrentAdmin();
+        if (['TEACHER', 'SUPERADMIN', 'ADMIN'].includes(userData.data.role)) {
+          router.push('/admin');
+        } else {
+          setError('Unauthorized access: Admin privileges required');
+        }
+      } catch (fetchError: any) {
+        console.error('Failed to fetch admin info:', fetchError);
+        setError('Login successful but failed to load user data');
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
@@ -43,6 +50,9 @@ export default function AdminLoginPage() {
       setLoading(false);
     }
   };
+
+
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 animate-in fade-in duration-500">

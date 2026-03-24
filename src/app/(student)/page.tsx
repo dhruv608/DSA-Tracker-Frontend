@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { studentTopicService } from '@/services/student/topic.service';
-import { studentProfileService } from '@/services/student/profile.service';
+import { studentAuthService } from '@/services/student/auth.service';
 import { TopicCard } from '@/components/student/topics/TopicCard';
-import { StatCard } from '@/components/student/shared/StatCard';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/app/(auth)/shared/hooks/useToast';
 import { Compass, PenTool, Zap, Target, Flame, Trophy, BookOpen } from 'lucide-react';
 import { OnboardingModal } from '@/components/student/onboarding/OnboardingModal';
 
@@ -19,60 +17,64 @@ interface User {
   codingStats?: {
     totalSolved?: number;
   };
-  streak?: {
-    currentStreak?: number;
-  };
   leaderboard?: {
     globalRank?: string;
   };
   // Add any other properties your user object has
 }
 
+interface StudentDataResponse {
+  success: boolean;
+  data: User;
+}
+
 export default function StudentHomePage() {
   const [topics, setTopics] = useState([]);
   const [user, setUser] = useState<User | null>(null);
+  const [studentResponse, setStudentResponse] = useState<StudentDataResponse | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [stats, setStats] = useState({
     solved: 0,
-    streak: 0,
     rank: '-',
     topicsActive: 0
   });
   const [loading, setLoading] = useState(true);
-  const { showToast } = useToast();
+
 
   const refreshUserData = async () => {
     try {
-      const profileData = await studentProfileService.getProfile().catch(e => {
-        console.error("Failed to fetch profile", e);
+      // Use lightweight /me endpoint for basic student info
+      console.log("Calling getCurrentStudent...");
+      const studentData = await studentAuthService.getCurrentStudent().catch((e: any) => {
+        console.error("Failed to fetch student data", e);
+        console.error("Error details:", e.response?.data, e.response?.status);
         return null;
       });
 
-      console.log("Full profile data response:ekjbfdkjvebdjkfbvejkdkj", profileData.student);
+      console.log("Student data from /me:", studentData);
 
-      // console.log("Profile data structure:", JSON.stringify(profileData, null, 2));
-
-      const topicsData = profileData ? await studentTopicService.getTopics().catch(e => {
+      const topicsData = await studentTopicService.getTopics().catch((e: any) => {
         console.warn("Failed to fetch topics (potentially missing batch)", e);
         return [];
-      }) : [];
+      });
 
-      setUser(profileData);
+      setStudentResponse(studentData);
+      setUser(studentData?.data);
       setTopics(topicsData);
 
-      // Check if required fields are missing - handle different response structures
-      const username = profileData?.student?.username || profileData?.student?.user?.username;
-      const leetcode = profileData?.student?.leetcode || profileData?.student?.user?.leetcode;
-      const gfg = profileData?.student?.gfg || profileData?.student?.user?.gfg;
+      // Check onboarding requirements from clean /me data
+      const username = studentData?.data?.username;
+      const leetcode = studentData?.data?.leetcode;
+      const gfg = studentData?.data?.gfg;
 
       console.log("Checking onboarding requirements:", {
         username,
         leetcode,
         gfg,
-        fullProfile: profileData
+        studentData
       });
 
-      if (profileData && (!username || !leetcode || !gfg)) {
+      if (studentData?.data && (!username || !leetcode || !gfg)) {
         console.log("Showing onboarding modal - missing required fields");
         setShowOnboarding(true);
       } else {
@@ -80,13 +82,12 @@ export default function StudentHomePage() {
         setShowOnboarding(false);
       }
 
-      const totalSolved = profileData ? ((profileData.codingStats?.totalSolved || 0)) : 0;
+      // For now, set basic stats - can be enhanced later if needed
       const activeTopics = topicsData.filter((t: any) => (t.batchSpecificData?.solvedQuestions || 0) > 0).length;
 
       setStats({
-        solved: totalSolved,
-        streak: profileData?.streak?.currentStreak || 0,
-        rank: profileData?.leaderboard?.globalRank || '-',
+        solved: 0, // Will be updated if we add stats to /me endpoint
+        rank: '-',
         topicsActive: activeTopics
       });
     } catch (e) {
@@ -132,7 +133,7 @@ export default function StudentHomePage() {
   }
 
   // Get top 4 topics for the showcase
-  const displayTopics = topics.slice(0, 4);
+  const displayTopics = topics.slice(0, 8);
 
   return (
     <>
@@ -179,64 +180,11 @@ export default function StudentHomePage() {
               </div>
             </div>
 
-            <div className="hidden md:flex flex-1 justify-end">
-              {/* Abstract Graphic / Stats Board */}
-              <div className="relative w-full max-w-[420px] aspect-square">
-                <div className="absolute inset-0 bg-gradient-to-tr from-card to-background rounded-[40px] border border-border shadow-2xl rotate-3 transition-transform hover:rotate-6 duration-700"></div>
-                <div className="absolute inset-0 bg-card rounded-[40px] border border-border shadow-xl p-8 flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start mb-8">
-                      <div className="p-3 bg-primary/10 rounded-2xl">
-                        <Target className="w-6 h-6 text-primary" />
-                      </div>
-                      <span className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-wider">Live Metrics</span>
-                    </div>
-                    <div className="space-y-6">
-                      <div>
-                        <div className="text-[12px] text-muted-foreground uppercase tracking-widest font-mono mb-1">Total Solved</div>
-                        <div className="text-4xl font-black text-foreground font-serif italic">{stats.solved}</div>
-                      </div>
-                      <div className="h-[1px] w-full bg-border"></div>
-                      <div>
-                        <div className="text-[12px] text-muted-foreground uppercase tracking-widest font-mono mb-1">Global Rank</div>
-                        <div className="text-4xl font-black text-primary font-serif italic">#{stats.rank}</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 text-[13px] font-medium text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 px-4 py-3 rounded-xl border border-emerald-500/20">
-                    <Flame className="w-5 h-5" />
-                    <span>{stats.streak} Day Learning Streak</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+    
           </div>
         </section>
 
-        {/* STATS BAR (Mobile/Tablet) */}
-        <section className="md:hidden mx-auto max-w-[1200px] w-full px-6 lg:px-10 -mt-6 relative z-20 mb-12">
-          <div className="bg-card border border-border rounded-2xl shadow-lg p-5 grid grid-cols-2 gap-4">
-            <div>
-              <div className="text-[11px] text-muted-foreground uppercase tracking-widest font-mono mb-1 flex items-center gap-1">
-                <Target className="w-3 h-3" /> Solved
-              </div>
-              <div className="text-2xl font-bold font-serif italic">{stats.solved}</div>
-            </div>
-            <div>
-              <div className="text-[11px] text-muted-foreground uppercase tracking-widest font-mono mb-1 flex items-center gap-1">
-                <Trophy className="w-3 h-3" /> Rank
-              </div>
-              <div className="text-2xl font-bold font-serif italic text-primary">#{stats.rank}</div>
-            </div>
-            <div className="col-span-2 bg-emerald-500/10 rounded-xl px-4 py-2 flex items-center justify-between border border-emerald-500/20">
-              <div className="text-[12px] font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
-                <Flame className="w-4 h-4" /> Current Streak
-              </div>
-              <div className="font-bold text-emerald-700 dark:text-emerald-400">{stats.streak} Days</div>
-            </div>
-          </div>
-        </section>
+     
 
         {/* RECENT TOPICS */}
         <section className="mx-auto max-w-[1200px] w-full px-6 lg:px-10 py-16">
@@ -300,6 +248,6 @@ export default function StudentHomePage() {
         user={user}
         onClose={() => setShowOnboarding(false)}
       />
-    </> // Added closing tag for the fragment
-  ); // Added closing tag for the JSX expression
+    </> 
+  ); 
 }

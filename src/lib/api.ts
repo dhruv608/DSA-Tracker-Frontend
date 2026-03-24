@@ -1,16 +1,29 @@
 import axios from 'axios';
 
+// Helper function to read cookies
+const getCookie = (name: string): string | null => {
+  if (typeof window === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    const cookiePart = parts.pop()?.split(';').shift();
+    return cookiePart || null;
+  }
+  return null;
+};
+
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
 });
 
 // Request Interceptor
-// Automatically attaches JWT access tokens from localStorage to all requests
+// Automatically attaches JWT access tokens from cookies or localStorage to all requests
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('accessToken');
+      // Try cookie first, then fallback to localStorage
+      const token = getCookie('accessToken') || localStorage.getItem('accessToken');
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -63,7 +76,6 @@ api.interceptors.response.use(
         // Refresh failed, clear data and redirect to appropriate login
         if (typeof window !== 'undefined') {
           localStorage.removeItem('accessToken');
-          localStorage.removeItem('user');
           document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 
           // Redirect to appropriate login page based on current path

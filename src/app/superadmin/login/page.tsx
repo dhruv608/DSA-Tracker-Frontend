@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { loginSuperAdmin } from '@/services/auth.service';
+import { getCurrentSuperAdmin } from '@/services/superadmin.service';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function SuperAdminLoginPage() {
@@ -28,18 +29,24 @@ export default function SuperAdminLoginPage() {
     try {
       const data = await loginSuperAdmin({ email, password });
       
-      const { accessToken, user } = data;
+      const { accessToken } = data;
       
       if (typeof window !== 'undefined') {
         localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('user', JSON.stringify(user));
         document.cookie = `accessToken=${accessToken}; path=/`;
       }
       
-      if (user.role === 'SUPERADMIN') {
-        router.push('/superadmin');
-      } else {
-        setError('Unauthorized access: SuperAdmin privileges required');
+      // Get fresh user data from /me endpoint
+      try {
+        const userData = await getCurrentSuperAdmin();
+        if (userData.data.role === 'SUPERADMIN') {
+          router.push('/superadmin');
+        } else {
+          setError('Unauthorized access: SuperAdmin privileges required');
+        }
+      } catch (fetchError: any) {
+        console.error('Failed to fetch superadmin info:', fetchError);
+        setError('Login successful but failed to load user data');
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');

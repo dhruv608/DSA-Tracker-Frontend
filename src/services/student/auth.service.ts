@@ -1,6 +1,18 @@
 import api from '@/lib/api';
 
 export const studentAuthService = {
+  getCurrentStudent: async () => {
+    try {
+      const response = await api.get('/api/students/me');
+      console.log("Raw API response:", response);
+      console.log("Response data:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("API call failed:", error);
+      throw error;
+    }
+  },
+
   login: async (credentials: any) => {
     const res = await api.post('/api/auth/student/login', credentials);
     return res.data;

@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { studentAuthService } from '@/services/student/auth.service';
-import { studentProfileService } from '@/services/student/profile.service';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { 
   DropdownMenu, 
@@ -13,7 +12,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuSeparator 
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, Home, BookOpen, PenTool, Trophy } from 'lucide-react';
+import { LogOut, User, Home, BookOpen, PenTool, Trophy, Lock } from 'lucide-react';
 
 export default function StudentHeader() {
   const pathname = usePathname();
@@ -23,15 +22,12 @@ export default function StudentHeader() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const data = await studentProfileService.getProfile();
-        // The API actually returns nested student data in some cases, but as per instructions 
-        // we assume data contains name, username, profilePhoto. However, if it's nested:
-        // Let's just set the data directly. We will log it.
-        const profileData = data?.student || data;
-        setProfile(profileData);
-        console.log("Profile Data:", profileData);
+        const data = await studentAuthService.getCurrentStudent();
+        // /me endpoint returns clean data directly
+        setProfile(data);
+        console.log("Student Header Profile Data:", data);
       } catch (e) {
-        console.error("Failed to fetch profile", e);
+        console.error("Failed to fetch student profile", e);
       }
     };
     
@@ -62,11 +58,27 @@ export default function StudentHeader() {
   };
 
   const isProfileLoaded = !!profile;
-  const username = profile?.username || profile?.student?.username || profile?.student?.user?.username;
-  const leetcode = profile?.leetcode || profile?.student?.leetcode || profile?.student?.user?.leetcode;
-  const gfg = profile?.gfg || profile?.student?.gfg || profile?.student?.user?.gfg;
+  const username = profile?.data?.username;
+  const leetcode = profile?.data?.leetcode;
+  const gfg = profile?.data?.gfg;
   
-  const isOnboarded = isProfileLoaded ? Boolean(username && leetcode && gfg) : true;
+  const isUserOnboarded = isProfileLoaded ? Boolean(username && leetcode && gfg) : true;
+
+  // Debug logging
+  console.log('StudentHeader Debug:', {
+    profile,
+    isProfileLoaded,
+    username,
+    leetcode,
+    gfg,
+    isUserOnboarded,
+    'Full profile object': profile,
+    'Profile keys': Object.keys(profile || {}),
+    'Profile data': profile?.data,
+    'Profile username': profile?.data?.username,
+    'Profile leetcode': profile?.data?.leetcode,
+    'Profile gfg': profile?.data?.gfg
+  });
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border h-[64px] flex items-center px-6 lg:px-10 gap-5 shadow-sm transition-all">
@@ -81,7 +93,18 @@ export default function StudentHeader() {
         {navLinks.map((link) => {
           const isActive = pathname === link.path || (link.path !== '/' && pathname.startsWith(link.path));
           const Icon = link.icon;
-          const isLocked = isProfileLoaded && !isOnboarded;
+          const isLocked = isProfileLoaded && !isUserOnboarded;
+          
+          // Debug logging
+          console.log('Link Debug:', {
+            link: link.name,
+            isLocked,
+            isProfileLoaded,
+            isUserOnboarded,
+            username,
+            leetcode,
+            gfg
+          });
           
           return (
             <Link 
@@ -98,7 +121,7 @@ export default function StudentHeader() {
             >
               <Icon className="w-[15px] h-[15px]" />
               <span className="relative z-10">{link.name}</span>
-              {isLocked && <div className="ml-1 text-[12px]">🔒</div>}
+              {isLocked && <div className="ml-1 text-[12px]"> <Lock/></div>}
             </Link>
           );
         })}
@@ -110,24 +133,24 @@ export default function StudentHeader() {
         <ThemeToggle />
 
         {isProfileLoaded ? (
-          isOnboarded ? (
+          isUserOnboarded ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="relative w-9 h-9 rounded-full border-2 border-border hover:border-primary focus:outline-none transition-all flex items-center justify-center overflow-hidden shrink-0 cursor-pointer">
-                  {profile.profileImageUrl ? (
+                  {profile?.data?.profileImageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={profile.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+                    <img src={profile?.data?.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary to-amber-600 text-primary-foreground flex items-center justify-center text-[12px] font-bold">
-                      {profile.name ? profile.name.charAt(0).toUpperCase() : ''}
+                      {profile?.data?.name ? profile?.data?.name.charAt(0).toUpperCase() : ''}
                     </div>
                   )}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-border/80 shadow-xl dark:shadow-black/50">
                 <div className="px-3 py-2.5 mb-1 bg-secondary/30 rounded-lg border border-border/50">
-                  <p className="text-[13.5px] font-semibold text-foreground truncate">{profile.name}</p>
-                  <p className="text-[12px] text-muted-foreground font-mono truncate">@{profile.username}</p>
+                  <p className="text-[13.5px] font-semibold text-foreground truncate">{profile?.data?.name}</p>
+                  <p className="text-[12px] text-muted-foreground font-mono truncate">@{profile?.data?.username}</p>
                 </div>
                 
                 <DropdownMenuSeparator className="bg-border/60 my-1" />

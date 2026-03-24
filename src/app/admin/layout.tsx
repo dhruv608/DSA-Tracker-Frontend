@@ -16,6 +16,7 @@ import {
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Select } from '@/components/Select';
 import { logoutUser } from '@/services/auth.service';
+import { getCurrentAdmin } from '@/services/admin.service';
 import { useAdminStore } from '@/store/adminStore';
 import { getAdminCities, getAdminBatches } from '@/services/admin.service';
 
@@ -60,31 +61,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (pathname === '/admin/login') return;
 
     const token = localStorage.getItem('accessToken');
-    const userStr = localStorage.getItem('user');
-
-    if (!token || !userStr) {
+    if (!token) {
       handleLogout();
       return;
     }
 
-    const payload = decodeJwt(token);
-    if (!payload || !['TEACHER', 'INTERN', 'SUPERADMIN', 'ADMIN'].includes(payload.role)) {
-      handleLogout();
-      return;
-    }
-
-    setUser(JSON.parse(userStr));
-
-    // Hydrate state from backend
-    const initializeData = async () => {
+    const loadUserAndData = async () => {
       setIsLoadingContext(true);
       try {
+        // Get current admin user from API
+        const userData = await getCurrentAdmin();
+        setUser(userData.data); // Service returns unwrapped data directly
+
+        // Get cities and batches
         const cityList = await getAdminCities();
         setCities(cityList);
 
-        let initialCityId = payload.cityId;
+        // Decode token for cityId/batchId if available
+        const payload = decodeJwt(token);
+        let initialCityId = payload?.cityId;
         
-        // Match token city or default to first
         let matchingCity = null;
         if (initialCityId) {
            matchingCity = cityList.find((c: any) => c.id === initialCityId);
@@ -97,11 +93,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (matchingCity) {
            setSelectedCity({ id: matchingCity.id, name: matchingCity.city_name });
            
-           // Fetch batches for this city
            const batchList = await getAdminBatches(matchingCity.city_name);
            setBatches(batchList);
 
-           const initialBatchId = payload.batchId;
+           const initialBatchId = payload?.batchId;
            let matchingBatch = null;
            
            if (initialBatchId) {
@@ -120,13 +115,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
            }
         }
       } catch (err) {
-        console.error("Failed to load layout data", err);
+        console.error("Failed to load admin data", err);
+        handleLogout();
       } finally {
         setIsLoadingContext(false);
       }
     };
 
-    initializeData();
+    loadUserAndData();
   }, [pathname]);
 
   // Handle City Change
