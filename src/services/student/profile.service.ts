@@ -1,4 +1,5 @@
 import api from '@/lib/api';
+import { ProfileUpdateData } from '@/types/student';
 
 export const studentProfileService = {
   getProfile: async () => {
@@ -57,7 +58,7 @@ export const studentProfileService = {
     }
   },
 
-  updateProfileDetails: async (data: any) => {
+  updateProfileDetails: async (data: ProfileUpdateData) => {
     // Use the new PUT /api/students/me endpoint for updating current student profile
     const res = await api.put('/api/students/me', data);    
     return res.data;

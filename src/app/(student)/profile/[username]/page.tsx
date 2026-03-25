@@ -7,7 +7,7 @@ import { studentAuthService } from '@/services/student/auth.service';
 import { ErrorHandler } from '@/lib/error-handler';
 import { Button } from '@/components/ui/button';
 import { Github, Linkedin, Flame, Trophy, CheckCircle2, Link as LinkIcon, Camera, Edit2, X, Calendar, Target, TrendingUp, Users, MapPin, GraduationCap, Code, Activity, Clock, Award, BarChart3 } from 'lucide-react';
-import { TopicProgressModal } from '@/components/TopicProgressModal';
+
 import api from '@/lib/api';
 import {
   Dialog,
@@ -18,12 +18,27 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-
+import {
+  StudentProfile,
+  ProfileEditForm,
+  UsernameForm,
+  ProfileUpdateData,
+  UsernameUpdateData,
+  TopicProgressModalProps,
+  ProfileDataState,
+  CurrentUserState,
+  HeatmapData,
+  RecentActivity,
+  ApiError
+} from '@/types/student';
+import { EditProfileModal } from '@/components/student/profile/EditProfileModal';
+import { EditUsernameModal } from '@/components/student/profile/EditUsernameModal';
+import { TopicProgressModal } from '@/components/student/topics/TopicProgressModal';
 export default function PublicProfilePage() {
   const params = useParams();
   const username = params?.username as string;
-  
-  const [profileData, setProfileData] = useState<any>(null);
+
+  const [profileData, setProfileData] = useState<ProfileDataState>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -40,7 +55,7 @@ export default function PublicProfilePage() {
   const [usernameForm, setUsernameForm] = useState({
     username: ''
   });
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<CurrentUserState | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [showTopicProgressModal, setShowTopicProgressModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -51,7 +66,7 @@ export default function PublicProfilePage() {
       await fetchCurrentUser();
       await fetchProfileByUsername();
     };
-    
+
     initializeAuthAndProfile();
   }, [username]);
 
@@ -60,26 +75,27 @@ export default function PublicProfilePage() {
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Auth check timeout')), 5000);
       });
-      
+
       const currentUserPromise = studentAuthService.getCurrentStudent();
       const user = await Promise.race([currentUserPromise, timeoutPromise]) as any;
-      
+
       setCurrentUser(user);
-      
+
       // Check if user has admin token trying to access student routes
       if (user?.error === "Access denied. Students only.") {
         setCurrentUser(null);
         return;
       }
-      
-    } catch (error: any) {
-      
+
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+
       // Handle 403 errors (admin token trying to access student routes)
-      if (error?.response?.status === 403) {
+      if (apiError?.response?.status === 403) {
         setCurrentUser(null);
         return;
       }
-      
+
       // For other errors, we still want to set authChecked = true
     } finally {
       setAuthChecked(true);
@@ -97,14 +113,8 @@ export default function PublicProfilePage() {
     setLoading(true);
     setProfileError(null);
 
-    const timeoutId = setTimeout(() => {
-      setProfileError('Profile is taking longer than expected to load.');
-    }, 5000);
-
     try {
       const data = await studentProfileService.getProfileByUsername(username);
-      
-      clearTimeout(timeoutId);
       setProfileData(data);
       setEditForm({
         name: data?.student?.name || '',
@@ -116,11 +126,9 @@ export default function PublicProfilePage() {
       setUsernameForm({
         username: data?.student?.username || ''
       });
-    } catch (err: any) {
-      clearTimeout(timeoutId);
-      
-      // Use proper error handling
-      const userError = ErrorHandler.handle(err, 'fetchProfileByUsername');
+    } catch (err: unknown) {
+      const apiError = err as ApiError;
+      const userError = ErrorHandler.handle(apiError, 'fetchProfileByUsername');
       setProfileError(userError.message);
     } finally {
       setLoading(false);
@@ -130,23 +138,24 @@ export default function PublicProfilePage() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
-    
+
     setUploading(true);
     try {
       await studentProfileService.updateProfileImage(file);
-      
+
       // Add timeout for profile refresh to prevent hanging
       const refreshTimeout = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Profile refresh timeout')), 3000); // 3 second timeout
       });
-      
+
       await Promise.race([fetchProfileByUsername(), refreshTimeout]);
-      
+
       // Show success feedback
-    } catch (err: any) {
-      
+    } catch (err: unknown) {
+      const apiError = err as ApiError;
+
       // If refresh timed out, still show success for the upload
-      if (err.message === 'Profile refresh timeout') {
+      if (apiError.message === 'Profile refresh timeout') {
 
       }
     } finally {
@@ -221,13 +230,12 @@ export default function PublicProfilePage() {
     // Multiple ways to check if this is the owner's profile
     const isOwner1 = currentUser?.data?.id === profileData.student.id;
     const isOwner2 = currentUser?.data?.username === profileData.student.username;
-    const isOwner3 = currentUser?.id === profileData.student.id;
-    const isOwner4 = currentUser?.username === profileData.student.username;
-    
+
+
     // Check token-based username match
     const token = localStorage.getItem('accessToken') || document.cookie.split('; ').find(row => row.startsWith('accessToken='))?.split('=')[1];
     let tokenUsername = null;
-    
+
     if (token) {
       try {
         const base64Url = token.split('.')[1];
@@ -243,12 +251,12 @@ export default function PublicProfilePage() {
       } catch (e) {
       }
     }
-    
+
     const isOwner5 = tokenUsername === profileData.student.username;
-    
+
     // Log for debugging
-    
-    return isOwner1 || isOwner2 || isOwner3 || isOwner4 || isOwner5;
+
+    return isOwner1 || isOwner2 || isOwner5;
   };
 
   // Add a manual refresh function for auth state
@@ -261,7 +269,7 @@ export default function PublicProfilePage() {
   const handleSaveProfile = async () => {
     try {
       setUploading(true);
-      
+
       // Use the existing profile service with automatic token handling
       await studentProfileService.updateProfileDetails({
         github: editForm.github,
@@ -281,7 +289,7 @@ export default function PublicProfilePage() {
   };
 
 
-const handleSaveUsername = async () => {
+  const handleSaveUsername = async () => {
     try {
       if (!usernameForm.username.trim()) {
         alert('Username cannot be empty');
@@ -312,7 +320,7 @@ const handleSaveUsername = async () => {
         // Refresh profile data and redirect to new URL
         await fetchProfileByUsername();
         setShowUsernameEditModal(false);
-        
+
         // Redirect to new username URL
         const newUsername = usernameForm.username.trim();
         if (newUsername !== username) {
@@ -322,17 +330,18 @@ const handleSaveUsername = async () => {
       } else {
         // Check if response is HTML (error page) instead of JSON
         const contentType = response.headers.get('content-type');
-        
+
         if (contentType && contentType.includes('text/html')) {
           throw new Error('Authentication failed. Please log in again.');
         }
-        
+
         const error = await response.json() as { error?: string };
         throw new Error(error.error || 'Failed to update username');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
       // Use proper error handling
-      ErrorHandler.showAlert(error, 'handleSaveUsername');
+      ErrorHandler.showAlert(apiError, 'handleSaveUsername');
     }
   };
 
@@ -343,9 +352,9 @@ const handleSaveUsername = async () => {
   const confirmDeleteImage = async () => {
     try {
       setUploading(true);
-      
-      const token = localStorage.getItem('accessToken') || 
-                   document.cookie.split('; ').find(row => row.startsWith('accessToken='))?.split('=')[1];
+
+      const token = localStorage.getItem('accessToken') ||
+        document.cookie.split('; ').find(row => row.startsWith('accessToken='))?.split('=')[1];
 
       const response = await fetch('/api/students/profile-image', {
         method: 'DELETE',
@@ -371,13 +380,13 @@ const handleSaveUsername = async () => {
 
   return (
     <div className="w-full max-w-[1200px] mx-auto pb-16">
-      
+
       {/* HERO SECTION */}
       <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border border-border rounded-3xl overflow-hidden shadow-sm mb-8 relative">
         <div className="h-40 bg-gradient-to-r from-primary/20 via-amber-600/20 to-emerald-600/20 w-full" />
-        
+
         <div className="px-8 sm:px-12 pb-8 flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-20 relative z-10">
-          
+
           <div className="relative group">
             <div className="w-36 h-36 rounded-full border-4 border-card bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground overflow-hidden shadow-xl">
               {student.profileImageUrl ? (
@@ -397,9 +406,9 @@ const handleSaveUsername = async () => {
             <div className="flex items-center justify-center sm:justify-start gap-2 mb-4">
               <p className="text-muted-foreground font-mono text-lg">@{student.username}</p>
               {canEdit() && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                   onClick={() => setShowUsernameEditModal(true)}
                   title="Edit username"
@@ -423,18 +432,18 @@ const handleSaveUsername = async () => {
               )}
             </div>
           </div>
-          
+
           <div className="flex gap-4">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="flex h-8 text-[12px]"
               onClick={() => setShowTopicProgressModal(true)}
             >
               <BarChart3 className="w-3 h-3 mr-2" />
               Topic Progress
             </Button>
-            
+
             {/* Show loading state while checking auth */}
             {!authChecked ? (
               <div className="hidden sm:flex items-center gap-2 px-3 h-8 text-[12px] text-muted-foreground">
@@ -442,9 +451,9 @@ const handleSaveUsername = async () => {
                 Checking permissions...
               </div>
             ) : canEdit() ? (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="hidden sm:flex h-8 text-[12px]"
                 onClick={() => setShowEditModal(true)}
               >
@@ -455,9 +464,9 @@ const handleSaveUsername = async () => {
               /* Show refresh button if user thinks they should be able to edit */
               <div className="hidden sm:flex items-center gap-2">
                 {canEdit() && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="h-8 text-[12px] text-blue-600 hover:text-blue-700"
                     onClick={() => setShowEditModal(true)}
                     title="Edit profile"
@@ -472,17 +481,17 @@ const handleSaveUsername = async () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
+
         {/* LEFT COLUMN: STATS & SOCIAL */}
         <div className="lg:col-span-1 space-y-8">
-          
+
           {/* OVERVIEW STATS */}
           <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
             <h3 className="font-bold text-foreground mb-6 text-[16px] uppercase tracking-wider flex items-center gap-2">
               <Award className="w-5 h-5 text-amber-500" />
               Overview
             </h3>
-            
+
             <div className="space-y-4">
               <div className="flex justify-between items-center p-4 bg-secondary/50 rounded-xl">
                 <span className="text-[14px] font-medium text-muted-foreground flex items-center gap-2">
@@ -491,7 +500,7 @@ const handleSaveUsername = async () => {
                 </span>
                 <span className="font-bold text-foreground font-mono text-xl">#{leaderboard?.globalRank || '-'}</span>
               </div>
-              
+
               <div className="flex justify-between items-center p-4 bg-primary/10 border border-primary/20 rounded-xl">
                 <span className="text-[14px] font-medium text-primary flex items-center gap-2">
                   <Target className="w-4 h-4" />
@@ -516,13 +525,13 @@ const handleSaveUsername = async () => {
               <Users className="w-5 h-5 text-primary" />
               Profile Information
             </h3>
-            
+
             <div className="space-y-4">
               <div className="flex justify-between items-center p-4 bg-secondary/50 rounded-xl">
                 <span className="text-[14px] font-medium text-muted-foreground">Name</span>
                 <span className="font-bold text-foreground">{student.name || '-'}</span>
               </div>
-              
+
 
               <div className="flex justify-between items-center p-4 bg-secondary/50 rounded-xl">
                 <span className="text-[14px] font-medium text-muted-foreground">Enrollment ID</span>
@@ -559,7 +568,7 @@ const handleSaveUsername = async () => {
               <LinkIcon className="w-5 h-5 text-primary" />
               Social Links
             </h3>
-            
+
             <div className="space-y-4">
               <a href={student.github || '#'} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${student.github ? 'bg-secondary/50 border-border hover:border-primary/50 hover:shadow-md' : 'bg-muted/30 border-dashed border-border opacity-60 pointer-events-none'}`}>
                 <div className="w-10 h-10 bg-gray-900 text-white rounded-lg flex items-center justify-center">
@@ -571,7 +580,7 @@ const handleSaveUsername = async () => {
                 </div>
                 {student.github && <CheckCircle2 className="w-5 h-5 text-green-500" />}
               </a>
-              
+
               <a href={student.linkedin || '#'} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${student.linkedin ? 'bg-blue-500/10 border-blue-500/20 hover:border-blue-500/40 hover:shadow-md text-blue-600 dark:text-blue-400' : 'bg-muted/30 border-dashed border-border opacity-60 pointer-events-none'}`}>
                 <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center">
                   <Linkedin className="w-6 h-6" />
@@ -583,7 +592,7 @@ const handleSaveUsername = async () => {
                 {student.linkedin && <CheckCircle2 className="w-5 h-5 text-blue-500" />}
               </a>
             </div>
-            
+
             {canEdit() && (
               <Button variant="outline" className="w-full mt-6 text-[12px] py-2 h-8" onClick={() => setShowEditModal(true)}>
                 Edit Social Links
@@ -594,7 +603,7 @@ const handleSaveUsername = async () => {
 
         {/* RIGHT COLUMN: ACTIVITY & HEATMAP */}
         <div className="lg:col-span-3 space-y-8">
-          
+
           {/* SOLVING STATISTICS */}
           <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
             <div className="flex items-end justify-between mb-8">
@@ -617,32 +626,32 @@ const handleSaveUsername = async () => {
                 <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">{codingStats?.easy?.solved || 0}</div>
                 <div className="text-[11px] text-muted-foreground mt-2">/ {codingStats?.easy?.assigned || 0} assigned</div>
                 <div className="w-full bg-emerald-500/20 rounded-full h-2 mt-3">
-                  <div 
-                    className="bg-emerald-500 h-2 rounded-full" 
+                  <div
+                    className="bg-emerald-500 h-2 rounded-full"
                     style={{ width: `${codingStats?.easy?.assigned ? (codingStats.easy.solved / codingStats.easy.assigned) * 100 : 0}%` }}
                   />
                 </div>
               </div>
-              
+
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 text-center hover:shadow-md transition-shadow">
                 <div className="text-[12px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500 mb-3">Medium</div>
                 <div className="text-3xl font-bold text-amber-700 dark:text-amber-400">{codingStats?.medium?.solved || 0}</div>
                 <div className="text-[11px] text-muted-foreground mt-2">/ {codingStats?.medium?.assigned || 0} assigned</div>
                 <div className="w-full bg-amber-500/20 rounded-full h-2 mt-3">
-                  <div 
-                    className="bg-amber-500 h-2 rounded-full" 
+                  <div
+                    className="bg-amber-500 h-2 rounded-full"
                     style={{ width: `${codingStats?.medium?.assigned ? (codingStats.medium.solved / codingStats.medium.assigned) * 100 : 0}%` }}
                   />
                 </div>
               </div>
-              
+
               <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center hover:shadow-md transition-shadow">
                 <div className="text-[12px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400 mb-3">Hard</div>
                 <div className="text-3xl font-bold text-red-700 dark:text-red-400">{codingStats?.hard?.solved || 0}</div>
                 <div className="text-[11px] text-muted-foreground mt-2">/ {codingStats?.hard?.assigned || 0} assigned</div>
                 <div className="w-full bg-red-500/20 rounded-full h-2 mt-3">
-                  <div 
-                    className="bg-red-500 h-2 rounded-full" 
+                  <div
+                    className="bg-red-500 h-2 rounded-full"
                     style={{ width: `${codingStats?.hard?.assigned ? (codingStats.hard.solved / codingStats.hard.assigned) * 100 : 0}%` }}
                   />
                 </div>
@@ -679,7 +688,7 @@ const handleSaveUsername = async () => {
                         <span>Dec</span>
                       </div>
                     </div>
-                    
+
                     {/* Heatmap grid */}
                     <div className="flex items-start gap-2">
                       {/* Day labels */}
@@ -693,7 +702,7 @@ const handleSaveUsername = async () => {
                         <div className="h-3 flex items-center justify-end">Fri</div>
                         <div className="h-3"></div>
                       </div>
-                      
+
                       {/* Heatmap cells - Horizontal layout */}
                       <div className="flex-1 flex gap-0.5">
                         {Array.from({ length: 53 }).map((_, weekIndex) => (
@@ -701,20 +710,20 @@ const handleSaveUsername = async () => {
                             {Array.from({ length: 7 }).map((_, dayIndex) => {
                               const today = new Date();
                               today.setHours(0, 0, 0, 0);
-                              
+
                               // Calculate the date for this cell (full year = 364 days)
                               const dayOffset = (weekIndex * 7) + dayIndex;
                               const date = new Date(today);
                               date.setDate(date.getDate() - (364 - dayOffset));
-                              
+
                               // Skip if date is in the future
                               if (date > today) {
                                 return <div key={`${weekIndex}-${dayIndex}`} className="w-3 h-3" />;
                               }
-                              
+
                               const dateStr = date.toISOString().split('T')[0];
-                              const dayData = heatmap.find((h: any) => new Date(h.date).toISOString().split('T')[0] === dateStr);
-                              
+                              const dayData = heatmap.find((h: HeatmapData) => new Date(h.date).toISOString().split('T')[0] === dateStr);
+
                               const count = dayData ? dayData.count : 0;
                               let bgClass = "bg-secondary/30 border border-border/50";
                               if (count === 0) bgClass = "bg-secondary/30 border border-border/50";
@@ -722,11 +731,11 @@ const handleSaveUsername = async () => {
                               else if (count === 2) bgClass = "bg-primary/40 border border-primary/50";
                               else if (count === 3) bgClass = "bg-primary/60 border border-primary/70";
                               else if (count >= 4) bgClass = "bg-primary border border-primary";
-                              
+
                               return (
-                                <div 
+                                <div
                                   key={`${weekIndex}-${dayIndex}`}
-                                  className={`w-3 h-3 ${bgClass} transition-all hover:scale-110 hover:z-10 cursor-pointer`} 
+                                  className={`w-3 h-3 ${bgClass} transition-all hover:scale-110 hover:z-10 cursor-pointer`}
                                   title={`${count} submissions on ${date.toLocaleDateString()}`}
                                 />
                               );
@@ -736,7 +745,7 @@ const handleSaveUsername = async () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Legend and stats */}
                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
                     <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
@@ -750,16 +759,16 @@ const handleSaveUsername = async () => {
                       </div>
                       <span>More</span>
                     </div>
-                    
+
                     {/* Stats summary */}
                     <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <div className="w-3 h-3 bg-primary/20 border border-primary/30"></div>
-                        {heatmap.reduce((sum: number, h: any) => sum + (h.count > 0 ? 1 : 0), 0)} active days
+                        {heatmap.reduce((sum: number, h: HeatmapData) => sum + (h.count > 0 ? 1 : 0), 0)} active days
                       </span>
                       <span className="flex items-center gap-1">
                         <Activity className="w-3 h-3" />
-                        {heatmap.reduce((sum: number, h: any) => sum + h.count, 0)} total submissions
+                        {heatmap.reduce((sum: number, h: HeatmapData) => sum + h.count, 0)} total submissions
                       </span>
                     </div>
                   </div>
@@ -781,10 +790,10 @@ const handleSaveUsername = async () => {
               <Clock className="w-5 h-5 text-primary" />
               Recent Activity
             </h3>
-            
+
             {recentActivity && recentActivity.length > 0 ? (
               <div className="space-y-4">
-                {recentActivity.map((activity: any, idx: number) => {
+                {recentActivity.map((activity: RecentActivity, idx: number) => {
                   let levelColor = "text-muted-foreground";
                   let levelBg = "bg-secondary/50";
                   if (activity.difficulty === 'EASY') {
@@ -802,12 +811,15 @@ const handleSaveUsername = async () => {
 
                   return (
                     <div key={idx} className="flex items-center justify-between p-5 rounded-xl border border-border/50 hover:bg-secondary/50 transition-all hover:shadow-sm">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 flex-1">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${levelBg}`}>
                           <CheckCircle2 className={`w-5 h-5 ${levelColor}`} />
                         </div>
-                        <div>
-                          <div className="font-semibold text-[15px] text-foreground">{activity.problemTitle}</div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-[15px] text-foreground hover:text-primary cursor-pointer transition-colors"
+                            onClick={() => activity.question_link && window.open(activity.question_link, '_blank', 'noopener,noreferrer')}>
+                            {activity.question_name}
+                          </div>
                           <div className="text-[12px] font-mono text-muted-foreground mt-1 flex items-center gap-4">
                             <span className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
@@ -825,6 +837,7 @@ const handleSaveUsername = async () => {
                       </div>
                     </div>
                   );
+
                 })}
               </div>
             ) : (
@@ -839,151 +852,29 @@ const handleSaveUsername = async () => {
         </div>
       </div>
 
-      {/* EDIT MODAL */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-2xl border border-border w-full max-w-md shadow-xl">
-            <div className="flex items-center justify-between p-6 border-b border-border">
-              <h2 className="text-xl font-bold">Edit Profile</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowEditModal(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              {/* Profile Image Upload */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Profile Image</label>
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full border-2 border-border bg-muted flex items-center justify-center overflow-hidden">
-                    {student.profileImageUrl ? (
-                      <img src={student.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-primary to-amber-600 text-white flex items-center justify-center text-sm font-bold">
-                        {student.name?.charAt(0)?.toUpperCase() || 'U'}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleImageUpload}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <Button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                    >
-                      {uploading ? 'Uploading...' : (student.profileImageUrl ? 'Change Image' : 'Add Image')}
-                    </Button>
-                    {student.profileImageUrl && (
-                      <Button
-                        onClick={handleDeleteImage}
-                        disabled={uploading}
-                        variant="ghost"
-                        size="sm"
-                        className="w-full mt-1 text-destructive hover:text-destructive"
-                      >
-                        Remove Image
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* GitHub */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">GitHub URL</label>
-                <input
-                  type="url"
-                  value={editForm.github}
-                  onChange={(e) => setEditForm({ ...editForm, github: e.target.value })}
-                  placeholder="https://github.com/username"
-                  className="w-full border border-border p-3 rounded-lg bg-background"
-                />
-              </div>
-
-              {/* LinkedIn */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">LinkedIn URL</label>
-                <input
-                  type="url"
-                  value={editForm.linkedin}
-                  onChange={(e) => setEditForm({ ...editForm, linkedin: e.target.value })}
-                  placeholder="https://linkedin.com/in/username"
-                  className="w-full border border-border p-3 rounded-lg bg-background"
-                />
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <Button onClick={handleSaveProfile} disabled={uploading} className="flex-1">
-                  {uploading ? 'Saving...' : 'Save Changes'}
-                </Button>
-                <Button onClick={() => setShowEditModal(false)} variant="outline" className="flex-1">
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
+      <EditProfileModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        student={student}
+        editForm={editForm}
+        setEditForm={setEditForm}
+        uploading={uploading}
+        fileInputRef={fileInputRef}
+        handleImageUpload={handleImageUpload}
+        handleDeleteImage={handleDeleteImage}
+        handleSaveProfile={handleSaveProfile}
+      />
       {/* USERNAME EDIT MODAL */}
-      {showUsernameEditModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-2xl border border-border w-full max-w-sm shadow-xl">
-            <div className="flex items-center justify-between p-6 border-b border-border">
-              <h2 className="text-xl font-bold">Edit Username</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowUsernameEditModal(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Username</label>
-                <input
-                  type="text"
-                  value={usernameForm.username}
-                  onChange={(e) => setUsernameForm({ ...usernameForm, username: e.target.value })}
-                  placeholder="username"
-                  className="w-full border border-border p-3 rounded-lg bg-background"
-                />
-                <p className="text-xs text-muted-foreground">
-                  This will be your unique identifier for profile URLs
-                </p>
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <Button onClick={handleSaveUsername} className="flex-1">
-                  Save Username
-                </Button>
-                <Button onClick={() => setShowUsernameEditModal(false)} variant="outline" className="flex-1">
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <EditUsernameModal
+        isOpen={showUsernameEditModal}
+        onClose={() => setShowUsernameEditModal(false)}
+        usernameForm={usernameForm}
+        setUsernameForm={setUsernameForm}
+        handleSaveUsername={handleSaveUsername}
+      />
 
       {/* TOPIC PROGRESS MODAL */}
-      <TopicProgressModal 
+      <TopicProgressModal
         isOpen={showTopicProgressModal}
         onClose={() => setShowTopicProgressModal(false)}
         username={username}
