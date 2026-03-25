@@ -19,7 +19,8 @@ import {
   Code,
   BookOpen,
   Brain,
-  X
+  X,
+  Upload
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,6 +54,7 @@ import { Pagination } from '@/components/Pagination';
 import CreateQuestion from './components/createQuestion';
 import UpdateQuestion from './components/updateQuestion';
 import DeleteQuestion from './components/deleteQuestion';
+import BulkUploadModal from './components/BulkUploadModal';
 
 function BadgeByLevel({ level }: { level: string }) {
   const variant = level === 'EASY' ? 'default' :
@@ -129,6 +131,7 @@ export default function AdminQuestionsBankPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [selectedQ, setSelectedQ] = useState<any>(null);
 
   // Form
@@ -148,6 +151,7 @@ export default function AdminQuestionsBankPage() {
   // For simplicity based on requirements, we'll use a number string input or assume the user knows the ID,
   // or we can fetch the topics array and build a dropdown. Let's fetch all global topics.
   const [allTopics, setAllTopics] = useState<{ label: string, value: string }[]>([]);
+  const [topicsForBulkUpload, setTopicsForBulkUpload] = useState<{ label: string; value: string }[]>([]);
 
   const fetchTopics = useCallback(async () => {
     try {
@@ -155,6 +159,7 @@ export default function AdminQuestionsBankPage() {
       const { default: api } = await import('@/lib/api');
       const res = await api.get('/api/admin/topics');
       setAllTopics(res.data.map((t: any) => ({ label: t.topic_name, value: t.slug })));
+      setTopicsForBulkUpload(res.data.map((t: any) => ({ label: t.topic_name, value: t.id.toString() })));
     } catch (err) {
       console.error(err);
     }
@@ -274,6 +279,163 @@ export default function AdminQuestionsBankPage() {
     setIsEditOpen(true);
   };
 
+  // Bulk Upload Handlers
+  const handleBulkFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      if (!selectedFile.name.endsWith('.csv')) {
+        setBulkValidationError('Please select a CSV file');
+        return;
+      }
+      setBulkFile(selectedFile);
+      validateBulkCSV(selectedFile);
+    }
+  };
+
+  const validateBulkCSV = (file: File) => {
+    setBulkValidationError('');
+    setBulkUploadError('');
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split('\n').filter(line => line.trim());
+        if (lines.length < 2) {
+          setBulkValidationError('CSV file is empty or invalid');
+          return;
+        }
+
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+        const rows = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+          if (values.length === headers.length) {
+            const row: any = {};
+            headers.forEach((header, index) => {
+              row[header] = values[index];
+            });
+            rows.push(row);
+          }
+        }
+
+        if (rows.length === 0) {
+          setBulkValidationError('CSV file is empty or invalid');
+          return;
+        }
+
+        // Check required columns
+        const firstRow = rows[0];
+        const requiredColumns = ['question_name', 'question_link', 'level', 'type'];
+        const missingColumns = requiredColumns.filter(col => !(col in firstRow));
+
+        if (missingColumns.length > 0) {
+          setBulkValidationError(`Missing required columns: ${missingColumns.join(', ')}`);
+          return;
+        }
+
+        // Validate each row
+        const validLevels = ['EASY', 'MEDIUM', 'HARD'];
+        const validTypes = ['HOMEWORK', 'CLASSWORK'];
+
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          
+          if (!row.question_name?.trim()) {
+            setBulkValidationError(`Row ${i + 1}: Question name is required`);
+            return;
+          }
+          
+          if (!row.question_link?.trim()) {
+            setBulkValidationError(`Row ${i + 1}: Question link is required`);
+            return;
+          }
+          
+          if (!validLevels.includes(row.level?.toUpperCase())) {
+            setBulkValidationError(`Row ${i + 1}: Level must be EASY, MEDIUM, or HARD`);
+            return;
+          }
+          
+          if (!validTypes.includes(row.type?.toUpperCase())) {
+            setBulkValidationError(`Row ${i + 1}: Type must be HOMEWORK or CLASSWORK`);
+            return;
+          }
+        }
+
+        setBulkCsvData(rows);
+      } catch (error) {
+        setBulkValidationError('Failed to parse CSV file');
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  const handleBulkUpload = async () => {
+    if (!bulkFile || bulkValidationError || !bulkSelectedTopic) return;
+
+    setBulkLoading(true);
+    setBulkUploadError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', bulkFile);
+      formData.append('topicId', bulkSelectedTopic);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/admin/questions/bulk-upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      const result = await response.json();
+      
+      // Show success message using alert for now
+      alert(`Successfully uploaded ${result.inserted} out of ${result.totalRows} questions`);
+      
+      setIsBulkUploadOpen(false);
+      setBulkFile(null);
+      setBulkSelectedTopic('');
+      setBulkValidationError('');
+      setBulkUploadError('');
+      setBulkCsvData([]);
+      loadQuestions();
+    } catch (error: any) {
+      setBulkUploadError(error.message || 'Upload failed');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const handleBulkClose = () => {
+    if (!bulkLoading) {
+      setIsBulkUploadOpen(false);
+      setBulkFile(null);
+      setBulkSelectedTopic('');
+      setBulkValidationError('');
+      setBulkUploadError('');
+      setBulkCsvData([]);
+    }
+  };
+
+  // Bulk Upload Modal State
+  const [bulkFile, setBulkFile] = useState<File | null>(null);
+  const [bulkSelectedTopic, setBulkSelectedTopic] = useState('');
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkValidationError, setBulkValidationError] = useState('');
+  const [bulkUploadError, setBulkUploadError] = useState('');
+  const [bulkCsvData, setBulkCsvData] = useState<any[]>([]);
+
+  const isBulkUploadDisabled = !bulkFile || !!bulkValidationError || bulkLoading || !bulkSelectedTopic;
+
   return (
   <div className="flex flex-col space-y-6">
 
@@ -289,6 +451,9 @@ export default function AdminQuestionsBankPage() {
       <div className="flex items-center gap-3">
         <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
           <Plus className="w-4 h-4" /> Add Question
+        </Button>
+        <Button onClick={() => setIsBulkUploadOpen(true)} variant="outline" className="gap-2">
+          <Upload className="w-4 h-4" /> Bulk Upload
         </Button>
       </div>
     </div>
@@ -498,6 +663,15 @@ export default function AdminQuestionsBankPage() {
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         onSuccess={loadQuestions}
+      />
+
+      {/* BULK UPLOAD MODAL */}
+      
+      <BulkUploadModal
+        open={isBulkUploadOpen}
+        onOpenChange={setIsBulkUploadOpen}
+        onSuccess={loadQuestions}
+        topics={topicsForBulkUpload}
       />
 
       {/* UPDATE MODAL */}

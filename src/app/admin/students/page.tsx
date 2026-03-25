@@ -38,6 +38,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Pagination } from '@/components/Pagination';
+import BulkUploadModal from './components/BulkUploadModal';
+import DownloadReportModal from './components/DownloadReportModal';
+import { useToast } from '@/app/(auth)/shared/hooks/useToast';
+import { Toast } from '@/app/(auth)/shared/components/Toast';
 
 
 
@@ -46,6 +50,7 @@ export default function AdminStudentsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { selectedBatch, isLoadingContext } = useAdminStore();
+  const { toasts } = useToast();
 
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -60,6 +65,8 @@ export default function AdminStudentsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isDownloadReportOpen, setIsDownloadReportOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
 
   // Form states
@@ -185,6 +192,11 @@ export default function AdminStudentsPage() {
     setFormError('');
   };
 
+  const handleBulkUploadSuccess = (result: any) => {
+    // Show success message or refresh data
+    fetchStudents();
+  };
+
   const openEdit = (s: any) => {
     setSelectedStudent(s);
     setFormName(s.name);
@@ -221,9 +233,17 @@ export default function AdminStudentsPage() {
             {selectedBatch.name} - {totalRecords} Total Enrollments
           </p>
         </div>
-        <Button onClick={() => { resetForms(); setIsCreateOpen(true); }} className="gap-2">
-          <Plus className="w-4 h-4" /> Onboard Student
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setIsDownloadReportOpen(true)} variant="outline" className="gap-2">
+            <Download className="w-4 h-4" /> Download Report
+          </Button>
+          <Button onClick={() => setIsBulkUploadOpen(true)} variant="outline" className="gap-2">
+            <Upload className="w-4 h-4" /> Bulk Upload
+          </Button>
+          <Button onClick={() => { resetForms(); setIsCreateOpen(true); }} className="gap-2">
+            <Plus className="w-4 h-4" /> Onboard Student
+          </Button>
+        </div>
       </div>
 
       <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden flex flex-col min-h-[600px]">
@@ -569,6 +589,22 @@ export default function AdminStudentsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* BULK UPLOAD MODAL */}
+      <BulkUploadModal
+        open={isBulkUploadOpen}
+        onOpenChange={setIsBulkUploadOpen}
+        onSuccess={handleBulkUploadSuccess}
+      />
+
+      {/* DOWNLOAD REPORT MODAL */}
+      <DownloadReportModal
+        open={isDownloadReportOpen}
+        onOpenChange={setIsDownloadReportOpen}
+      />
+
+      {/* TOAST NOTIFICATIONS */}
+      <Toast />
     </div>
   );
 }
