@@ -58,12 +58,12 @@
   --spacing-xl: 32px;
   --spacing-2xl: 48px;
 
-  /* Border Radius System */
+   /* Border Radius System */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-full: 9999px;
+  --radius-xl: 23px;
+  --radius-full: 9999px; 
 
   /* Typography Scale */
   --text-xs: 12px;
@@ -401,4 +401,14 @@ input:focus, button:focus, .btn:focus {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
+}
+
+/* Hide scrollbar but keep scroll working */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

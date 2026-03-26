@@ -216,21 +216,66 @@ export default function AdminClassesPage() {
         </Button>
       </div>
 
-      <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden">
-        <div className="p-4 border-b border-border flex items-center gap-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Search classes..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-background focus-visible:ring-1"
-            />
-          </div>
-        </div>
+      <div className="bg-card border border-border  shadow-sm rounded-xl overflow-hidden">
+        <div className="
+  glass rounded-xl overflow-hidden
+  shadow-md
+">
+
+  <div className="
+    flex items-center justify-between
+    px-5 py-4
+  ">
+
+    {/* SEARCH */}
+    <div className="relative flex-1 max-w-sm group">
+
+      <Search className="
+        absolute left-3 top-1/2 -translate-y-1/2
+        w-4 h-4
+        text-muted-foreground
+        pointer-events-none
+        transition
+        group-focus-within:text-primary
+      " />
+
+      <Input
+        placeholder="Search classes..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="
+          h-10 !pl-9 !pr-9 rounded-full
+
+          bg-accent/40
+          border-0
+
+          focus:ring-2 focus:ring-primary/20
+          focus:bg-accent/60
+
+          transition-all
+        "
+      />
+    </div>
+
+    {/* COUNT BADGE */}
+    <div className="
+      text-xs font-semibold tracking-wide
+
+      px-3 py-1.5 rounded-full
+
+      bg-primary/10 text-primary
+      border border-primary/20
+
+      shadow-[0_0_10px_var(--hover-glow)]
+    ">
+      {totalRecords} Classes
+    </div>
+
+  </div>
+</div>
 
         <div className="overflow-x-auto">
-          <Table>
+          <Table >
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50">
                 <TableHead>Overview</TableHead>

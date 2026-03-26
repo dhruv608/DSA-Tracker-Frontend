@@ -74,7 +74,7 @@ export default function AdminClassDetailsPage() {
    const [assignedPage, setAssignedPage] = useState(1);
    const [assignedTotalPages, setAssignedTotalPages] = useState(1);
    const [assignedTotalCount, setAssignedTotalCount] = useState(0);
-   const [limit, setLimit] = useState(25);
+   const [limit, setLimit] = useState(10);
 
    // Assign Modal States
    const [isAssignOpen, setIsAssignOpen] = useState(false);
@@ -206,7 +206,7 @@ export default function AdminClassDetailsPage() {
       }
    };
 
-  
+
    if (isLoadingContext) {
       return <Skeletons />;
    }
@@ -235,7 +235,7 @@ export default function AdminClassDetailsPage() {
                <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
                   <BookOpen className="w-6 h-6 text-primary" /> Class Questions
                </h2>
-               <p className="text-muted-foreground mt-1 text-sm font-mono bg-muted inline-block px-2 py-0.5 rounded-md border border-border mt-2">
+               <p className="text-muted-foreground mt-1 text-sm font-mono bg-muted inline-block px-2 py-0.5 rounded-2xl border border-border mt-2">
                   {selectedBatch.name} / {topicSlug} / {classSlug}
                </p>
             </div>
@@ -245,91 +245,183 @@ export default function AdminClassDetailsPage() {
          </div>
 
          <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-border flex items-center gap-4">
-               <div className="relative flex-1 max-w-sm">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input
-                     placeholder="Search assigned questions..."
-                     value={search}
-                     onChange={(e) => {
-                        setSearch(e.target.value);
-                        setAssignedPage(1); // Reset to page 1 when searching
-                     }}
-                     className="pl-9 bg-background focus-visible:ring-1"
-                  />
-               </div>
-               <div className="text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-md font-medium">
-                  {assignedTotalCount} Total Assigned
+            <div className="
+  glass rounded-xl overflow-hidden
+  border border-[var(--glass-border)]
+  shadow-sm
+">
+
+               <div className="
+    flex items-center justify-between
+    px-5 py-4
+    border-b border-border/60
+  ">
+
+                  {/* SEARCH */}
+                  <div className="relative flex-1 max-w-sm group">
+
+                     
+
+                     <Input
+                        placeholder="Search assigned questions..."
+                        value={search}
+                        onChange={(e) => {
+                           setSearch(e.target.value);
+                           setAssignedPage(1);
+                        }}
+                        className="
+          pl-9  h-10 rounded-full
+
+          bg-accent/40 border border-border
+          focus:border-primary
+
+          focus:shadow-[0_0_0_2px_rgba(204,255,0,0.15)]
+
+          transition-all
+        "
+                     />
+                  </div>
+
+                  {/* COUNT BADGE */}
+                  <div className="
+      text-xs font-semibold tracking-wide
+
+      px-3 py-1.5 rounded-full
+
+      bg-primary/10 text-primary
+      border border-primary/20
+
+      shadow-[0_0_10px_var(--hover-glow)]
+    ">
+                     {assignedTotalCount} Assigned
+                  </div>
+
                </div>
             </div>
 
             <div className="overflow-x-auto ">
-               <Table >
+               <Table className="border-separate border-spacing-y-2">
+
+                  {/* HEADER */}
                   <TableHeader>
-                     <TableRow className="bg-muted/50  hover:bg-muted/50">
-                        <TableHead>Question Name</TableHead>
-                        <TableHead>Platform</TableHead>
-                        <TableHead>Difficulty</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Assigned Date</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                     <TableRow className="border-0">
+                        <TableHead className="text-muted-foreground font-medium text-xs tracking-wide">
+                           Question Name
+                        </TableHead>
+                        <TableHead className="text-muted-foreground font-medium text-xs">
+                           Platform
+                        </TableHead>
+                        <TableHead className="text-muted-foreground font-medium text-xs">
+                           Difficulty
+                        </TableHead>
+                        <TableHead className="text-muted-foreground font-medium text-xs">
+                           Type
+                        </TableHead>
+                        <TableHead className="text-muted-foreground font-medium text-xs">
+                           Assigned Date
+                        </TableHead>
+                        <TableHead className="text-right text-muted-foreground font-medium text-xs">
+                           Actions
+                        </TableHead>
                      </TableRow>
                   </TableHeader>
+
+                  {/* BODY */}
                   <TableBody>
-                     {loading ? (
-                        <TableRow>
-                           <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
-                              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-primary inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                              Loading assignments...
-                           </TableCell>
-                        </TableRow>
-                     ) : assignedQuestions.length === 0 ? (
-                        <TableRow>
-                           <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
-                              No questions have been attached to this class.
-                           </TableCell>
-                        </TableRow>
-                     ) : (
-                        assignedQuestions.map((qObj: any) => {
-                           const q = qObj.question || qObj; // Flatten potential nested structure
-                           return (
-                              <TableRow key={q.id} className="group">
-                                 <TableCell>
-                                    <div className="flex items-center gap-2">
-                                       <a href={q.question_link} target="_blank" rel="noreferrer" className="font-medium text-foreground hover:text-primary transition-colors flex items-center gap-1.5">
-                                          {q.question_name} <ExternalLink className="w-3.5 h-3.5 opacity-50" />
-                                       </a>
-                                    </div>
-                                 </TableCell>
-                                 <TableCell>
-                                    <span className="text-xs font-semibold tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                                       {q.platform}
-                                    </span>
-                                 </TableCell>
-                                 <TableCell>
-                                    <BadgeByLevel level={q.level} />
-                                 </TableCell>
-                                 <TableCell>
-                                    <span className="text-xs italic text-muted-foreground capitalize">
-                                       {q.type?.toLowerCase() || 'Homework'}
-                                    </span>
-                                 </TableCell>
-                                 <TableCell>
-                                    <span className="text-xs text-muted-foreground">
-                                       {qObj.assigned_at ? new Date(qObj.assigned_at).toLocaleDateString('en-GB') : 'N/A'}
-                                    </span>
-                                 </TableCell>
-                                 <TableCell className="text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                       <Button variant="outline" size="icon" onClick={() => handleRemoveQuestion(q.id)} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive border-border/50">
-                                          <Trash2 className="w-4 h-4 opacity-70" />
-                                       </Button>
-                                    </div>
-                                 </TableCell>
-                              </TableRow>
-                           );
-                        })
-                     )}
+
+                     {assignedQuestions.map((qObj: any) => {
+                        const q = qObj.question || qObj;
+
+                        return (
+                           <TableRow
+                              key={q.id}
+                              className="
+            group border-0
+
+            bg-accent/30
+            hover:bg-accent/50
+
+            backdrop-blur-md
+
+            rounded-xl
+            transition-all duration-200
+          "
+                           >
+
+                              {/* QUESTION */}
+                              <TableCell className="rounded-l-xl py-3">
+                                 <a
+                                    href={q.question_link}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="
+                font-medium text-foreground
+                hover:text-primary
+                transition-colors
+                flex items-center gap-1.5
+              "
+                                 >
+                                    {q.question_name}
+                                    <ExternalLink className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100" />
+                                 </a>
+                              </TableCell>
+
+                              {/* PLATFORM */}
+                              <TableCell>
+                                 <span className="
+              text-xs font-semibold tracking-wide
+              text-muted-foreground
+              bg-muted px-2 py-1 rounded-full
+            ">
+                                    {q.platform}
+                                 </span>
+                              </TableCell>
+
+                              {/* DIFFICULTY */}
+                              <TableCell>
+                                 <BadgeByLevel level={q.level} />
+                              </TableCell>
+
+                              {/* TYPE */}
+                              <TableCell>
+                                 <span className="text-xs italic text-muted-foreground capitalize">
+                                    {q.type?.toLowerCase() || 'Homework'}
+                                 </span>
+                              </TableCell>
+
+                              {/* DATE */}
+                              <TableCell>
+                                 <span className="text-xs text-muted-foreground">
+                                    {qObj.assigned_at
+                                       ? new Date(qObj.assigned_at).toLocaleDateString('en-GB')
+                                       : 'N/A'}
+                                 </span>
+                              </TableCell>
+
+                              {/* ACTION */}
+                              <TableCell className="text-right rounded-r-xl">
+                                 <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleRemoveQuestion(q.id)}
+                                    className="
+                h-8 w-8 rounded-full
+
+                text-muted-foreground
+                hover:text-destructive
+                hover:bg-destructive/10
+
+                transition-all
+              "
+                                 >
+                                    <Trash2 className="w-4 h-4" />
+                                 </Button>
+                              </TableCell>
+
+                           </TableRow>
+                        );
+                     })}
+
                   </TableBody>
                </Table>
             </div>
