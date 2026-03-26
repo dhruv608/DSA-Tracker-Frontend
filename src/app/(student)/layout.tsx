@@ -5,6 +5,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import StudentHeader from '@/components/student/layout/StudentHeader';
 import { studentAuthService } from '@/services/student/auth.service';
 import { isStudentToken, clearAuthTokens } from '@/lib/auth-utils';
+import { RecentQuestionsSidebar } from '@/components/student/RecentQuestionsSidebar';
+import { RecentQuestionsProvider } from '@/contexts/RecentQuestionsContext';
 
 export default function StudentLayout({
   children,
@@ -93,12 +95,15 @@ export default function StudentLayout({
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary/20">
-      <StudentHeader />
-      
-      <main className="flex-1 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        {children}
-      </main>
-      
+      <RecentQuestionsProvider>
+        <StudentHeader />
+        
+        <main className="flex-1 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {children}
+        </main>
+        
+        <RecentQuestionsSidebar />
+      </RecentQuestionsProvider>
     </div>
   );
 }

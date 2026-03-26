@@ -13,13 +13,16 @@ import {
   DropdownMenuItem, 
   DropdownMenuSeparator 
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, Home, BookOpen, PenTool, Trophy, Lock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { LogOut, User, Home, BookOpen, PenTool, Trophy, Lock, Activity } from 'lucide-react';
+import { useRecentQuestions } from '@/contexts/RecentQuestionsContext';
 
 export default function StudentHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const { toggleSidebar } = useRecentQuestions();
 
   useEffect(() => {
     // Check if we have a student token before making API calls
@@ -133,6 +136,19 @@ export default function StudentHeader() {
       <div className="flex items-center gap-4 ml-auto">
         
         <ThemeToggle />
+
+        {/* Recent Questions Button */}
+        {isUserOnboarded && profile?.data && !profileLoading && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSidebar}
+            className="relative"
+          >
+            <Activity className="w-4 h-4 mr-2" />
+            Recent
+          </Button>
+        )}
 
         {/* Check authentication and show appropriate UI */}
         {(() => {
