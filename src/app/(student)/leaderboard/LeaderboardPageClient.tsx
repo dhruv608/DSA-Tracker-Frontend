@@ -148,7 +148,7 @@ export function LeaderboardPageClient({ initialData, initialSearch }: Leaderboar
   };
   //  console.log("vergrtgrtgrt: ",studentData)
   return (
-    <>
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* Your Rank Section */}
       <YourRank yourRank={leaderboardData.yourRank} />
 
@@ -157,7 +157,7 @@ export function LeaderboardPageClient({ initialData, initialSearch }: Leaderboar
 
       {/* Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-card border border-border rounded-xl p-5 flex items-center gap-4 shadow-sm">
+        <div className="glass hover-glow rounded-xl p-5 flex items-center gap-4 shadow-sm">
           <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -169,7 +169,7 @@ export function LeaderboardPageClient({ initialData, initialSearch }: Leaderboar
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-5 flex items-center gap-4 shadow-sm">
+        <div className="glass hover-glow rounded-xl p-5 flex items-center gap-4 shadow-sm">
           <div className="w-14 h-14 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -186,7 +186,7 @@ export function LeaderboardPageClient({ initialData, initialSearch }: Leaderboar
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-5 flex items-center gap-4 shadow-sm">
+        <div className="glass hover-glow rounded-xl p-5 flex items-center gap-4 shadow-sm">
           <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -205,7 +205,7 @@ export function LeaderboardPageClient({ initialData, initialSearch }: Leaderboar
       </div>
 
       {/* Filters and Table */}
-      <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden flex flex-col min-h-[500px]">
+      <div className="glass hover-glow shadow-sm rounded-xl overflow-hidden flex flex-col min-h-[500px]">
         <Filters 
           lSearch={lSearch} 
           setLSearch={setLSearch}
@@ -217,6 +217,6 @@ export function LeaderboardPageClient({ initialData, initialSearch }: Leaderboar
         
         <LeaderboardTable entries={leaderboardData.top10} filters={filters} />
       </div>
-    </>
+    </div>
   );
 }

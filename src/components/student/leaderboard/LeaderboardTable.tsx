@@ -22,20 +22,40 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, fil
   };
 
   return (
-    <div className="w-full overflow-x-auto bg-card border border-border rounded-xl shadow-sm">
-      <table className="w-full text-left border-collapse min-w-[800px]">
+    <div className="w-full overflow-x-auto">
+      <table className="w-full text-left border-collapse" style={{minWidth: '800px'}}>
         <thead>
-          <tr className="border-b border-border bg-muted/30 text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
-            <th className="p-5 font-semibold w-16 text-center">Rank</th>
-            <th className="p-5 font-semibold">Student</th>
-            <th className="p-5 font-semibold text-center hidden md:table-cell">City / Year</th>
-            <th className="p-5 font-semibold text-center">Score</th>
-            <th className="p-5 font-semibold text-center hidden lg:table-cell">Difficulty</th>
-            <th className="p-5 font-semibold text-center">Streak</th>
-            <th className="p-5 font-semibold text-right">Solved</th>
+          <tr 
+            className="border-b" 
+            style={{borderColor: 'var(--border)', backgroundColor: 'var(--muted)'}}
+          >
+            <th 
+              className="p-4 font-semibold w-16 text-center" 
+              style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', textTransform: 'uppercase'}}
+            >
+              Rank
+            </th>
+            <th className="p-4 font-semibold" style={{fontSize: 'var(--text-xs)'}}>
+              Student
+            </th>
+            <th className="p-4 font-semibold text-center hidden md:table-cell" style={{fontSize: 'var(--text-xs)'}}>
+              City / Year
+            </th>
+            <th className="p-4 font-semibold text-center" style={{fontSize: 'var(--text-xs)'}}>
+              Score
+            </th>
+            <th className="p-4 font-semibold text-center hidden lg:table-cell" style={{fontSize: 'var(--text-xs)'}}>
+              Difficulty
+            </th>
+            <th className="p-4 font-semibold text-center" style={{fontSize: 'var(--text-xs)'}}>
+              Streak
+            </th>
+            <th className="p-4 font-semibold text-right" style={{fontSize: 'var(--text-xs)'}}>
+              Solved
+            </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border/50">
+        <tbody style={{borderColor: 'var(--border)'}}>
           {entries.map((entry) => {
             const rankValue = getRank(entry);
             const completion = getCompletionPercentage(entry);
@@ -43,33 +63,53 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, fil
             return (
               <tr 
                 key={entry.username} 
-                className={`transition-colors hover:bg-muted/20 ${
-                  entry.isCurrentUser ? 'bg-primary/5 hover:bg-primary/10' : ''
-                } ${Number(rankValue) <= 3 ? 'bg-primary/5 hover:bg-primary/10' : ''}`}
+                className="transition-all duration-200 hover-glow"
+                style={{
+                  backgroundColor: entry.isCurrentUser ? 'var(--accent-primary)' : 
+                                   Number(rankValue) <= 3 ? 'var(--accent-primary)' : 'transparent',
+                  opacity: entry.isCurrentUser ? 0.1 : Number(rankValue) <= 3 ? 0.1 : 0
+                }}
               >
                 {/* Rank */}
-                <td className="p-5 text-center">
-                  <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-[13px] font-bold font-mono ${
-                    entry.isCurrentUser ? 'bg-primary text-primary-foreground' : 
-                    Number(rankValue) === 1 ? 'bg-yellow-400 text-yellow-900' :
-                    Number(rankValue) === 2 ? 'bg-slate-300 text-slate-800' :
-                    Number(rankValue) === 3 ? 'bg-amber-600 text-orange-50' :
-                    'bg-secondary text-muted-foreground'
-                  }`}>
+                <td className="p-4 text-center">
+                  <span 
+                    className="inline-flex items-center justify-center rounded-full font-bold font-mono transition-all duration-200 hover:scale-110" 
+                    style={{
+                      width: 'var(--spacing-lg)',
+                      height: 'var(--spacing-lg)',
+                      fontSize: 'var(--text-sm)',
+                      backgroundColor: entry.isCurrentUser ? 'var(--accent-primary)' : 
+                                       Number(rankValue) === 1 ? 'var(--accent-primary)' :
+                                       Number(rankValue) === 2 ? 'var(--accent-secondary)' :
+                                       Number(rankValue) === 3 ? 'var(--muted)' : 'var(--accent-secondary)',
+                      color: entry.isCurrentUser ? 'var(--primary-foreground)' : 
+                             Number(rankValue) === 1 ? 'var(--primary-foreground)' :
+                             Number(rankValue) === 2 ? 'var(--secondary-foreground)' :
+                             Number(rankValue) === 3 ? 'var(--text-secondary)' : 'var(--secondary-foreground)',
+                      borderRadius: 'var(--radius-full)',
+                      boxShadow: Number(rankValue) === 1 ? 'var(--shadow-md)' : 'none'
+                    }}
+                  >
                     {rankValue}
                   </span>
                 </td>
 
                 {/* Student Info */}
-                <td className="p-5">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${
-                      entry.isCurrentUser ? 'border-primary/50 text-primary bg-primary/10' : 
-                      Number(rankValue) === 1 ? 'border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]' :
-                      Number(rankValue) === 2 ? 'border-slate-300' :
-                      Number(rankValue) === 3 ? 'border-amber-600' :
-                      'border-border bg-secondary text-muted-foreground'
-                    }`}>
+                <td className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="rounded-full overflow-hidden transition-all duration-200 hover:scale-105" 
+                      style={{
+                        width: 'var(--spacing-lg)',
+                        height: 'var(--spacing-lg)',
+                        border: `2px solid ${entry.isCurrentUser ? 'var(--accent-primary)' : 
+                                       Number(rankValue) === 1 ? 'var(--accent-primary)' :
+                                       Number(rankValue) === 2 ? 'var(--accent-secondary)' :
+                                       Number(rankValue) === 3 ? 'var(--muted)' : 'var(--border)'}`,
+                        backgroundColor: entry.isCurrentUser ? 'var(--accent-primary)' : 'var(--card)',
+                        borderRadius: 'var(--radius-full)'
+                      }}
+                    >
                       <img 
                         src={entry.profile_image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${entry.username}&backgroundColor=1e293b&textColor=f8fafc`} 
                         alt={entry.name} 
@@ -77,64 +117,135 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, fil
                       />
                     </div>
                     <div>
-                      <div className="font-semibold text-[14.5px] text-foreground flex items-center gap-2">
+                      <div 
+                        className="font-semibold flex items-center gap-2" 
+                        style={{fontSize: 'var(--text-base)', color: 'var(--foreground)'}}
+                      >
                         {entry.name}
                         {entry.isCurrentUser && (
-                          <span className="text-[9px] uppercase tracking-wider bg-primary/20 text-primary px-1.5 py-0.5 rounded font-bold">You</span>
+                          <span 
+                            className="uppercase tracking-wider px-1.5 py-0.5 rounded font-bold" 
+                            style={{
+                              fontSize: 'var(--text-xs)',
+                              backgroundColor: 'var(--accent-primary)',
+                              color: 'var(--primary-foreground)',
+                              borderRadius: 'var(--radius-sm)',
+                              padding: 'var(--spacing-xs) var(--spacing-xs)'
+                            }}
+                          >
+                            You
+                          </span>
                         )}
                       </div>
-                      <div className="text-[12px] text-muted-foreground font-mono mt-0.5">@{entry.username}</div>
+                      <div 
+                        className="font-mono mt-0.5" 
+                        style={{fontSize: 'var(--text-sm)', color: 'var(--text-secondary)'}}
+                      >
+                        @{entry.username}
+                      </div>
                     </div>
                   </div>
                 </td>
 
                 {/* City / Year */}
-                <td className="p-5 text-center hidden md:table-cell">
-                  <div className="text-[13px] font-medium text-foreground">{entry.city_name}</div>
-                  <div className="text-[11px] text-muted-foreground font-mono mt-0.5">Batch {entry.batch_year}</div>
+                <td className="p-4 text-center hidden md:table-cell">
+                  <div style={{fontSize: 'var(--text-sm)', color: 'var(--foreground)'}}>
+                    {entry.city_name}
+                  </div>
+                  <div 
+                    className="font-mono mt-0.5" 
+                    style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
+                  >
+                    Batch {entry.batch_year}
+                  </div>
                 </td>
 
                 {/* Score */}
-                <td className="p-5 text-center">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-secondary border border-border/50 text-[13.5px] font-bold text-foreground">
-                    <ChevronUp className="w-3.5 h-3.5 text-emerald-500" />
+                <td className="p-4 text-center">
+                  <div 
+                    className="inline-flex items-center gap-1.5 px-3 py-1 font-bold transition-all duration-200 hover:scale-105" 
+                    style={{
+                      borderRadius: 'var(--radius-lg)',
+                      backgroundColor: 'var(--accent-secondary)',
+                      border: `1px solid var(--border)`,
+                      fontSize: 'var(--text-sm)',
+                      color: 'var(--foreground)'
+                    }}
+                  >
+                    <ChevronUp className="w-3.5 h-3.5" style={{color: 'var(--accent-primary)'}} />
                     {completion}%
                   </div>
                 </td>
 
                 {/* Difficulty Breakdown */}
-                <td className="p-5 hidden lg:table-cell">
-                  <div className="flex items-center justify-center gap-3 text-[12px] font-mono">
+                <td className="p-4 hidden lg:table-cell">
+                  <div 
+                    className="flex items-center justify-center gap-3 font-mono" 
+                    style={{fontSize: 'var(--text-sm)', color: 'var(--foreground)'}}
+                  >
                     <div className="flex flex-col items-center" title="Easy">
-                      <span className="text-emerald-500 font-bold">{entry.easy_completion.toFixed(1)}</span>
-                      <span className="text-[9px] text-muted-foreground uppercase">E</span>
+                      <span style={{color: 'var(--accent-primary)', fontWeight: 'bold'}}>{entry.easy_completion.toFixed(1)}</span>
+                      <span 
+                        className="uppercase" 
+                        style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
+                      >
+                        E
+                      </span>
                     </div>
-                    <div className="w-[1px] h-6 bg-border" />
+                    <div 
+                      className="w-[1px]" 
+                      style={{height: 'var(--spacing-sm)', backgroundColor: 'var(--border)'}}
+                    />
                     <div className="flex flex-col items-center" title="Medium">
-                      <span className="text-amber-500 font-bold">{entry.medium_completion.toFixed(1)}</span>
-                      <span className="text-[9px] text-muted-foreground uppercase">M</span>
+                      <span style={{color: 'var(--accent-primary)', fontWeight: 'bold'}}>{entry.medium_completion.toFixed(1)}</span>
+                      <span 
+                        className="uppercase" 
+                        style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
+                      >
+                        M
+                      </span>
                     </div>
-                    <div className="w-[1px] h-6 bg-border" />
+                    <div 
+                      className="w-[1px]" 
+                      style={{height: 'var(--spacing-sm)', backgroundColor: 'var(--border)'}}
+                    />
                     <div className="flex flex-col items-center" title="Hard">
-                      <span className="text-red-500 font-bold">{entry.hard_completion.toFixed(1)}</span>
-                      <span className="text-[9px] text-muted-foreground uppercase">H</span>
+                      <span style={{color: 'var(--accent-primary)', fontWeight: 'bold'}}>{entry.hard_completion.toFixed(1)}</span>
+                      <span 
+                        className="uppercase" 
+                        style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
+                      >
+                        H
+                      </span>
                     </div>
                   </div>
                 </td>
 
                 {/* Streak */}
-                <td className="p-5 text-center">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-500 text-[13px] font-bold border border-orange-500/20">
-                    <Flame className="w-4 h-4" />
+                <td className="p-4 text-center">
+                  <div 
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold transition-all duration-200 hover:scale-105" 
+                    style={{
+                      backgroundColor: 'var(--accent-primary)',
+                      border: `1px solid var(--border)`,
+                      fontSize: 'var(--text-sm)',
+                      color: 'var(--foreground)',
+                      borderRadius: 'var(--radius-full)'
+                    }}
+                  >
+                    <Flame className="w-4 h-4" style={{color: 'var(--accent-primary)'}} />
                     {entry.max_streak}
                   </div>
                 </td>
 
                 {/* Total Solved */}
-                <td className="p-5 text-right">
-                  <div className="inline-flex items-center gap-2 text-[14px] font-bold text-foreground">
+                <td className="p-4 text-right">
+                  <div 
+                    className="inline-flex items-center gap-2 font-bold transition-all duration-200 hover:scale-105" 
+                    style={{fontSize: 'var(--text-base)', color: 'var(--foreground)'}}
+                  >
                     {entry.total_solved}
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <CheckCircle2 className="w-4 h-4" style={{color: 'var(--accent-primary)'}} />
                   </div>
                 </td>
               </tr>

@@ -157,7 +157,7 @@ export default function PublicProfilePage() {
 
       // If refresh timed out, still show success for the upload
       if (apiError.message === 'Profile refresh timeout') {
-
+        alert('Profile image uploaded successfully!');
       }
     } finally {
       setUploading(false);
@@ -411,103 +411,86 @@ export default function PublicProfilePage() {
 
   return (
     <div className="w-full max-w-[1200px] mx-auto pb-16">
-
       {/* HERO SECTION */}
-      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border border-border rounded-3xl overflow-hidden shadow-sm mb-8 relative">
-        <div className="h-40 bg-gradient-to-r from-primary/20 via-amber-600/20 to-emerald-600/20 w-full" />
+      <div className="glass borderless p-8 mb-8" style={{borderRadius: 'var(--radius-xl)'}}>
+        <div className="flex items-center justify-between">
+          {/* LEFT: Profile Info */}
+          <div className="flex items-center gap-6">
+            {/* Profile Image */}
+            <div className="relative">
+              <div 
+                className="w-20 h-20 rounded-full overflow-hidden border-2 glass hover-glow transition-all duration-200 hover:scale-105" 
+                style={{borderColor: 'var(--border)'}}
+              >
+                {student.profileImageUrl ? (
+                  <img src={student.profileImageUrl} alt={student.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div 
+                    className="w-full h-full flex items-center justify-center font-bold text-primary-foreground" 
+                    style={{backgroundColor: 'var(--accent-primary)', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-xl)'}}
+                  >
+                    {initials}
+                  </div>
+                )}
+              </div>
+            </div>
 
-        <div className="px-8 sm:px-12 pb-8 flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-20 relative z-10">
-
-          <div className="relative group">
-            <div className="w-36 h-36 rounded-full border-4 border-card bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground overflow-hidden shadow-xl">
-              {student.profileImageUrl ? (
-                <img src={student.profileImageUrl} alt={student.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-primary via-amber-600 to-emerald-600 text-white flex items-center justify-center font-serif">
-                  {initials}
-                </div>
-              )}
+            {/* Name and Metadata */}
+            <div>
+              <h1 
+                className="font-bold mb-1" 
+                style={{fontSize: 'var(--text-3xl)', color: 'var(--foreground)'}}
+              >
+                {student.name}
+              </h1>
+              <p 
+                className="font-mono mb-3" 
+                style={{fontSize: 'var(--text-base)', color: 'var(--text-secondary)'}}
+              >
+                @{student.username}
+              </p>
+              
+              {/* Metadata */}
+              <div className="flex flex-wrap gap-3" style={{fontSize: 'var(--text-sm)', color: 'var(--text-secondary)'}}>
+                {student.batch && (
+                  <span className="flex items-center gap-1 px-3 py-1 rounded-full" style={{backgroundColor: 'var(--accent-primary)', color: 'var(--primary-foreground)', borderRadius: 'var(--radius-full)'}}>
+                    <GraduationCap className="w-4 h-4" />
+                    Batch {student.batch} {student.year && `(${student.year})`}
+                  </span>
+                )}
+                {student.city && (
+                  <span className="flex items-center gap-1 px-3 py-1 rounded-full" style={{backgroundColor: 'var(--accent-secondary)', color: 'var(--secondary-foreground)', borderRadius: 'var(--radius-full)'}}>
+                    <MapPin className="w-4 h-4" />
+                    {student.city}
+                  </span>
+                )}
+                <span className="flex items-center gap-1 px-3 py-1 rounded-full" style={{backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderRadius: 'var(--radius-full)'}}>
+                  ID: {student.enrollmentId}
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="flex-1 text-center sm:text-left">
-            <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
-              <h1 className="text-4xl font-black font-serif italic text-foreground tracking-tight">{student.name}</h1>
-            </div>
-            <div className="flex items-center justify-center sm:justify-start gap-2 mb-4">
-              <p className="text-muted-foreground font-mono text-lg">@{student.username}</p>
-              {canEdit() && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                  onClick={() => setShowUsernameEditModal(true)}
-                  title="Edit username"
-                >
-                  <Edit2 className="w-3 h-3" />
-                </Button>
-              )}
-            </div>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-[14px] font-medium text-muted-foreground">
-              {student.batch && (
-                <span className="bg-primary/10 px-4 py-2 rounded-full border border-primary/20 flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4" />
-                  Batch: {student.batch} {student.year && `(${student.year})`}
-                </span>
-              )}
-              {student.city && (
-                <span className="bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  {student.city}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex gap-4">
+          {/* RIGHT: Actions */}
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
-              className="flex h-8 text-[12px]"
-              onClick={() => setShowTopicProgressModal(true)}
+              onClick={() => setShowEditModal(true)}
+              className="hover-glow"
             >
-              <BarChart3 className="w-3 h-3 mr-2" />
-              Topic Progress
+              <Edit2 className="w-4 h-4" />
+              Edit Profile
             </Button>
 
-            {/* Show loading state while checking auth */}
-            {!authChecked ? (
-              <div className="hidden sm:flex items-center gap-2 px-3 h-8 text-[12px] text-muted-foreground">
-                <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></div>
-                Checking permissions...
-              </div>
-            ) : canEdit() ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden sm:flex h-8 text-[12px]"
-                onClick={() => setShowEditModal(true)}
-              >
-                <Edit2 className="w-3 h-3 mr-2" />
-                Edit Profile
-              </Button>
-            ) : (
-              (localStorage.getItem('accessToken') || document.cookie.split('; ').find(row => row.startsWith('accessToken='))) ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden sm:flex h-8 text-[12px]"
-                  onClick={() => setShowEditModal(true)}
-                >
-                  <Edit2 className="w-3 h-3 mr-2" />
-                  Edit Profile
-                </Button>
-              ) : (
-                <div className="hidden sm:flex items-center gap-2 px-3 h-8 text-[12px] text-muted-foreground">
-                  <span>Log in to edit profile</span>
-                </div>
-              )
-            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowTopicProgressModal(true)}
+              className="hover-glow"
+            >
+              <BarChart3 className="w-5 h-5" />
+            </Button>
           </div>
         </div>
       </div>
@@ -518,73 +501,85 @@ export default function PublicProfilePage() {
         <div className="lg:col-span-1 space-y-8">
 
           {/* OVERVIEW STATS */}
-          <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
-            <h3 className="font-bold text-foreground mb-6 text-[16px] uppercase tracking-wider flex items-center gap-2">
-              <Award className="w-5 h-5 text-amber-500" />
+          <div className="glass p-6" style={{borderRadius: 'var(--radius-lg)'}}>
+            <h3 
+              className="font-bold mb-6 flex items-center gap-2" 
+              style={{fontSize: 'var(--text-base)', color: 'var(--foreground)'}}
+            >
+              <Award className="w-5 h-5" style={{color: 'var(--accent-primary)'}} />
               Overview
             </h3>
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-secondary/50 rounded-xl">
-                <span className="text-[14px] font-medium text-muted-foreground flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-amber-500" />
+              <div className="flex justify-between items-center p-4 hover-glow transition-all duration-200" style={{backgroundColor: 'var(--accent-secondary)', borderRadius: 'var(--radius-lg)'}}>
+                <span className="font-medium flex items-center gap-2" style={{fontSize: 'var(--text-sm)', color: 'var(--text-secondary)'}}>
+                  <Trophy className="w-4 h-4" style={{color: 'var(--accent-primary)'}} />
                   Global Rank
                 </span>
-                <span className="font-bold text-foreground font-mono text-xl">#{leaderboard?.globalRank || '-'}</span>
+                <span className="font-bold font-mono" style={{fontSize: 'var(--text-xl)', color: 'var(--foreground)'}}>
+                  #{leaderboard?.globalRank || '-'}
+                </span>
               </div>
 
-              <div className="flex justify-between items-center p-4 bg-primary/10 border border-primary/20 rounded-xl">
-                <span className="text-[14px] font-medium text-primary flex items-center gap-2">
-                  <Target className="w-4 h-4" />
+              <div className="flex justify-between items-center p-4 hover-glow transition-all duration-200" style={{backgroundColor: 'var(--accent-secondary)', borderRadius: 'var(--radius-lg)'}}>
+                <span className="font-medium flex items-center gap-2" style={{fontSize: 'var(--text-sm)', color: 'var(--text-secondary)'}}>
+                  <Target className="w-4 h-4" style={{color: 'var(--accent-primary)'}} />
                   City Rank
                 </span>
-                <span className="font-bold text-primary font-mono text-xl">#{leaderboard?.cityRank || '-'}</span>
+                <span className="font-bold font-mono" style={{fontSize: 'var(--text-xl)', color: 'var(--foreground)'}}>
+                  #{leaderboard?.cityRank || '-'}
+                </span>
               </div>
 
-              <div className="flex justify-between items-center p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-                <span className="text-[14px] font-medium text-orange-700 dark:text-orange-400 flex items-center gap-2">
-                  <Flame className="w-4 h-4" />
+              <div className="flex justify-between items-center p-4 hover-glow transition-all duration-200" style={{backgroundColor: 'var(--accent-secondary)', borderRadius: 'var(--radius-lg)'}}>
+                <span className="font-medium flex items-center gap-2" style={{fontSize: 'var(--text-sm)', color: 'var(--text-secondary)'}}>
+                  <Flame className="w-4 h-4" style={{color: 'var(--accent-primary)'}} />
                   Max Streak
                 </span>
-                <span className="font-bold text-orange-700 dark:text-orange-400 font-mono text-xl">{streak?.maxStreak || 0}</span>
+                <span className="font-bold font-mono" style={{fontSize: 'var(--text-xl)', color: 'var(--foreground)'}}>
+                  {streak?.maxStreak || 0}
+                </span>
               </div>
 
               {/* Current Streak with new logic */}
-              <div className={`flex justify-between items-center p-4 rounded-xl ${
-                (streak?.count === 0 && streak?.hasQuestion === false) 
-                  ? 'bg-orange-500/5 border border-orange-500/10' 
-                  : 'bg-orange-500/10 border border-orange-500/20'
-              }`}>
+              <div className="flex justify-between items-center p-4 hover-glow transition-all duration-200" style={{
+                backgroundColor: (streak?.count === 0 && streak?.hasQuestion === false) 
+                  ? 'var(--muted)' 
+                  : 'var(--accent-secondary)',
+                borderRadius: 'var(--radius-lg)'
+              }}>
                 <div className="flex flex-col gap-1">
-                  <span className={`text-[14px] font-medium flex items-center gap-2 ${
-                    (streak?.count === 0 && streak?.hasQuestion === false)
-                      ? 'text-orange-600/60 dark:text-orange-400/60'
-                      : 'text-orange-700 dark:text-orange-400'
-                  }`}>
-                    <Flame className="w-4 h-4" />
+                  <span className="font-medium flex items-center gap-2" style={{
+                    fontSize: 'var(--text-sm)', 
+                    color: (streak?.count === 0 && streak?.hasQuestion === false)
+                      ? 'var(--text-secondary)'
+                      : 'var(--text-secondary)'
+                  }}>
+                    <Flame className="w-4 h-4" style={{color: 'var(--accent-primary)'}} />
                     Current Streak
                     {(streak?.count === 0 && streak?.hasQuestion === false) && (
-                      <span className="text-[11px] font-normal text-orange-600/50 dark:text-orange-400/50">
+                      <span style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>
                         (Frozen)
                       </span>
                     )}
                   </span>
                   {(streak?.count === 0 && streak?.hasQuestion === false) && (
-                    <span className="text-[11px] text-muted-foreground">
+                    <span style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>
                       No question uploaded today
                     </span>
                   )}
                 </div>
                 <div className="text-right">
-                  <span className={`font-bold font-mono text-xl ${
-                    (streak?.count === 0 && streak?.hasQuestion === false)
-                      ? 'text-orange-600/60 dark:text-orange-400/60'
-                      : 'text-orange-700 dark:text-orange-400'
-                  }`}>
+                  <span className="font-bold font-mono" style={{
+                    fontSize: 'var(--text-xl)', 
+                    color: (streak?.count === 0 && streak?.hasQuestion === false)
+                      ? 'var(--text-secondary)'
+                      : 'var(--foreground)'
+                  }}>
                     {streak?.currentStreak || 0}
                   </span>
                   {streak && streak.count && streak.count > 0 && (
-                    <div className="text-[10px] text-muted-foreground">
+                    <div style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>
                       {streak.count} submission{streak.count !== 1 ? 's' : ''} today
                     </div>
                   )}
@@ -594,88 +589,124 @@ export default function PublicProfilePage() {
           </div>
 
           {/* FIXED INFO */}
-          <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
-            <h3 className="font-bold text-foreground mb-6 text-[16px] uppercase tracking-wider flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
+          <div className="glass p-6" style={{borderRadius: 'var(--radius-lg)'}}>
+            <h3 
+              className="font-bold mb-6 flex items-center gap-2" 
+              style={{fontSize: 'var(--text-base)', color: 'var(--foreground)'}}
+            >
+              <Users className="w-5 h-5" style={{color: 'var(--accent-primary)'}} />
               Profile Information
             </h3>
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-secondary/50 rounded-xl">
-                <span className="text-[14px] font-medium text-muted-foreground">Name</span>
-                <span className="font-bold text-foreground">{student.name || '-'}</span>
+              <div className="flex justify-between items-center p-4 hover-glow transition-all duration-200" style={{backgroundColor: 'var(--accent-secondary)', borderRadius: 'var(--radius-lg)'}}>
+                <span className="font-medium" style={{fontSize: 'var(--text-sm)', color: 'var(--text-secondary)'}}>Name</span>
+                <span className="font-bold" style={{fontSize: 'var(--text-base)', color: 'var(--foreground)'}}>{student.name || '-'}</span>
               </div>
 
-
-              <div className="flex justify-between items-center p-4 bg-secondary/50 rounded-xl">
-                <span className="text-[14px] font-medium text-muted-foreground">Enrollment ID</span>
-                <span className="font-mono text-sm text-foreground">{student.enrollmentId || '-'}</span>
+              <div className="flex justify-between items-center p-4 hover-glow transition-all duration-200" style={{backgroundColor: 'var(--accent-secondary)', borderRadius: 'var(--radius-lg)'}}>
+                <span className="font-medium" style={{fontSize: 'var(--text-sm)', color: 'var(--text-secondary)'}}>Enrollment ID</span>
+                <span className="font-mono" style={{fontSize: 'var(--text-sm)', color: 'var(--foreground)'}}>{student.enrollmentId || '-'}</span>
               </div>
 
-              <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${student.leetcode ? 'bg-amber-500/10 border-amber-500/20' : 'bg-muted/30 border-dashed border-border opacity-60'}`}>
-                <div className="w-10 h-10 bg-amber-500 text-white rounded-lg flex items-center justify-center font-bold text-lg">
+              <div className="flex items-center gap-4 p-4 hover-glow transition-all duration-200" style={{
+                backgroundColor: student.leetcode ? 'var(--accent-secondary)' : 'var(--muted)',
+                borderRadius: 'var(--radius-lg)',
+                border: `1px solid ${student.leetcode ? 'var(--border)' : 'var(--border)'}`
+              }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold" style={{
+                  backgroundColor: student.leetcode ? 'var(--accent-primary)' : 'var(--muted)',
+                  color: student.leetcode ? 'var(--primary-foreground)' : 'var(--text-secondary)',
+                  borderRadius: 'var(--radius-md)'
+                }}>
                   <Code className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-[14px] font-bold">LeetCode</div>
-                  <div className="text-[12px] opacity-80 font-mono">{student.leetcode || 'Not linked'}</div>
+                  <div className="font-bold" style={{fontSize: 'var(--text-sm)', color: 'var(--foreground)'}}>LeetCode</div>
+                  <div className="font-mono" style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>{student.leetcode || 'Not linked'}</div>
                 </div>
-                {student.leetcode && <CheckCircle2 className="w-5 h-5 text-amber-500" />}
+                {student.leetcode && <CheckCircle2 className="w-5 h-5" style={{color: 'var(--accent-primary)'}} />}
               </div>
 
-              <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${student.gfg ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-muted/30 border-dashed border-border opacity-60'}`}>
-                <div className="w-10 h-10 bg-emerald-500 text-white rounded-lg flex items-center justify-center font-bold text-lg">
+              <div className="flex items-center gap-4 p-4 hover-glow transition-all duration-200" style={{
+                backgroundColor: student.gfg ? 'var(--accent-secondary)' : 'var(--muted)',
+                borderRadius: 'var(--radius-lg)',
+                border: `1px solid ${student.gfg ? 'var(--border)' : 'var(--border)'}`
+              }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold" style={{
+                  backgroundColor: student.gfg ? 'var(--accent-primary)' : 'var(--muted)',
+                  color: student.gfg ? 'var(--primary-foreground)' : 'var(--text-secondary)',
+                  borderRadius: 'var(--radius-md)'
+                }}>
                   <Code className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-[14px] font-bold">GeeksforGeeks</div>
-                  <div className="text-[12px] opacity-80 font-mono">{student.gfg || 'Not linked'}</div>
+                  <div className="font-bold" style={{fontSize: 'var(--text-sm)', color: 'var(--foreground)'}}>GeeksforGeeks</div>
+                  <div className="font-mono" style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>{student.gfg || 'Not linked'}</div>
                 </div>
-                {student.gfg && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+                {student.gfg && <CheckCircle2 className="w-5 h-5" style={{color: 'var(--accent-primary)'}} />}
               </div>
             </div>
           </div>
 
           {/* EDITABLE SOCIAL LINKS */}
-          <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
-            <h3 className="font-bold text-foreground mb-6 text-[16px] uppercase tracking-wider flex items-center gap-2">
-              <LinkIcon className="w-5 h-5 text-primary" />
+          <div className="glass p-6" style={{borderRadius: 'var(--radius-lg)'}}>
+            <h3 
+              className="font-bold mb-6 flex items-center gap-2" 
+              style={{fontSize: 'var(--text-base)', color: 'var(--foreground)'}}
+            >
+              <LinkIcon className="w-5 h-5" style={{color: 'var(--accent-primary)'}} />
               Social Links
             </h3>
 
             <div className="space-y-4">
-              <a href={student.github || '#'} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${student.github ? 'bg-secondary/50 border-border hover:border-primary/50 hover:shadow-md' : 'bg-muted/30 border-dashed border-border opacity-60 pointer-events-none'}`}>
-                <div className="w-10 h-10 bg-gray-900 text-white rounded-lg flex items-center justify-center">
+              <a href={student.github || '#'} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-4 p-4 hover-glow transition-all duration-200 ${student.github ? '' : 'opacity-60 pointer-events-none'}`} style={{
+                backgroundColor: student.github ? 'var(--accent-secondary)' : 'var(--muted)',
+                borderRadius: 'var(--radius-lg)',
+                border: `1px solid ${student.github ? 'var(--border)' : 'var(--border)'}`
+              }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold" style={{
+                  backgroundColor: student.github ? 'var(--accent-primary)' : 'var(--muted)',
+                  color: student.github ? 'var(--primary-foreground)' : 'var(--text-secondary)',
+                  borderRadius: 'var(--radius-md)'
+                }}>
                   <Github className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-[14px] font-bold text-foreground">GitHub</div>
-                  <div className="text-[12px] text-muted-foreground font-mono truncate">{student.github ? 'Connected' : 'Not connected'}</div>
+                  <div className="font-bold" style={{fontSize: 'var(--text-sm)', color: 'var(--foreground)'}}>GitHub</div>
+                  <div className="font-mono" style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>{student.github ? 'Connected' : 'Not connected'}</div>
                 </div>
-                {student.github && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                {student.github && <CheckCircle2 className="w-5 h-5" style={{color: 'var(--accent-primary)'}} />}
               </a>
 
-              <a href={student.linkedin || '#'} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${student.linkedin ? 'bg-blue-500/10 border-blue-500/20 hover:border-blue-500/40 hover:shadow-md text-blue-600 dark:text-blue-400' : 'bg-muted/30 border-dashed border-border opacity-60 pointer-events-none'}`}>
-                <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center">
+              <a href={student.linkedin || '#'} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-4 p-4 hover-glow transition-all duration-200 ${student.linkedin ? '' : 'opacity-60 pointer-events-none'}`} style={{
+                backgroundColor: student.linkedin ? 'var(--accent-secondary)' : 'var(--muted)',
+                borderRadius: 'var(--radius-lg)',
+                border: `1px solid ${student.linkedin ? 'var(--border)' : 'var(--border)'}`
+              }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold" style={{
+                  backgroundColor: student.linkedin ? 'var(--accent-primary)' : 'var(--muted)',
+                  color: student.linkedin ? 'var(--primary-foreground)' : 'var(--text-secondary)',
+                  borderRadius: 'var(--radius-md)'
+                }}>
                   <Linkedin className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-[14px] font-bold">LinkedIn</div>
-                  <div className="text-[12px] opacity-80 font-mono truncate">{student.linkedin ? 'Connected' : 'Not linked'}</div>
+                  <div className="font-bold" style={{fontSize: 'var(--text-sm)', color: 'var(--foreground)'}}>LinkedIn</div>
+                  <div className="font-mono" style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>{student.linkedin ? 'Connected' : 'Not linked'}</div>
                 </div>
-                {student.linkedin && <CheckCircle2 className="w-5 h-5 text-blue-500" />}
+                {student.linkedin && <CheckCircle2 className="w-5 h-5" style={{color: 'var(--accent-primary)'}} />}
               </a>
             </div>
 
             {canEdit() && (
-              <Button variant="outline" className="w-full mt-6 text-[12px] py-2 h-8" onClick={() => setShowEditModal(true)}>
+              <Button 
+                variant="outline" 
+                className="w-full mt-6 hover-glow transition-all duration-200" 
+                onClick={() => setShowEditModal(true)}
+                style={{borderRadius: 'var(--radius-lg)'}}
+              >
                 Edit Social Links
-              </Button>
-            )}
-            {/* Fallback: Show edit button if user has token but canEdit fails */}
-            {!canEdit() && (localStorage.getItem('accessToken') || document.cookie.split('; ').find(row => row.startsWith('accessToken='))) && (
-              <Button variant="outline" className="w-full mt-6 text-[12px] py-2 h-8 text-orange-600 border-orange-600/30 hover:border-orange-600/50" onClick={() => setShowEditModal(true)}>
-                Edit Social Links (Debug)
               </Button>
             )}
           </div>
@@ -685,54 +716,145 @@ export default function PublicProfilePage() {
         <div className="lg:col-span-3 space-y-8">
 
           {/* SOLVING STATISTICS */}
-          <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
+          <div className="glass p-8" style={{borderRadius: 'var(--radius-lg)'}}>
             <div className="flex items-end justify-between mb-8">
               <div>
-                <h2 className="text-3xl font-bold font-serif italic text-foreground mb-2 flex items-center gap-3">
-                  <TrendingUp className="w-8 h-8 text-primary" />
+                <h2 
+                  className="font-bold mb-2 flex items-center gap-3" 
+                  style={{fontSize: 'var(--text-3xl)', color: 'var(--foreground)'}}
+                >
+                  <TrendingUp className="w-8 h-8" style={{color: 'var(--accent-primary)'}} />
                   Problem Solving Stats
                 </h2>
-                <p className="text-[14px] text-muted-foreground">Track your coding journey across all difficulty levels.</p>
+                <p style={{fontSize: 'var(--text-sm)', color: 'var(--text-secondary)'}}>Track your coding journey across all difficulty levels.</p>
               </div>
               <div className="text-right">
-                <div className="text-5xl font-black font-serif italic text-primary">{codingStats?.totalSolved || 0}</div>
-                <div className="text-[12px] uppercase tracking-widest font-mono text-muted-foreground mt-1">Total Solved</div>
+                <div 
+                  className="font-black" 
+                  style={{fontSize: 'var(--text-5xl)', color: 'var(--accent-primary)'}}
+                >
+                  {codingStats?.totalSolved || 0}
+                </div>
+                <div 
+                  className="font-mono mt-1" 
+                  style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em'}}
+                >
+                  Total Solved
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-6 mb-8">
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6 text-center hover:shadow-md transition-shadow">
-                <div className="text-[12px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3">Easy</div>
-                <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">{codingStats?.easy?.solved || 0}</div>
-                <div className="text-[11px] text-muted-foreground mt-2">/ {codingStats?.easy?.assigned || 0} assigned</div>
-                <div className="w-full bg-emerald-500/20 rounded-full h-2 mt-3">
+              <div className="p-6 text-center hover-glow transition-all duration-200" style={{
+                backgroundColor: 'var(--accent-secondary)', 
+                borderRadius: 'var(--radius-lg)'
+              }}>
+                <div 
+                  className="font-bold mb-3" 
+                  style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em'}}
+                >
+                  Easy
+                </div>
+                <div 
+                  className="font-bold" 
+                  style={{fontSize: 'var(--text-3xl)', color: 'var(--foreground)'}}
+                >
+                  {codingStats?.easy?.solved || 0}
+                </div>
+                <div 
+                  className="mt-2" 
+                  style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
+                >
+                  / {codingStats?.easy?.assigned || 0} assigned
+                </div>
+                <div 
+                  className="w-full rounded-full mt-3" 
+                  style={{height: 'var(--spacing-xs)', backgroundColor: 'var(--border)', borderRadius: 'var(--radius-full)'}}
+                >
                   <div
-                    className="bg-emerald-500 h-2 rounded-full"
-                    style={{ width: `${codingStats?.easy?.assigned ? (codingStats.easy.solved / codingStats.easy.assigned) * 100 : 0}%` }}
+                    className="rounded-full"
+                    style={{
+                      width: `${codingStats?.easy?.assigned ? (codingStats.easy.solved / codingStats.easy.assigned) * 100 : 0}%`,
+                      height: '100%',
+                      backgroundColor: 'var(--accent-primary)',
+                      borderRadius: 'var(--radius-full)'
+                    }}
                   />
                 </div>
               </div>
 
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 text-center hover:shadow-md transition-shadow">
-                <div className="text-[12px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500 mb-3">Medium</div>
-                <div className="text-3xl font-bold text-amber-700 dark:text-amber-400">{codingStats?.medium?.solved || 0}</div>
-                <div className="text-[11px] text-muted-foreground mt-2">/ {codingStats?.medium?.assigned || 0} assigned</div>
-                <div className="w-full bg-amber-500/20 rounded-full h-2 mt-3">
+              <div className="p-6 text-center hover-glow transition-all duration-200" style={{
+                backgroundColor: 'var(--accent-secondary)', 
+                borderRadius: 'var(--radius-lg)'
+              }}>
+                <div 
+                  className="font-bold mb-3" 
+                  style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em'}}
+                >
+                  Medium
+                </div>
+                <div 
+                  className="font-bold" 
+                  style={{fontSize: 'var(--text-3xl)', color: 'var(--foreground)'}}
+                >
+                  {codingStats?.medium?.solved || 0}
+                </div>
+                <div 
+                  className="mt-2" 
+                  style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
+                >
+                  / {codingStats?.medium?.assigned || 0} assigned
+                </div>
+                <div 
+                  className="w-full rounded-full mt-3" 
+                  style={{height: 'var(--spacing-xs)', backgroundColor: 'var(--border)', borderRadius: 'var(--radius-full)'}}
+                >
                   <div
-                    className="bg-amber-500 h-2 rounded-full"
-                    style={{ width: `${codingStats?.medium?.assigned ? (codingStats.medium.solved / codingStats.medium.assigned) * 100 : 0}%` }}
+                    className="rounded-full"
+                    style={{
+                      width: `${codingStats?.medium?.assigned ? (codingStats.medium.solved / codingStats.medium.assigned) * 100 : 0}%`,
+                      height: '100%',
+                      backgroundColor: 'var(--accent-primary)',
+                      borderRadius: 'var(--radius-full)'
+                    }}
                   />
                 </div>
               </div>
 
-              <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center hover:shadow-md transition-shadow">
-                <div className="text-[12px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400 mb-3">Hard</div>
-                <div className="text-3xl font-bold text-red-700 dark:text-red-400">{codingStats?.hard?.solved || 0}</div>
-                <div className="text-[11px] text-muted-foreground mt-2">/ {codingStats?.hard?.assigned || 0} assigned</div>
-                <div className="w-full bg-red-500/20 rounded-full h-2 mt-3">
+              <div className="p-6 text-center hover-glow transition-all duration-200" style={{
+                backgroundColor: 'var(--accent-secondary)', 
+                borderRadius: 'var(--radius-lg)'
+              }}>
+                <div 
+                  className="font-bold mb-3" 
+                  style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em'}}
+                >
+                  Hard
+                </div>
+                <div 
+                  className="font-bold" 
+                  style={{fontSize: 'var(--text-3xl)', color: 'var(--foreground)'}}
+                >
+                  {codingStats?.hard?.solved || 0}
+                </div>
+                <div 
+                  className="mt-2" 
+                  style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
+                >
+                  / {codingStats?.hard?.assigned || 0} assigned
+                </div>
+                <div 
+                  className="w-full rounded-full mt-3" 
+                  style={{height: 'var(--spacing-xs)', backgroundColor: 'var(--border)', borderRadius: 'var(--radius-full)'}}
+                >
                   <div
-                    className="bg-red-500 h-2 rounded-full"
-                    style={{ width: `${codingStats?.hard?.assigned ? (codingStats.hard.solved / codingStats.hard.assigned) * 100 : 0}%` }}
+                    className="rounded-full"
+                    style={{
+                      width: `${codingStats?.hard?.assigned ? (codingStats.hard.solved / codingStats.hard.assigned) * 100 : 0}%`,
+                      height: '100%',
+                      backgroundColor: 'var(--accent-primary)',
+                      borderRadius: 'var(--radius-full)'
+                    }}
                   />
                 </div>
               </div>
@@ -740,20 +862,23 @@ export default function PublicProfilePage() {
 
             {/* ACTIVITY HEATMAP */}
             <div>
-              <h3 className="text-[16px] font-bold text-foreground mb-4 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-primary" />
+              <h3 
+                className="font-bold mb-4 flex items-center gap-2" 
+                style={{fontSize: 'var(--text-base)', color: 'var(--foreground)'}}
+              >
+                <Activity className="w-5 h-5" style={{color: 'var(--accent-primary)'}} />
                 Activity Heatmap (Full Year)
               </h3>
               {heatmap && heatmap.length > 0 ? (
-                <div className="bg-card border border-border rounded-2xl p-4">
+                <div className="glass p-4" style={{borderRadius: 'var(--radius-lg)'}}>
                   {/* GitHub-style horizontal layout */}
                   <div className="flex flex-col gap-2">
                     {/* Month labels */}
                     <div className="flex items-start gap-2">
-                      <div className="w-10 h-3 flex items-center justify-end text-[10px] text-muted-foreground">
+                      <div className="w-10 h-3 flex items-center justify-end" style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>
                         {/* Empty space for day labels */}
                       </div>
-                      <div className="flex-1 flex justify-between text-[10px] text-muted-foreground">
+                      <div className="flex-1 flex justify-between" style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>
                         <span>Jan</span>
                         <span>Feb</span>
                         <span>Mar</span>
@@ -772,7 +897,7 @@ export default function PublicProfilePage() {
                     {/* Heatmap grid */}
                     <div className="flex items-start gap-2">
                       {/* Day labels */}
-                      <div className="flex flex-col gap-0.5 text-[9px] text-muted-foreground w-10">
+                      <div className="flex flex-col gap-0.5 w-10" style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>
                         <div className="h-3 flex items-center justify-end">Mon</div>
                         <div className="h-3"></div>
                         <div className="h-3"></div>
@@ -827,23 +952,23 @@ export default function PublicProfilePage() {
                   </div>
 
                   {/* Legend and stats */}
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                  <div className="flex items-center justify-between mt-3 pt-3" style={{borderTop: `1px solid var(--border)`}}>
+                    <div className="flex items-center gap-3" style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>
                       <span>Less</span>
                       <div className="flex gap-0.5">
-                        <div className="w-3 h-3 bg-secondary/30 border border-border/50"></div>
-                        <div className="w-3 h-3 bg-primary/20 border border-primary/30"></div>
-                        <div className="w-3 h-3 bg-primary/40 border border-primary/50"></div>
-                        <div className="w-3 h-3 bg-primary/60 border border-primary/70"></div>
-                        <div className="w-3 h-3 bg-primary border border-primary"></div>
+                        <div className="w-3 h-3" style={{backgroundColor: 'var(--muted)', border: `1px solid var(--border)`}}></div>
+                        <div className="w-3 h-3" style={{backgroundColor: 'var(--primary)', opacity: 0.2, border: `1px solid var(--border)`}}></div>
+                        <div className="w-3 h-3" style={{backgroundColor: 'var(--primary)', opacity: 0.4, border: `1px solid var(--border)`}}></div>
+                        <div className="w-3 h-3" style={{backgroundColor: 'var(--primary)', opacity: 0.6, border: `1px solid var(--border)`}}></div>
+                        <div className="w-3 h-3" style={{backgroundColor: 'var(--primary)', border: `1px solid var(--border)`}}></div>
                       </div>
                       <span>More</span>
                     </div>
 
                     {/* Stats summary */}
-                    <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+                    <div className="flex items-center gap-4" style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}>
                       <span className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-primary/20 border border-primary/30"></div>
+                        <div className="w-3 h-3" style={{backgroundColor: 'var(--primary)', opacity: 0.2, border: `1px solid var(--border)`}}></div>
                         {heatmap.reduce((sum: number, h: HeatmapData) => sum + (h.count > 0 ? 1 : 0), 0)} active days
                       </span>
                       <span className="flex items-center gap-1">
@@ -854,53 +979,69 @@ export default function PublicProfilePage() {
                   </div>
                 </div>
               ) : (
-                <div className="h-24 border border-dashed border-border rounded-2xl flex items-center justify-center text-[13px] text-muted-foreground bg-card">
+                <div className="p-8 flex items-center justify-center" style={{
+                  height: 'var(--spacing-2xl)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: `1px dashed var(--border)`,
+                  backgroundColor: 'var(--card)'
+                }}>
                   <div className="text-center">
-                    <Activity className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-                    <div>No activity data available yet. Start solving!</div>
+                    <Activity className="w-6 h-6 mx-auto mb-2" style={{color: 'var(--text-secondary)'}} />
+                    <div style={{fontSize: 'var(--text-sm)', color: 'var(--text-secondary)'}}>No activity data available yet. Start solving!</div>
                   </div>
                 </div>
               )}
             </div>
-          </div>
 
           {/* RECENT ACTIVITY */}
-          <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
-            <h3 className="font-bold text-foreground mb-6 text-[16px] uppercase tracking-wider flex items-center gap-2">
-              <Clock className="w-5 h-5 text-primary" />
+          <div className="glass p-8" style={{borderRadius: 'var(--radius-lg)'}}>
+            <h3 
+              className="font-bold mb-6 flex items-center gap-2" 
+              style={{fontSize: 'var(--text-base)', color: 'var(--foreground)'}}
+            >
+              <Clock className="w-5 h-5" style={{color: 'var(--accent-primary)'}} />
               Recent Activity
             </h3>
 
             {recentActivity && recentActivity.length > 0 ? (
               <div className="space-y-4">
                 {recentActivity.map((activity: RecentActivity, idx: number) => {
-                  let levelColor = "text-muted-foreground";
-                  let levelBg = "bg-secondary/50";
-                  if (activity.difficulty === 'EASY') {
-                    levelColor = "text-emerald-600 dark:text-emerald-400";
-                    levelBg = "bg-emerald-500/10 border-emerald-500/20";
-                  }
-                  if (activity.difficulty === 'MEDIUM') {
-                    levelColor = "text-amber-600 dark:text-amber-500";
-                    levelBg = "bg-amber-500/10 border-amber-500/20";
-                  }
-                  if (activity.difficulty === 'HARD') {
-                    levelColor = "text-red-600 dark:text-red-400";
-                    levelBg = "bg-red-500/10 border-red-500/20";
-                  }
+                  const levelBg = 'var(--accent-secondary)';
+                  const levelColor = 'var(--text-secondary)';
 
                   return (
-                    <div key={idx} className="flex items-center justify-between p-5 rounded-xl border border-border/50 hover:bg-secondary/50 transition-all hover:shadow-sm">
+                    <div 
+                      key={idx} 
+                      className="flex items-center justify-between p-5 hover-glow transition-all duration-200" 
+                      style={{
+                        backgroundColor: levelBg,
+                        borderRadius: 'var(--radius-lg)',
+                        border: `1px solid var(--border)`
+                      }}
+                    >
                       <div className="flex items-center gap-4 flex-1">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${levelBg}`}>
-                          <CheckCircle2 className={`w-5 h-5 ${levelColor}`} />
+                        <div 
+                          className="w-10 h-10 rounded-lg flex items-center justify-center" 
+                          style={{
+                            backgroundColor: 'var(--accent-primary)',
+                            color: 'var(--primary-foreground)',
+                            borderRadius: 'var(--radius-md)'
+                          }}
+                        >
+                          <CheckCircle2 className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
-                          <div className="font-semibold text-[15px] text-foreground hover:text-primary cursor-pointer transition-colors"
-                            onClick={() => activity.question_link && window.open(activity.question_link, '_blank', 'noopener,noreferrer')}>
+                          <div 
+                            className="font-semibold cursor-pointer transition-colors" 
+                            style={{fontSize: 'var(--text-base)', color: 'var(--foreground)'}}
+                            onClick={() => activity.question_link && window.open(activity.question_link, '_blank', 'noopener,noreferrer')}
+                          >
                             {activity.question_name}
                           </div>
-                          <div className="text-[12px] font-mono text-muted-foreground mt-1 flex items-center gap-4">
+                          <div 
+                            className="font-mono mt-1 flex items-center gap-4" 
+                            style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
+                          >
                             <span className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
                               {new Date(activity.solvedAt).toLocaleDateString()}
@@ -912,24 +1053,31 @@ export default function PublicProfilePage() {
                           </div>
                         </div>
                       </div>
-                      <div className={`text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg ${levelBg} ${levelColor}`}>
+                      <div 
+                        className="font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg" 
+                        style={{
+                          fontSize: 'var(--text-xs)',
+                          backgroundColor: levelBg,
+                          color: levelColor,
+                          borderRadius: 'var(--radius-md)'
+                        }}
+                      >
                         {activity.difficulty}
                       </div>
                     </div>
                   );
-
                 })}
               </div>
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <div className="text-[16px]">No recent submissions.</div>
-                <div className="text-[14px] mt-2">Start solving problems to see your activity here!</div>
+              <div className="text-center py-12" style={{color: 'var(--text-secondary)'}}>
+                <Target className="w-12 h-12 mx-auto mb-4" style={{color: 'var(--text-secondary)'}} />
+                <div style={{fontSize: 'var(--text-base)'}}>No recent submissions.</div>
+                <div style={{fontSize: 'var(--text-sm)', marginTop: 'var(--spacing-sm)'}}>Start solving problems to see your activity here!</div>
               </div>
             )}
           </div>
-
         </div>
+      </div>
       </div>
 
       <EditProfileModal

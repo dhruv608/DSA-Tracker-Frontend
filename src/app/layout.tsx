@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 
 import { Geist, Geist_Mono } from "next/font/google";
-
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
-
 
 
 const geistSans = Geist({
@@ -15,8 +14,6 @@ const geistSans = Geist({
 
 });
 
-
-
 const geistMono = Geist_Mono({
 
   variable: "--font-geist-mono",
@@ -25,8 +22,6 @@ const geistMono = Geist_Mono({
 
 });
 
-
-
 export const metadata: Metadata = {
 
   title: "BruteForce",
@@ -34,8 +29,6 @@ export const metadata: Metadata = {
   description: "BruteForce Executive Portal",
 
 };
-
-
 
 export default function RootLayout({
 
@@ -69,12 +62,13 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <QueryProvider>
-          {children}
-        </QueryProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <QueryProvider>
+            {children}
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
 
 }
-

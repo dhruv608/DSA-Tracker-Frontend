@@ -45,7 +45,10 @@ export function OnboardingModal({ isOpen, user, onClose }: OnboardingModalProps)
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div 
+      className="fixed inset-0 flex items-center justify-center z-50" 
+      style={{backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)'}}
+    >
       <Modal width="max-w-[480px]">
         <ProgressBar step={step} />
         {step === 1 && <OnboardingStep1 data={data} setData={setData} setStep={setStep} />}

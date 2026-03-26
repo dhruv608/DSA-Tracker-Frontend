@@ -144,8 +144,8 @@ export default function AdminDashboardPage() {
           {/* Breakdown Charts/KPIs */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* By Level */}
-            <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col">
-              <div className="px-6 py-4 border-b border-border bg-muted/20 flex flex-row items-center gap-3">
+            <div className="glass hover-glow rounded-xl shadow-sm overflow-hidden flex flex-col">
+              <div className="px-6 py-4 border-b border-glass-border bg-muted/20 flex flex-row items-center gap-3">
                 <BarChart3 className="w-5 h-5 text-primary" />
                 <h3 className="font-semibold text-foreground">By Difficulty</h3>
               </div>
@@ -157,8 +157,8 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* By Type */}
-            <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col">
-              <div className="px-6 py-4 border-b border-border bg-muted/20 flex flex-row items-center gap-3">
+            <div className="glass hover-glow rounded-xl shadow-sm overflow-hidden flex flex-col">
+              <div className="px-6 py-4 border-b border-glass-border bg-muted/20 flex flex-row items-center gap-3">
                 <Target className="w-5 h-5 text-primary" />
                 <h3 className="font-semibold text-foreground">By Type</h3>
               </div>
@@ -169,8 +169,8 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* By Platform */}
-            <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col">
-              <div className="px-6 py-4 border-b border-border bg-muted/20 flex flex-row items-center gap-3">
+            <div className="glass hover-glow rounded-xl shadow-sm overflow-hidden flex flex-col">
+              <div className="px-6 py-4 border-b border-glass-border bg-muted/20 flex flex-row items-center gap-3">
                 <Globe className="w-5 h-5 text-primary" />
                 <h3 className="font-semibold text-foreground">By Platform</h3>
               </div>
@@ -202,7 +202,7 @@ export default function AdminDashboardPage() {
 
 function StatCard({ title, value, icon }: { title: string, value: number, icon: React.ReactNode }) {
   return (
-    <div className="bg-card border border-border rounded-xl p-6 shadow-sm flex items-center gap-4 hover:border-primary/30 transition-colors group">
+    <div className="glass hover-glow rounded-xl p-6 shadow-sm flex items-center gap-4 group">
       <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
         {icon}
       </div>

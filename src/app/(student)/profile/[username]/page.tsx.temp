@@ -1,0 +1,8 @@
+// Temporary file to test syntax
+export default function TestFunction() {
+  return (
+    <div>
+      <p>Test</p>
+    </div>
+  );
+}

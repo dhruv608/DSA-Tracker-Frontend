@@ -85,7 +85,7 @@ export function LoginForm() {
           value={emailOrUsername}
           onChange={e => setEmailOrUsername(e.target.value)}
           disabled={loading}
-          className="h-11 bg-muted/40 rounded-lg focus-visible:ring-2 focus-visible:ring-primary/50"
+          className="h-11 rounded-lg"
         />
       </div>
 
@@ -115,7 +115,7 @@ export function LoginForm() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             disabled={loading}
-            className="h-11 bg-muted/40 rounded-lg pr-10 focus-visible:ring-2 focus-visible:ring-primary/50"
+            className="h-11 rounded-lg pr-10"
           />
 
           {/* 👁️ TOGGLE */}
@@ -138,7 +138,7 @@ export function LoginForm() {
       <Button
         type="submit"
         disabled={loading}
-        className="w-full h-11 text-sm font-semibold tracking-wide bg-gradient-to-r from-primary to-amber-600 hover:from-primary/90 hover:to-amber-600/90 text-primary-foreground shadow-md transition-all active:scale-[0.98]"
+        className="w-full h-11 text-sm font-semibold tracking-wide"
       >
         {loading ? (
           "Authenticating..."

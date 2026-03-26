@@ -80,21 +80,23 @@ export default async function StudentLeaderboardPage({
   const lastUpdatedFormat = 'Live';
 
   return (
-    <div className="flex flex-col space-y-6">
-      <div className="flex items-end justify-between">
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-              <Trophy className="w-6 h-6 text-primary" />
-              Leaderboard
-            </h2>
+    <div className="max-w-6xl mx-auto px-8 py-8">
+      <div className="glass rounded-2xl p-8 mb-8">
+        <div className="flex items-end justify-between">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
+                <Trophy className="w-6 h-6 text-primary" />
+                Leaderboard
+              </h2>
+            </div>
+            <p className="text-muted-foreground text-sm bg-muted/50 inline-block px-3 py-1 rounded-md border border-border/50 w-fit">
+              Top 10 Students {city !== 'all' ? `in ${city}` : 'Globally'} {year !== 0 ? `- ${year}` : ''}
+            </p>
           </div>
-          <p className="text-muted-foreground text-sm bg-muted inline-block px-2 py-0.5 rounded-md border border-border w-fit">
-            Top 10 Students {city !== 'all' ? `in ${city}` : 'Globally'} {year !== 0 ? `- ${year}` : ''}
-          </p>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground bg-muted/30 px-3 py-1.5 border border-border rounded-full shadow-sm">
-          <Clock className="w-3.5 h-3.5" /> Last Updated: {lastUpdatedFormat}
+          <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground bg-muted/30 px-3 py-1.5 border border-border/50 rounded-full shadow-sm">
+            <Clock className="w-3.5 h-3.5" /> Last Updated: {lastUpdatedFormat}
+          </div>
         </div>
       </div>
 

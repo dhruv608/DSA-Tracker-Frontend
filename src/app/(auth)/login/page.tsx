@@ -21,7 +21,7 @@ export default function LoginPage() {
           <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground font-medium tracking-widest">Or continue with</span>
+          <span className="glass px-3 text-muted-foreground font-medium tracking-widest rounded-full">Or continue with</span>
         </div>
       </div>
 
