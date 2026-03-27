@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import api from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
 import {
   BarChart3,
   TrendingUp,
@@ -12,7 +11,20 @@ import {
   Filter,
   X,
   Loader2,
+  GitBranch,
+  Database,
+  Network,
+  Brain,
+  Box,
 } from "lucide-react";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Topic {
   id: number;
@@ -45,7 +57,6 @@ export default function TopicProgressModal({
   const [loading, setLoading] = useState(false);
   const [sortBy, setSortBy] = useState<"weak" | "strong" | "name">("weak");
 
-  // 🔥 FETCH DATA
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -62,7 +73,6 @@ export default function TopicProgressModal({
     if (isOpen && username) fetchData();
   }, [isOpen, username]);
 
-  // 🔥 SORT LOGIC (IMPORTANT)
   const getSortedTopics = () => {
     if (!data) return [];
 
@@ -97,6 +107,15 @@ export default function TopicProgressModal({
     return "from-lime-400 to-green-500";
   };
 
+  const getTopicIcon = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes("graph")) return <Network className="w-4 h-4" />;
+    if (n.includes("tree")) return <GitBranch className="w-4 h-4" />;
+    if (n.includes("dp") || n.includes("dynamic")) return <Brain className="w-4 h-4" />;
+    if (n.includes("array")) return <Box className="w-4 h-4" />;
+    return <Database className="w-4 h-4" />;
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -108,10 +127,10 @@ export default function TopicProgressModal({
       />
 
       {/* MODAL */}
-      <div className="relative w-[95vw] max-w-[1000px] h-[85vh] bg-background  rounded-2xl shadow-xl flex flex-col overflow-hidden">
+      <div className="relative w-[95vw] max-w-[1000px] h-[85vh] bg-background rounded-2xl shadow-xl flex flex-col overflow-hidden">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between px-6 py-4 ">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
           <div>
             <div className="text-xl font-bold flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-primary" />
@@ -152,24 +171,25 @@ export default function TopicProgressModal({
 
           {/* CONTROLS */}
           <div className="flex items-center gap-3">
-            <Filter className="w-4 h-4" />
+            <Filter className="w-4 h-4 text-muted-foreground" />
 
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className=" rounded px-2 py-1 bg-background"
-            >
-              <option value="weak">Weakest First</option>
-              <option value="strong">Strongest First</option>
-              <option value="name">A-Z</option>
-            </select>
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+              <SelectTrigger className="w-[160px] h-10 px-4 rounded-xl bg-muted/40 border-border/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="weak">Weakest First</SelectItem>
+                <SelectItem value="strong">Strongest First</SelectItem>
+                <SelectItem value="name">A-Z</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* LIST */}
-          <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+          <div className="flex-1 overflow-y-auto scrollbar-none pr-2 grid grid-cols-1 md:grid-cols-2 gap-4">
 
             {loading ? (
-              <div className="flex justify-center items-center h-full">
+              <div className="flex justify-center items-center col-span-2">
                 <Loader2 className="animate-spin" />
               </div>
             ) : (
@@ -184,22 +204,28 @@ export default function TopicProgressModal({
                 return (
                   <div
                     key={topic.id}
-                    className="p-4 rounded-xl  bg-muted/30 hover:bg-muted/50 transition-all"
+                    className="group p-4 rounded-2xl bg-card border border-border/60 hover:border-primary/30 transition-all hover:shadow-md"
                   >
                     {/* TOP */}
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-semibold">
-                        {topic.topic_name}
-                      </h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                          {getTopicIcon(topic.topic_name)}
+                        </div>
+
+                        <div>
+                          <h3 className="text-sm font-semibold">
+                            {topic.topic_name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            {topic.totalSolved} / {topic.totalAssigned}
+                          </p>
+                        </div>
+                      </div>
 
                       <span className="text-sm font-semibold text-primary">
                         {progress}%
                       </span>
-                    </div>
-
-                    {/* SUB */}
-                    <div className="text-xs text-muted-foreground mb-2">
-                      {topic.totalSolved} / {topic.totalAssigned} solved
                     </div>
 
                     {/* PROGRESS */}
@@ -207,11 +233,9 @@ export default function TopicProgressModal({
                       <div
                         className={`h-full rounded-full bg-gradient-to-r ${getColor(
                           progress
-                        )} transition-all duration-700 relative`}
+                        )} transition-all duration-700`}
                         style={{ width: `${progress}%` }}
-                      >
-                        <div className="absolute inset-0 animate-[shine_2s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                      </div>
+                      />
                     </div>
                   </div>
                 );
@@ -227,8 +251,8 @@ export default function TopicProgressModal({
 /* STAT CARD */
 function Stat({ icon, label, value }: any) {
   return (
-    <div className=" rounded-xl p-4 flex items-center gap-3 bg-muted/30">
-      <div className="p-2 bg-primary/10 rounded">{icon}</div>
+    <div className="rounded-2xl p-4 flex items-center gap-3 bg-card border border-border/60 hover:border-primary/30 transition-all">
+      <div className="p-2 bg-primary/10 rounded text-primary">{icon}</div>
       <div>
         <p className="text-sm text-muted-foreground">{label}</p>
         <p className="font-semibold">{value}</p>

@@ -12,242 +12,167 @@ interface LeaderboardTableProps {
 }
 
 export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, filters }) => {
-  // Same rank logic as admin podium and table
+
   const getRank = (entry: LeaderboardEntry) => {
     return filters?.city === "all" ? entry.global_rank : entry.city_rank;
   };
 
   const getCompletionPercentage = (entry: LeaderboardEntry) => {
-    return ((entry.easy_completion + entry.medium_completion + entry.hard_completion) / 3).toFixed(1);
+    return (
+      (entry.easy_completion +
+        entry.medium_completion +
+        entry.hard_completion) /
+      3
+    ).toFixed(1);
   };
 
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full text-left border-collapse" style={{minWidth: '800px'}}>
+      <table className="w-full text-left border-collapse" style={{ minWidth: '800px' }}>
+        
+        {/* HEADER */}
         <thead>
-          <tr 
-            className="border-b" 
-            style={{borderColor: 'var(--border)', backgroundColor: 'var(--muted)'}}
+          <tr
+            className="border-b"
+            style={{
+              borderColor: 'var(--border)',
+              backgroundColor: 'var(--muted)',
+            }}
           >
-            <th 
-              className="p-4 font-semibold w-16 text-center" 
-              style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', textTransform: 'uppercase'}}
-            >
-              Rank
-            </th>
-            <th className="p-4 font-semibold" style={{fontSize: 'var(--text-xs)'}}>
-              Student
-            </th>
-            <th className="p-4 font-semibold text-center hidden md:table-cell" style={{fontSize: 'var(--text-xs)'}}>
-              City / Year
-            </th>
-            <th className="p-4 font-semibold text-center" style={{fontSize: 'var(--text-xs)'}}>
-              Score
-            </th>
-            <th className="p-4 font-semibold text-center hidden lg:table-cell" style={{fontSize: 'var(--text-xs)'}}>
-              Difficulty
-            </th>
-            <th className="p-4 font-semibold text-center" style={{fontSize: 'var(--text-xs)'}}>
-              Streak
-            </th>
-            <th className="p-4 font-semibold text-right" style={{fontSize: 'var(--text-xs)'}}>
-              Solved
-            </th>
+            <th className="p-4 text-center text-xs font-semibold uppercase tracking-wider">Rank</th>
+            <th className="p-4 text-xs font-semibold uppercase tracking-wider">Student</th>
+            <th className="p-4 text-center text-xs font-semibold uppercase tracking-wider hidden md:table-cell">City / Year</th>
+            <th className="p-4 text-center text-xs font-semibold uppercase tracking-wider">Score</th>
+            <th className="p-4 text-center text-xs font-semibold uppercase tracking-wider hidden lg:table-cell">Difficulty</th>
+            <th className="p-4 text-center text-xs font-semibold uppercase tracking-wider">Streak</th>
+            <th className="p-4 text-right text-xs font-semibold uppercase tracking-wider">Solved</th>
           </tr>
         </thead>
-        <tbody style={{borderColor: 'var(--border)'}}>
+
+        {/* BODY */}
+        <tbody>
           {entries.map((entry) => {
             const rankValue = getRank(entry);
             const completion = getCompletionPercentage(entry);
-            
+
+            const isTop = Number(rankValue) <= 3;
+            const isYou = entry.isCurrentUser;
+
             return (
-              <tr 
-                key={entry.username} 
-                className="transition-all duration-200 hover-glow"
+              <tr
+                key={entry.username}
+                className="transition-all duration-200 hover:bg-muted/40"
                 style={{
-                  backgroundColor: entry.isCurrentUser ? 'var(--accent-primary)' : 
-                                   Number(rankValue) <= 3 ? 'var(--accent-primary)' : 'transparent',
-                  opacity: entry.isCurrentUser ? 0.1 : Number(rankValue) <= 3 ? 0.1 : 0
+                  backgroundColor: isYou
+                    ? 'rgba(132, 204, 22, 0.12)'
+                    : Number(rankValue) === 1
+                    ? 'rgba(132, 204, 22, 0.08)'
+                    : Number(rankValue) === 2
+                    ? 'rgba(132, 204, 22, 0.06)'
+                    : Number(rankValue) === 3
+                    ? 'rgba(132, 204, 22, 0.04)'
+                    : 'transparent',
                 }}
               >
-                {/* Rank */}
+
+                {/* RANK */}
                 <td className="p-4 text-center">
-                  <span 
-                    className="inline-flex items-center justify-center rounded-full font-bold font-mono transition-all duration-200 hover:scale-110" 
+                  <span
+                    className="inline-flex items-center justify-center rounded-full font-bold"
                     style={{
-                      width: 'var(--spacing-lg)',
-                      height: 'var(--spacing-lg)',
-                      fontSize: 'var(--text-sm)',
-                      backgroundColor: entry.isCurrentUser ? 'var(--accent-primary)' : 
-                                       Number(rankValue) === 1 ? 'var(--accent-primary)' :
-                                       Number(rankValue) === 2 ? 'var(--accent-secondary)' :
-                                       Number(rankValue) === 3 ? 'var(--muted)' : 'var(--accent-secondary)',
-                      color: entry.isCurrentUser ? 'var(--primary-foreground)' : 
-                             Number(rankValue) === 1 ? 'var(--primary-foreground)' :
-                             Number(rankValue) === 2 ? 'var(--secondary-foreground)' :
-                             Number(rankValue) === 3 ? 'var(--text-secondary)' : 'var(--secondary-foreground)',
-                      borderRadius: 'var(--radius-full)',
-                      boxShadow: Number(rankValue) === 1 ? 'var(--shadow-md)' : 'none'
+                      width: '36px',
+                      height: '36px',
+                      fontSize: '14px',
+                      backgroundColor: isYou
+                        ? 'var(--primary)'
+                        : Number(rankValue) === 1
+                        ? 'gold'
+                        : Number(rankValue) === 2
+                        ? 'silver'
+                        : Number(rankValue) === 3
+                        ? '#cd7f32'
+                        : 'var(--muted)',
+                      color: 'var(--foreground)',
                     }}
                   >
                     {rankValue}
                   </span>
                 </td>
 
-                {/* Student Info */}
+                {/* STUDENT */}
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <div 
-                      className="rounded-full overflow-hidden transition-all duration-200 hover:scale-105" 
-                      style={{
-                        width: 'var(--spacing-lg)',
-                        height: 'var(--spacing-lg)',
-                        border: `2px solid ${entry.isCurrentUser ? 'var(--accent-primary)' : 
-                                       Number(rankValue) === 1 ? 'var(--accent-primary)' :
-                                       Number(rankValue) === 2 ? 'var(--accent-secondary)' :
-                                       Number(rankValue) === 3 ? 'var(--muted)' : 'var(--border)'}`,
-                        backgroundColor: entry.isCurrentUser ? 'var(--accent-primary)' : 'var(--card)',
-                        borderRadius: 'var(--radius-full)'
-                      }}
-                    >
-                      <img 
-                        src={entry.profile_image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${entry.username}&backgroundColor=1e293b&textColor=f8fafc`} 
-                        alt={entry.name} 
-                        className="w-full h-full object-cover" 
-                      />
-                    </div>
+                    <img
+                      src={
+                        entry.profile_image_url ||
+                        `https://api.dicebear.com/7.x/initials/svg?seed=${entry.username}`
+                      }
+                      className="w-9 h-9 rounded-full object-cover border"
+                    />
+
                     <div>
-                      <div 
-                        className="font-semibold flex items-center gap-2" 
-                        style={{fontSize: 'var(--text-base)', color: 'var(--foreground)'}}
-                      >
+                      <div className="font-semibold flex items-center gap-2">
                         {entry.name}
-                        {entry.isCurrentUser && (
-                          <span 
-                            className="uppercase tracking-wider px-1.5 py-0.5 rounded font-bold" 
-                            style={{
-                              fontSize: 'var(--text-xs)',
-                              backgroundColor: 'var(--accent-primary)',
-                              color: 'var(--primary-foreground)',
-                              borderRadius: 'var(--radius-sm)',
-                              padding: 'var(--spacing-xs) var(--spacing-xs)'
-                            }}
-                          >
+                        {isYou && (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-primary text-primary-foreground">
                             You
                           </span>
                         )}
                       </div>
-                      <div 
-                        className="font-mono mt-0.5" 
-                        style={{fontSize: 'var(--text-sm)', color: 'var(--text-secondary)'}}
-                      >
+                      <div className="text-xs text-muted-foreground">
                         @{entry.username}
                       </div>
                     </div>
                   </div>
                 </td>
 
-                {/* City / Year */}
+                {/* CITY */}
                 <td className="p-4 text-center hidden md:table-cell">
-                  <div style={{fontSize: 'var(--text-sm)', color: 'var(--foreground)'}}>
-                    {entry.city_name}
-                  </div>
-                  <div 
-                    className="font-mono mt-0.5" 
-                    style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
-                  >
+                  <div>{entry.city_name}</div>
+                  <div className="text-xs text-muted-foreground">
                     Batch {entry.batch_year}
                   </div>
                 </td>
 
-                {/* Score */}
+                {/* SCORE */}
                 <td className="p-4 text-center">
-                  <div 
-                    className="inline-flex items-center gap-1.5 px-3 py-1 font-bold transition-all duration-200 hover:scale-105" 
-                    style={{
-                      borderRadius: 'var(--radius-lg)',
-                      backgroundColor: 'var(--accent-secondary)',
-                      border: `1px solid var(--border)`,
-                      fontSize: 'var(--text-sm)',
-                      color: 'var(--foreground)'
-                    }}
-                  >
-                    <ChevronUp className="w-3.5 h-3.5" style={{color: 'var(--accent-primary)'}} />
+                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-2xl bg-muted  text-sm">
+                    <ChevronUp className="w-4 h-4 text-primary" />
                     {completion}%
                   </div>
                 </td>
 
-                {/* Difficulty Breakdown */}
+                {/* DIFFICULTY */}
                 <td className="p-4 hidden lg:table-cell">
-                  <div 
-                    className="flex items-center justify-center gap-3 font-mono" 
-                    style={{fontSize: 'var(--text-sm)', color: 'var(--foreground)'}}
-                  >
-                    <div className="flex flex-col items-center" title="Easy">
-                      <span style={{color: 'var(--accent-primary)', fontWeight: 'bold'}}>{entry.easy_completion.toFixed(1)}</span>
-                      <span 
-                        className="uppercase" 
-                        style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
-                      >
-                        E
-                      </span>
-                    </div>
-                    <div 
-                      className="w-[1px]" 
-                      style={{height: 'var(--spacing-sm)', backgroundColor: 'var(--border)'}}
-                    />
-                    <div className="flex flex-col items-center" title="Medium">
-                      <span style={{color: 'var(--accent-primary)', fontWeight: 'bold'}}>{entry.medium_completion.toFixed(1)}</span>
-                      <span 
-                        className="uppercase" 
-                        style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
-                      >
-                        M
-                      </span>
-                    </div>
-                    <div 
-                      className="w-[1px]" 
-                      style={{height: 'var(--spacing-sm)', backgroundColor: 'var(--border)'}}
-                    />
-                    <div className="flex flex-col items-center" title="Hard">
-                      <span style={{color: 'var(--accent-primary)', fontWeight: 'bold'}}>{entry.hard_completion.toFixed(1)}</span>
-                      <span 
-                        className="uppercase" 
-                        style={{fontSize: 'var(--text-xs)', color: 'var(--text-secondary)'}}
-                      >
-                        H
-                      </span>
-                    </div>
+                  <div className="flex justify-center gap-3 text-sm">
+                    <span className="text-green-400 font-semibold">
+                      {entry.easy_completion.toFixed(1)}E
+                    </span>
+                    <span className="text-yellow-400 font-semibold">
+                      {entry.medium_completion.toFixed(1)}M
+                    </span>
+                    <span className="text-red-400 font-semibold">
+                      {entry.hard_completion.toFixed(1)}H
+                    </span>
                   </div>
                 </td>
 
-                {/* Streak */}
+                {/* STREAK */}
                 <td className="p-4 text-center">
-                  <div 
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold transition-all duration-200 hover:scale-105" 
-                    style={{
-                      backgroundColor: 'var(--accent-primary)',
-                      border: `1px solid var(--border)`,
-                      fontSize: 'var(--text-sm)',
-                      color: 'var(--foreground)',
-                      borderRadius: 'var(--radius-full)'
-                    }}
-                  >
-                    <Flame className="w-4 h-4" style={{color: 'var(--accent-primary)'}} />
+                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted">
+                    <Flame className="w-4 h-4 text-orange-400" />
                     {entry.max_streak}
                   </div>
                 </td>
 
-                {/* Total Solved */}
-                <td className="p-4 text-right">
-                  <div 
-                    className="inline-flex items-center gap-2 font-bold transition-all duration-200 hover:scale-105" 
-                    style={{fontSize: 'var(--text-base)', color: 'var(--foreground)'}}
-                  >
+                {/* SOLVED */}
+                <td className="p-4 text-right font-semibold">
+                  <div className="inline-flex items-center gap-2">
                     {entry.total_solved}
-                    <CheckCircle2 className="w-4 h-4" style={{color: 'var(--accent-primary)'}} />
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
                   </div>
                 </td>
+
               </tr>
             );
           })}
