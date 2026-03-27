@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { LayoutDashboard, Users, Building2, Layers, LogOut } from 'lucide-react';
+import { Menu, LayoutDashboard, Users, Building2, Layers } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { Sidebar, SidebarNavItems } from '@/components/sidebar/Sidebar';
 import { getCurrentSuperAdmin } from '@/services/superadmin.service';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { isAdminToken, clearAuthTokens } from '@/lib/auth-utils';
@@ -14,6 +14,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   const pathname = usePathname();
   const [user, setUser] = React.useState<{name: string, role: string, email?: string} | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
 
   React.useEffect(() => {
     const loadUser = async () => {
@@ -51,7 +53,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
   const navItems = [
     { label: 'Dashboard', href: '/superadmin', icon: LayoutDashboard },
-    { label: 'Admins', href: '/superadmin/admins', icon: Users },
+    { label: 'Admins', href: '/superadmin/admins', icon: Users, showDivider: true, dividerLabel: 'Management' },
     { label: 'Cities', href: '/superadmin/cities', icon: Building2 },
     { label: 'Batches', href: '/superadmin/batches', icon: Layers },
   ];
@@ -63,81 +65,39 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2"></div>
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen bg-background text-foreground overflow-hidden selection:bg-primary/20">
-      
-      {/* Sidebar - mapped exactly from theme */}
-      <aside className="w-[240px] flex-shrink-0 bg-sidebar border-r border-border flex flex-col z-20 shadow-sm relative animate-in slide-in-from-left duration-500">
-        <div className="p-6 border-border/50">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center p-1.5">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-full h-full text-primary-foreground"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            </div>
-            <div className="text-xl font-bold tracking-tight text-foreground">
-              BruteForce
-            </div>
-          </div>
-        </div>
+      {/* Mobile Menu Toggle */}
+      <button
+        onClick={() => setIsSidebarOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-30 p-2 rounded-md bg-card border border-border hover:bg-muted"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
 
-        <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono px-3 py-2 mb-1">
-            Overview
-          </div>
-          
-          {navItems.map((item, idx) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-            
-            return (
-              <React.Fragment key={item.href}>
-                {idx === 1 && (
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono px-3 pt-5 pb-2">
-                    Management
-                  </div>
-                )}
-                <Link 
-                  href={item.href}
-                  className={`group flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive 
-                      ? 'text-primary bg-muted/60 font-semibold' 
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                  {item.label}
-                </Link>
-              </React.Fragment>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-border/50">
-          <button 
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors group"
-          >
-            <div className="w-8 h-8 rounded-md bg-muted text-muted-foreground flex items-center justify-center font-bold text-sm shrink-0 uppercase">
-              {user.name.charAt(0) || 'S'}
-            </div>
-            <div className="text-left flex-1 min-w-0">
-              <div className="text-sm font-medium truncate text-foreground">{user.name || 'Super Admin'}</div>
-              <div className="text-xs text-muted-foreground truncate">Logout Session</div>
-            </div>
-            <LogOut className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-all" />
-          </button>
-        </div>
-      </aside>
+      {/* Reusable Sidebar Component */}
+      <Sidebar
+        role="superadmin"
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        user={user}
+        navItems={navItems}
+        onLogout={handleLogout}
+        portalLabel="SuperAdmin Portal"
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col relative z-10 min-w-0">
+      <main className="flex-1 flex flex-col relative z-20 min-w-0 ps-2 mt-3 ">
         
         {/* Topbar */}
-        <header className="h-14 bg-card/80 backdrop-blur flex items-center justify-between px-6 shrink-0 z-10 w-full">
+        <header className="h-14 glass rounded-2xl border border-border/20 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-30 w-full">
           <div className="flex items-center gap-3">
             <Breadcrumb />
           </div>
@@ -147,13 +107,11 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         </header>
 
         {/* Scrollable Page Wrapper */}
-        <div className="flex-1 p-8 relative">
+        <div className="flex-1 p-8 relative ">
           <div className="max-w-[1200px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             {children}
           </div>
         </div>
-
-        
       </main>
     </div>
   );

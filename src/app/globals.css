@@ -181,9 +181,7 @@
   transition: all 0.2s ease;
 }
 
-.card-premium:hover {
-  box-shadow: 0 0 25px var(--hover-glow);
-}
+
 @keyframes shine {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
@@ -452,24 +450,7 @@ body {
   animation: gradientMove 12s ease infinite;
 }
 
-/* 🌙 Light Theme Variation */
-.light .hero-gradient {
-  background: radial-gradient(
-      circle at 30% 20%,
-      var(--accent-primary) 0%,
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at 70% 80%,
-      var(--accent-primary) 0%,
-      transparent 35%
-    ),
-    linear-gradient(
-      120deg,
-      #f8fafc 0%,
-      #e2e8f0 100%
-    );
-}
+
 
 .shimmer-wrapper {
   position: relative;
@@ -499,7 +480,7 @@ body {
   100% {
     transform: translateX(100%);
   }
-
+}
 /* Hide scrollbar but allow scroll */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
@@ -524,4 +505,41 @@ body:hover::-webkit-scrollbar {
 body:hover::-webkit-scrollbar-thumb {
   background: var(--primary);
   border-radius: 9999px;
+}
+
+
+/* Neon Animated Border */
+.sidebar-glow {
+  position: relative;
+}
+
+.sidebar-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+
+  background: linear-gradient(
+    120deg,
+    rgba(204,255,0,0.6),
+    transparent,
+    rgba(204,255,0,0.4)
+  );
+
+  background-size: 200% 200%;
+  animation: borderFlow 6s linear infinite;
+
+  -webkit-mask: 
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  pointer-events: none;
+}
+
+@keyframes borderFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
 }

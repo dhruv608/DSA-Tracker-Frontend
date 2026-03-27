@@ -2,19 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  Layers, 
-  Users, 
-  Trophy,
-  LogOut,
-  HelpCircle,
-  AlertCircle
-} from 'lucide-react';
+import { Menu, X, LayoutDashboard, BookOpen, HelpCircle, Users, Trophy, AlertCircle, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Select } from '@/components/Select';
+import { Sidebar, SidebarNavItems } from '@/components/sidebar/Sidebar';
 import { logoutUser } from '@/services/auth.service';
 import { getCurrentAdmin } from '@/services/admin.service';
 import { useAdminStore } from '@/store/adminStore';
@@ -67,6 +58,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [batches, setBatches] = useState<{id: number, slug: string, batch_name: string, year: number}[]>([]);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const { 
     selectedCity, 
@@ -302,69 +295,67 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex h-[100vh] bg-background text-foreground overflow-hidden selection:bg-primary/20">
-      
-      {/* Sidebar - mapped exactly from theme */}
-      <aside className="w-[240px] flex-shrink-0 bg-sidebar border-r border-border flex flex-col z-20 shadow-sm relative animate-in slide-in-from-left duration-500">
-        <div className="p-6 border-border/50">
-          <div className="text-[10px] uppercase tracking-[0.15em] text-primary font-mono mb-1.5 font-bold">Admin Portal</div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center p-1.5">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-full h-full text-primary-foreground"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            </div>
-            <div className="text-xl font-bold tracking-tight text-foreground">
-              BruteForce
-            </div>
-          </div>
-        </div>
+      {/* Mobile Menu Toggle */}
+      <button
+        onClick={() => setIsMobileSidebarOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-30 p-2 rounded-md bg-card border border-border hover:bg-muted"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
 
-        <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono px-3 py-2 mb-1">
-            Menu
-          </div>
-          
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/admin');
-            const Icon = item.icon;
-            
-            return (
-              <Link 
-                key={item.href}
-                href={item.href}
-                className={`group flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive 
-                    ? 'text-primary bg-muted/60 font-semibold' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+      {/* Collapsible Sidebar Container */}
+      <div className={`
+        relative transition-all duration-300 ease-in-out
+        ${isSidebarCollapsed ? 'w-[60px]' : 'w-[240px]'}
+        lg:block hidden
+      `}>
+        {/* Reusable Sidebar Component */}
+        <Sidebar
+          role="admin"
+          isOpen={isMobileSidebarOpen}
+          onClose={() => setIsMobileSidebarOpen(false)}
+          user={user}
+          navItems={navItems}
+          onLogout={handleLogout}
+          portalLabel="Admin Portal"
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+      </div>
 
-        <div className="p-4 border-t border-border/50">
-          <button 
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors group"
-          >
-            <div className="w-8 h-8 rounded-md bg-muted text-muted-foreground flex items-center justify-center font-bold text-sm shrink-0 uppercase">
-              {user.name.charAt(0) || 'A'}
-            </div>
-            <div className="text-left flex-1 min-w-0">
-              <div className="text-sm font-medium truncate text-foreground">{user.name || 'Admin'}</div>
-              <div className="text-xs text-muted-foreground truncate">{user.role}</div>
-            </div>
-            <LogOut className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-all" />
-          </button>
-        </div>
-      </aside>
+      {/* Mobile Sidebar Overlay */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col relative z-10 min-w-0">
-        
+      {/* Mobile Sidebar */}
+      <div className={`
+        lg:hidden fixed top-0 left-0 h-full z-40 transition-transform duration-300
+        ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <Sidebar
+          role="admin"
+          isOpen={isMobileSidebarOpen}
+          onClose={() => setIsMobileSidebarOpen(false)}
+          user={user}
+          navItems={navItems}
+          onLogout={handleLogout}
+          portalLabel="Admin Portal"
+          isCollapsed={false}
+          onToggleCollapse={() => {}}
+        />
+      </div>
+
+      {/* Main Content Area with Dynamic Spacing */}
+      <main className={`
+        flex-1 flex flex-col relative z-20 min-w-0 transition-all duration-300 ease-in-out ps-3  mt-3
+        ${isSidebarCollapsed ? 'ml-0' : 'ml-0 lg:ml-0'}
+      `}>
         {/* Topbar */}
-        <header className="h-14 bg-card/80 backdrop-blur flex items-center justify-between px-6 shrink-0 z-10 w-full">
+        <header className="h-14 glass border rounded-2xl border-border/20 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-30 w-full">
           {/* Dropdown Selectors */}
           <div className="flex items-center gap-4">
              {selectedCity ? (

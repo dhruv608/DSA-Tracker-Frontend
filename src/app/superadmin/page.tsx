@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { getStats } from '@/services/superadmin.service';
 import { getAllCities, City } from '@/services/city.service';
 import { getAllBatches, Batch } from '@/services/batch.service';
-import { Building2, Layers, Users } from 'lucide-react';
+import { Building2, Layers, Users, TrendingUp, Activity, MapPin, Users2, BarChart3, ArrowUpRight, Sparkles, Globe, Target } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface Stats {
   totalCities: number;
@@ -17,14 +18,14 @@ interface Stats {
 export default function SuperAdminDashboard() {
   const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
-  const [cityBreakdown, setCityBreakdown] = useState<{name: string, count: number}[]>([]);
+  const [cityBreakdown, setCityBreakdown] = useState<{ name: string, count: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const statsData = await getStats();
-        
+
         setStats({
           totalCities: statsData?.totalCities || 0,
           totalBatches: statsData?.totalBatches || 0,
@@ -32,8 +33,8 @@ export default function SuperAdminDashboard() {
         });
 
         const [citiesResp, batchesResp] = await Promise.all([
-          getAllCities().catch(()=>[]),
-          getAllBatches().catch(()=>[])
+          getAllCities().catch(() => []),
+          getAllBatches().catch(() => [])
         ]);
 
         const batchesArray = Array.isArray(batchesResp) ? batchesResp : [];
@@ -43,7 +44,7 @@ export default function SuperAdminDashboard() {
           const count = batchesArray.filter((b: Batch) => b.city_id === city.id).length;
           return { name: city.city_name, count };
         }).sort((a, b) => b.count - a.count).slice(0, 5); // top 5
-        
+
         setCityBreakdown(breakdown);
       } catch (err) {
         console.error("Dashboard error:", err);
@@ -60,7 +61,7 @@ export default function SuperAdminDashboard() {
       <div className="space-y-8 pb-10">
         <div className="grid gap-4 md:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-card border rounded-xl p-6">
+            <div key={i} className="bg-card rounded p-6">
               <div className="flex items-center justify-between space-y-0 pb-2">
                 <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-4 w-4 rounded" />
@@ -69,9 +70,9 @@ export default function SuperAdminDashboard() {
             </div>
           ))}
         </div>
-        
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 items-start">
-          <div className="lg:col-span-2 bg-card border rounded-xl p-6">
+          <div className="lg:col-span-2 bg-card rounded p-6">
             <div className="flex items-center justify-between pb-6">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-3 w-16" />
@@ -88,8 +89,8 @@ export default function SuperAdminDashboard() {
               ))}
             </div>
           </div>
-          
-          <div className="bg-card border rounded-xl p-6">
+
+          <div className="bg-card rounded p-6">
             <Skeleton className="h-4 w-24 mb-6" />
             <div className="flex flex-col gap-3">
               {[1, 2, 3].map((i) => (
@@ -103,84 +104,179 @@ export default function SuperAdminDashboard() {
   }
 
   return (
-    <div className="space-y-8 pb-10">
-      
-      <div className="grid gap-4 md:grid-cols-3">
-        <div onClick={() => router.push('/superadmin/cities')} className="cursor-pointer bg-card border rounded-xl p-6 transition-colors hover:bg-muted/50">
-          <div className="flex items-center justify-between space-y-0 text-muted-foreground pb-2">
-            <h3 className="tracking-tight text-sm font-medium">Total Cities</h3>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
+    <div className="space-y-8 pb-10 hero-gradient min-h-screen p-6">
+
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Cities */}
+        <div
+          onClick={() => router.push('/superadmin/cities')}
+          className="cursor-pointer glass card-premium p-6 rounded-2xl group  transition-all duration-300 border border-border/20  relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-20 h-20 bg-chart-2/5 rounded-full -mr-10 -mt-10  transition-transform duration-500"></div>
+
+          <div className="flex items-center justify-between pb-4 relative">
+            <h3 className="text-sm font-medium text-muted-foreground">Total Cities</h3>
+            <div className="p-2.5 rounded-xl bg-chart-2/10 border border-chart-2/20 group-hover:scale-110 transition-transform">
+              <Globe className="h-6 w-5 text-chart-2 rounded" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-foreground">{stats?.totalCities || 0}</div>
+
+          <div className="text-4xl font-bold text-foreground group-hover:text-chart-2 transition-colors duration-300 relative">
+            {stats?.totalCities || 0}
+          </div>
+
+          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground/70">
+            <MapPin className="h-3 w-3" />
+            <span>Active locations</span>
+          </div>
         </div>
 
-        <div onClick={() => router.push('/superadmin/batches')} className="cursor-pointer bg-card border rounded-xl p-6 transition-colors hover:bg-muted/50">
-          <div className="flex items-center justify-between space-y-0 text-muted-foreground pb-2">
-            <h3 className="tracking-tight text-sm font-medium">Total Batches</h3>
-            <Layers className="h-4 w-4 text-muted-foreground" />
+        {/* Batches */}
+        <div
+          onClick={() => router.push('/superadmin/batches')}
+          className="cursor-pointer glass card-premium p-6 rounded-2xl group hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 border border-border/20 hover:border-primary/30 relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-20 h-20 bg-chart-3/5 rounded-full -mr-10 -mt-10  transition-transform duration-500"></div>
+
+          <div className="flex items-center justify-between pb-4 relative">
+            <h3 className="text-sm font-medium text-muted-foreground">Total Batches</h3>
+            <div className="p-2.5 rounded-xl bg-chart-3/10 border border-chart-3/20 group-hover:scale-110 transition-transform">
+              <Layers className="h-5 w-5 text-chart-3" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-foreground">{stats?.totalBatches || 0}</div>
+
+          <div className="text-4xl font-bold text-foreground group-hover:text-chart-3 transition-colors duration-300 relative">
+            {stats?.totalBatches || 0}
+          </div>
+
+          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground/70">
+            <Target className="h-3 w-3" />
+            <span>Learning groups</span>
+          </div>
         </div>
 
-        <div onClick={() => router.push('/superadmin/admins')} className="cursor-pointer bg-card border rounded-xl p-6 transition-colors hover:bg-muted/50">
-          <div className="flex items-center justify-between space-y-0 text-muted-foreground pb-2">
-            <h3 className="tracking-tight text-sm font-medium">Total Admins</h3>
-            <Users className="h-4 w-4 text-muted-foreground" />
+        {/* Admins */}
+        <div
+          onClick={() => router.push('/superadmin/admins')}
+          className="cursor-pointer glass card-premium p-6 rounded-2xl group hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 border border-border/20 hover:border-primary/30 relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-20 h-20 bg-chart-5/5 rounded-full -mr-10 -mt-10  transition-transform duration-500"></div>
+
+          <div className="flex items-center justify-between pb-4 relative">
+            <h3 className="text-sm font-medium text-muted-foreground">Total Admins</h3>
+            <div className="p-2.5 rounded-xl bg-chart-5/10 border border-chart-5/20 group-hover:scale-110 transition-transform">
+              <Users2 className="h-5 w-5 text-chart-5" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-foreground">{stats?.totalAdmins || 0}</div>
+
+          <div className="text-4xl font-bold text-foreground group-hover:text-chart-5 transition-colors duration-300 relative">
+            {stats?.totalAdmins || 0}
+          </div>
+
+          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground/70">
+            <Activity className="h-3 w-3" />
+            <span>Team members</span>
+          </div>
         </div>
+
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 items-start">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
         {/* City Breakdown Panel */}
-        <div className="lg:col-span-2 bg-card border rounded-xl p-6">
-          <div className="flex items-center justify-between space-y-0 pb-6 text-foreground">
-            <h3 className="tracking-tight text-sm font-semibold">City Breakdown</h3>
-            <span className="text-xs font-normal text-muted-foreground">Top Active</span>
-          </div>
-          <div className="space-y-6">
-            {cityBreakdown.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4">No batch data available yet.</p>
-            ) : (
-              cityBreakdown.map((item, idx) => {
-                const max = Math.max(...cityBreakdown.map(c => c.count)) || 1;
-                const percentage = (item.count / max) * 100;
-                return (
-                  <div key={idx} className="flex flex-col gap-2 group">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-foreground">{item.name}</span>
-                      <span className="text-muted-foreground">{item.count} batches</span>
-                    </div>
-                    <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-primary transition-all duration-500" 
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })
-            )}
+      <div className="md:col-span-2 glass rounded-2xl p-6 border border-border/20">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <BarChart3 className="text-primary" />
+            City Breakdown
+          </h3>
+
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={cityBreakdown}>
+                <CartesianGrid strokeDasharray="3 6" vertical={false} />
+
+                <XAxis dataKey="name" />
+                <YAxis />
+
+                <Tooltip />
+
+                <Bar dataKey="count" radius={[10, 10, 5, 5]}>
+                  {cityBreakdown.map((_, i) => (
+                    <Cell key={i} fill="hsl(var(--chart-3))" />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
         {/* Quick Actions Panel */}
-        <div className="bg-card border rounded-xl p-6">
-          <h3 className="tracking-tight text-sm font-semibold text-foreground mb-6">Quick Actions</h3>
-          <div className="flex flex-col gap-3">
-            <button onClick={() => router.push('/superadmin/admins')} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full">
-              Add Admin
+        <div className="glass h-[423px] card-premium rounded-2xl p-6 border border-border/20 ">
+
+          <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-chart-1 animate-pulse"></div>
+            <Sparkles className="h-5 w-5 text-chart-1" />
+            Quick Actions
+          </h3>
+
+          <div className="space-y-3">
+            <button
+              onClick={() => router.push('/superadmin/admins')}
+              className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-chart-5/10 to-transparent border border-chart-5/20 hover:border-chart-5/40 px-4 py-3 text-left transition-all duration-300 hover:shadow-lg hover:shadow-chart-5/10"
+            >
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-lg bg-chart-5/10 group-hover:scale-110 transition-transform">
+                    <Users2 className="h-4 w-4 text-chart-5" />
+                  </div>
+                  <span className="font-medium text-foreground group-hover:text-chart-5 transition-colors">
+                    Add Admin
+                  </span>
+                </div>
+                <ArrowUpRight className="h-4 w-4 text-chart-5 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-chart-5/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
-            <button onClick={() => router.push('/superadmin/cities')} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full">
-              Add City
+
+            <button
+              onClick={() => router.push('/superadmin/cities')}
+              className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-chart-2/10 to-transparent border border-chart-2/20 hover:border-chart-2/40 px-4 py-3 text-left transition-all duration-300 hover:shadow-lg hover:shadow-chart-2/10"
+            >
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-lg bg-chart-2/10 group-hover:scale-110 transition-transform">
+                    <Globe className="h-4 w-4 text-chart-2" />
+                  </div>
+                  <span className="font-medium text-foreground group-hover:text-chart-2 transition-colors">
+                    Add City
+                  </span>
+                </div>
+                <ArrowUpRight className="h-4 w-4 text-chart-2 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-chart-2/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
-            <button onClick={() => router.push('/superadmin/batches')} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full">
-              Add Batch
+
+            <button
+              onClick={() => router.push('/superadmin/batches')}
+              className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-chart-3/10 to-transparent border border-chart-3/20 hover:border-chart-3/40 px-4 py-3 text-left transition-all duration-300 hover:shadow-lg hover:shadow-chart-3/10"
+            >
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-lg bg-chart-3/10 group-hover:scale-110 transition-transform">
+                    <Layers className="h-4 w-4 text-chart-3" />
+                  </div>
+                  <span className="font-medium text-foreground group-hover:text-chart-3 transition-colors">
+                    Add Batch
+                  </span>
+                </div>
+                <ArrowUpRight className="h-4 w-4 text-chart-3 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-chart-3/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
           </div>
+
         </div>
       </div>
-      
+
     </div>
   );
 }

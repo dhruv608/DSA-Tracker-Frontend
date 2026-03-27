@@ -49,7 +49,7 @@ export default function SuperAdminLoginPage() {
       <div className="absolute top-6 right-6">
         <ThemeToggle />
       </div>
-      <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-lg p-8">
+      <div className="w-full max-w-md bg-card rounded-2xl shadow-lg p-8">
         <div className="mb-8 text-center space-y-3">
           <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent-foreground flex items-center justify-center p-2.5 shadow-lg shadow-primary/20 mb-2">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-full h-full text-primary-foreground"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
@@ -59,7 +59,7 @@ export default function SuperAdminLoginPage() {
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg text-center animate-in slide-in-from-top-2">
+          <div className="mb-6 p-3 bg-destructive/10 text-destructive text-sm rounded-lg text-center animate-in slide-in-from-top-2">
             {error}
           </div>
         )}
@@ -72,7 +72,7 @@ export default function SuperAdminLoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              className="w-full px-4 py-2.5 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+              className="w-full px-4 py-2.5 bg-background rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
               placeholder="admin@bruteforce.com"
               required
             />
@@ -86,7 +86,7 @@ export default function SuperAdminLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
-                className="w-full px-4 py-2.5 pr-12 bg-background border border-input rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 pr-12 bg-background rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                 placeholder="••••••••"
                 required
               />

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Moon, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
   const [theme, setTheme] = React.useState<"light" | "dark">("light");
@@ -15,11 +14,7 @@ export function ThemeToggle() {
     console.log('ThemeToggle init:', { saved, systemPrefersDark, initialTheme });
     
     setTheme(initialTheme);
-    if (initialTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    applyTheme(initialTheme);
 
     // Listen for system theme changes
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -27,11 +22,7 @@ export function ThemeToggle() {
       if (!localStorage.getItem("theme")) {
         const newTheme = e.matches ? "dark" : "light";
         setTheme(newTheme);
-        if (newTheme === "dark") {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
+        applyTheme(newTheme);
       }
     };
 
@@ -39,39 +30,53 @@ export function ThemeToggle() {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  const applyTheme = (newTheme: "light" | "dark") => {
+    const root = document.documentElement;
+    
+    if (newTheme === "dark") {
+      root.classList.add("dark");
+      root.style.colorScheme = "dark";
+    } else {
+      root.classList.remove("dark");
+      root.style.colorScheme = "light";
+    }
+    
+    // Force a reflow to ensure theme changes are applied immediately
+    root.style.display = 'none';
+    root.offsetHeight; // Trigger reflow
+    root.style.display = '';
+  };
+
   const toggleTheme = () => {
     console.log('Theme toggle clicked, current theme:', theme);
-    if (theme === "dark") {
-      setTheme("light");
-      localStorage.setItem("theme", "light");
-      document.documentElement.classList.remove("dark");
-      console.log('Switched to light mode');
-    } else {
-      setTheme("dark");
-      localStorage.setItem("theme", "dark");
-      document.documentElement.classList.add("dark");
-      console.log('Switched to dark mode');
-    }
+    const newTheme = theme === "dark" ? "light" : "dark";
+    
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    applyTheme(newTheme);
+    
+    console.log('Switched to', newTheme, 'mode');
   };
 
   return (
-    <Button 
-      variant="ghost" 
-      size="icon" 
+    <button 
       onClick={toggleTheme} 
       className="
-        rounded-full w-9 h-9
-        border-border border-border
-        hover:bg-accent hover:border-border-primary
+        rounded-full w-9 h-9 p-0
+        border border-border
+        bg-background hover:bg-muted
         transition-all duration-200
         hover:scale-105
         active:scale-95
         shadow-sm
+        flex items-center justify-center
+        hover:border-primary/50
+        hover:shadow-[0_0_8px_var(--hover-glow)]
       "
       title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
     >
       {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
       <span className="sr-only">Toggle theme</span>
-    </Button>
+    </button>
   );
 }
