@@ -251,48 +251,20 @@ export default function AdminClassDetailsPage() {
   shadow-sm
 ">
 
-               <div className="
-    flex items-center justify-between
-    px-5 py-4
-    border-border/60
-  ">
+               <div className="flex items-center justify-between  px-5 py-4  border-border/60  ">
 
-                  {/* SEARCH */}
                   <div className="relative flex-1 max-w-sm group">
-
-                     
-
+                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none transition group-focus-within:text-primary " />
                      <Input
-                        placeholder="Search assigned questions..."
+                        placeholder="Search classes..."
                         value={search}
-                        onChange={(e) => {
-                           setSearch(e.target.value);
-                           setAssignedPage(1);
-                        }}
-                        className="
-          pl-9  h-10 rounded-full
-
-          bg-accent/40 border border-border
-          focus:border-primary
-
-          focus:shadow-[0_0_0_2px_rgba(204,255,0,0.15)]
-
-          transition-all
-        "
+                        onChange={(e) => { setSearch(e.target.value); setAssignedPage(1); }}
+                        className="h-10 !pl-9 !pr-9 rounded-full bg-accent/40   border-0 focus:ring-2 focus:ring-primary/20 focus:bg-accent/60   transition-all    "
                      />
                   </div>
-
+                  
                   {/* COUNT BADGE */}
-                  <div className="
-      text-xs font-semibold tracking-wide
-
-      px-3 py-1.5 rounded-full
-
-      bg-primary/10 text-primary
-      border border-primary/20
-
-      shadow-[0_0_10px_var(--hover-glow)]
-    ">
+                  <div className="  text-xs font-semibold tracking-wide  px-3 py-1.5 rounded-full   bg-primary/10 text-primary  border border-primary/20    shadow-[0_0_10px_var(--hover-glow)]   ">
                      {assignedTotalCount} Assigned
                   </div>
 
