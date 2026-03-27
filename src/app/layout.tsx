@@ -61,7 +61,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full overflow-y-auto custom-scrollbar flex flex-col ">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <QueryProvider>
             {children}

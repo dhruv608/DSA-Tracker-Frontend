@@ -380,38 +380,39 @@ input:focus, button:focus, .btn:focus {
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Custom Scrollbar Styles */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+/* Custom Scrollbar with Logo Color */
+body::-webkit-scrollbar {
+  width: 8px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+body::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--border);
-  border-radius: var(--radius-full);
+body::-webkit-scrollbar-thumb {
+  background: var(--logo);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: var(--accent-primary);
+body::-webkit-scrollbar-thumb:hover {
+  background: var(--logo);
+  opacity: 0.8;
 }
 
 /* Firefox */
-@supports (scrollbar-width: thin) {
-  .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
+body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--logo) transparent;
 }
 
 /* Hide scrollbar but keep scroll working */
-.scrollbar-none::-webkit-scrollbar {
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
-.scrollbar-none {
+.no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -498,4 +499,29 @@ input:focus, button:focus, .btn:focus {
   100% {
     transform: translateX(100%);
   }
+
+/* Hide scrollbar but allow scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE & Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+
+/* Hidden by default */
+::-webkit-scrollbar {
+  width: 0px;
+}
+
+/* Show on hover */
+body:hover::-webkit-scrollbar {
+  width: 8px;
+}
+
+body:hover::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 9999px;
 }

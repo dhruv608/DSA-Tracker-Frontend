@@ -94,7 +94,7 @@ export default function StudentLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary/20">
+    <div className="min-h-screen  bg-background text-foreground flex flex-col font-sans selection:bg-primary/20">
       <RecentQuestionsProvider>
         <StudentHeader />
         

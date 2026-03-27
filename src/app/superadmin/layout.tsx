@@ -147,7 +147,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         </header>
 
         {/* Scrollable Page Wrapper */}
-        <div className="flex-1 overflow-y-auto p-8 relative">
+        <div className="flex-1 p-8 relative">
           <div className="max-w-[1200px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             {children}
           </div>

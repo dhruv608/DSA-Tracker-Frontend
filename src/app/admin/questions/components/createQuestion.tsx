@@ -148,9 +148,9 @@ export default function CreateQuestion({
                 Basic Information
               </h3>
 
-              <div className="space-y-2 flex justify-between ">
+              <div className="space-y-2 flex justify-between text-base ">
                 <div>
-                <Label className="text-xs text-muted-foreground ">
+                <Label className="text-m text-muted-foreground ">
                   Question Title
                 </Label>
 
@@ -169,9 +169,9 @@ export default function CreateQuestion({
                 </div>
               </div>
 
-              <div className="space-y-2 flex justify-between ">
+              <div className="space-y-2 flex justify-between text-base ">
                 <div>
-                <Label className="text-xs text-muted-foreground">
+                <Label className="text-m text-muted-foreground">
                   Question Link
                 </Label>
                 </div>
