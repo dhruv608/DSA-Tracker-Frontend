@@ -8,10 +8,10 @@
 
   --card: #161821;
   --card-foreground: #E2E8F0;
-  
+
   --popover: #1E2230;
   --popover-foreground: #E2E8F0;
-  
+
   --primary: #ccff00d1;
   --primary-foreground: #090A0F;
 
@@ -58,12 +58,12 @@
   --spacing-xl: 32px;
   --spacing-2xl: 48px;
 
-   /* Border Radius System */
+  /* Border Radius System */
   --radius-sm: 8px;
   --radius-md: 20px;
   --radius-lg: 16px;
   --radius-xl: 23px;
-  --radius-full: 9999px; 
+  --radius-full: 9999px;
 
   /* Typography Scale */
   --text-xs: 12px;
@@ -95,6 +95,7 @@
   /* ===== ACCENT COLORS ===== */
   --accent-primary: var(--primary);
   --accent-secondary: var(--secondary);
+  --font-sans: 'Lufga', sans-serif;
 
   /* ===== PLACEHOLDER STYLES ===== */
   input::placeholder {
@@ -117,7 +118,7 @@
 
   --secondary: #0F1117;
   --secondary-foreground: #E2E8F0;
-   --logo: #ccff00;
+  --logo: #ccff00;
   --muted: #0F1117;
   --muted-foreground: #64748B;
 
@@ -154,8 +155,8 @@
 .light .glass {
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(18px);
-  border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   transition: backdrop-filter 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -183,9 +184,15 @@
 
 
 @keyframes shine {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -245,29 +252,77 @@
     @apply text-foreground;
     font-family: var(--font-sans);
     font-feature-settings: "rlig" 1, "calt" 1;
-    
+
     background:
-      radial-gradient(circle at 20% 20%, rgba(204,255,0,0.08), transparent 40%),
-      radial-gradient(circle at 80% 0%, rgba(0,240,255,0.08), transparent 40%),
+      radial-gradient(circle at 20% 20%, rgba(204, 255, 0, 0.08), transparent 40%),
+      radial-gradient(circle at 80% 0%, rgba(0, 240, 255, 0.08), transparent 40%),
       linear-gradient(180deg, #090A0F 0%, #0F1117 100%);
   }
-  
+
   /* Typography Scale */
-  h1 { font-size: var(--text-4xl); line-height: 1.2; }
-  h2 { font-size: var(--text-3xl); line-height: 1.3; }
-  h3 { font-size: var(--text-2xl); line-height: 1.4; }
-  h4 { font-size: var(--text-xl); line-height: 1.5; }
-  h5 { font-size: var(--text-lg); line-height: 1.6; }
-  h6 { font-size: var(--text-base); line-height: 1.7; }
-  
-  p { font-size: var(--text-base); line-height: 1.6; margin-bottom: var(--spacing-md); }
-  
+  h1 {
+    font-size: var(--text-4xl);
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: var(--text-3xl);
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: var(--text-2xl);
+    line-height: 1.4;
+  }
+
+  h4 {
+    font-size: var(--text-xl);
+    line-height: 1.5;
+  }
+
+  h5 {
+    font-size: var(--text-lg);
+    line-height: 1.6;
+  }
+
+  h6 {
+    font-size: var(--text-base);
+    line-height: 1.7;
+  }
+
+  p {
+    font-size: var(--text-base);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+  }
+
   /* Spacing System */
-  .container { max-width: 1200px; margin: 0 auto; padding: 0 var(--spacing-lg); }
-  .section { margin-bottom: var(--spacing-2xl); }
-  .card { padding: var(--spacing-lg); margin-bottom: var(--spacing-md); }
-  .flex-center { display: flex; align-items: center; justify-content: center; }
-  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+  }
+
+  .section {
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .card {
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 .light body {
@@ -324,9 +379,12 @@
   }
 
   @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
       opacity: 1;
     }
+
     50% {
       opacity: 0.7;
     }
@@ -337,15 +395,20 @@
   }
 
   @keyframes crown-float {
-    0%, 100% {
+
+    0%,
+    100% {
       transform: translateY(0px) rotate(0deg);
     }
+
     25% {
       transform: translateY(-3px) rotate(-2deg);
     }
+
     50% {
       transform: translateY(-5px) rotate(0deg);
     }
+
     75% {
       transform: translateY(-3px) rotate(2deg);
     }
@@ -363,12 +426,17 @@
 }
 
 /* Consistent border radius for all interactive elements */
-button, .btn, input, .card {
+button,
+.btn,
+input,
+.card {
   border-radius: var(--radius-lg);
 }
 
 /* Enhanced focus states */
-input:focus, button:focus, .btn:focus {
+input:focus,
+button:focus,
+.btn:focus {
   outline: none;
   box-shadow: 0 0 0 3px var(--ring);
 }
@@ -420,9 +488,11 @@ body {
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -430,21 +500,15 @@ body {
 
 /* 🎨 Animated Background */
 .hero-gradient {
-  background: radial-gradient(
-      circle at 20% 30%,
+  background: radial-gradient(circle at 20% 30%,
       var(--accent-primary) 0%,
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at 80% 70%,
+      transparent 40%),
+    radial-gradient(circle at 80% 70%,
       var(--accent-primary) 0%,
-      transparent 40%
-    ),
-    linear-gradient(
-      120deg,
+      transparent 40%),
+    linear-gradient(120deg,
       var(--background) 0%,
-      var(--background-secondary) 100%
-    );
+      var(--background-secondary) 100%);
 
   background-size: 200% 200%;
   animation: gradientMove 12s ease infinite;
@@ -464,12 +528,10 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent);
   animation: shimmer 2s infinite;
 }
 
@@ -477,18 +539,22 @@ body {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
 }
+
 /* Hide scrollbar but allow scroll */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE & Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;
+  /* IE & Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 
@@ -520,17 +586,15 @@ body:hover::-webkit-scrollbar-thumb {
   border-radius: inherit;
   padding: 1px;
 
-  background: linear-gradient(
-    120deg,
-    rgba(204,255,0,0.6),
-    transparent,
-    rgba(204,255,0,0.4)
-  );
+  background: linear-gradient(120deg,
+      rgba(204, 255, 0, 0.6),
+      transparent,
+      rgba(204, 255, 0, 0.4));
 
   background-size: 200% 200%;
   animation: borderFlow 6s linear infinite;
 
-  -webkit-mask: 
+  -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -540,6 +604,55 @@ body:hover::-webkit-scrollbar-thumb {
 }
 
 @keyframes borderFlow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+
+
+@font-face {
+  font-family: 'Lufga';
+  src: url('/fonts/lufga/LufgaThin.ttf') format('truetype');
+  font-weight: 100;
+}
+
+@font-face {
+  font-family: 'Lufga';
+  src: url('/fonts/lufga/LufgaLight.ttf') format('truetype');
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'Lufga';
+  src: url('/fonts/lufga/LufgaRegular.ttf') format('truetype');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Lufga';
+  src: url('/fonts/lufga/LufgaMedium.ttf') format('truetype');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'Lufga';
+  src: url('/fonts/lufga/LufgaSemiBold.ttf') format('truetype');
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: 'Lufga';
+  src: url('/fonts/lufga/LufgaBold.ttf') format('truetype');
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: 'Lufga';
+  src: url('/fonts/lufga/LufgaBlack.ttf') format('truetype');
+  font-weight: 900;
 }

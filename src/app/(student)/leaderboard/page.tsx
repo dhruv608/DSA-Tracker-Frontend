@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { studentLeaderboardService } from "@/services/student/leaderboard.service";
 import { studentAuthService } from "@/services/student/auth.service";
 import { EvaluationModal } from "@/components/admin/leaderboard/components/EvaluationModal";
 import { FilterBar } from "@/components/admin/leaderboard/components/FilterBar";
-import { PodiumSection } from "@/components/admin/leaderboard/components/PodiumSection";
 import { StatsSection } from "@/components/admin/leaderboard/components/StatsSection";
 import { LeaderboardTable } from "@/components/admin/leaderboard/components/LeaderboardTable";
 import { TimerLeaderboard } from "@/components/admin/leaderboard/components/TimerLeaderboard";
 import { YourRank } from "@/components/student/leaderboard/YourRank";
+import PodiumSection from "@/components/admin/leaderboard/components/PodiumSection";
 
 export default function StudentLeaderboardPage() {
   const [lType, setLType] = useState('all');
@@ -39,23 +39,35 @@ export default function StudentLeaderboardPage() {
     }
   }, [studentData]);
 
-  const handleRefresh = () => {
-    window.location.reload();
-  };
 
-  const { data: leaderboardData, isLoading, error } = useQuery({
+
+  const { data: leaderboardData, isLoading, error, refetch } = useQuery({
     queryKey: ['studentLeaderboard', lCity === 'all' ? 'all' : lCity, lYear, lType, lSearch],
     queryFn: async () => {
-      return await studentLeaderboardService.getLeaderboard({
-        city: lCity === 'All Cities' ? 'all' : lCity,
-        year: lYear,
-        type: lType
-      }, lSearch);
+      return await studentLeaderboardService.getLeaderboard(
+        {
+          city: lCity === 'All Cities' ? 'all' : lCity,
+          year: lYear,
+          type: lType,
+        },
+        lSearch
+      );
     },
     staleTime: 5 * 60 * 1000,
+
+    // 🔥 ADD THESE
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
+
+
   const data = leaderboardData?.data;
+  const handleRefresh = useCallback(() => {
+      console.log("REFETCH CALLED");
+    refetch();
+  }, [refetch]);
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-8">
@@ -74,7 +86,7 @@ export default function StudentLeaderboardPage() {
             </p>
           </div>
           <div className="flex justify-end">
-            <TimerLeaderboard 
+            <TimerLeaderboard
               lastUpdated={data?.last_calculated}
               refreshInterval={4}
               onRefresh={handleRefresh}
@@ -120,7 +132,7 @@ export default function StudentLeaderboardPage() {
           loading={isLoading}
           error={error?.message}
         />
-        
+
         <StatsSection
           leaderboard={data?.top10 || []}
           totalParticipants={data?.top10?.length || 0}
@@ -137,8 +149,8 @@ export default function StudentLeaderboardPage() {
           selectedCity={lCity === 'All Cities' ? 'all' : lCity}
           page={1}
           limit={10}
-          setPage={() => {}}
-          setLimit={() => {}}
+          setPage={() => { }}
+          setLimit={() => { }}
           mode="student"
         />
       </div>

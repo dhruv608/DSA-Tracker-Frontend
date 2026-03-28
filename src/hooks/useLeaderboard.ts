@@ -36,6 +36,7 @@ export interface YourRankData {
   medium_solved: number;
   hard_solved: number;
   total_solved: string;
+  total_assigned: number;
 }
 
 export interface LeaderboardData {

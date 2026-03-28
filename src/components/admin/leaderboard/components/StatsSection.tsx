@@ -4,7 +4,7 @@ import { Users, BarChart, CheckCircle2 } from 'lucide-react';
 import StatsShimmer from '@/components/admin/leaderboard/shimmers/StatsShimmer';
 
 const StatsCard = ({ icon, title, value, color, bg }: any) => (
-  <div className="bg-card border border-border rounded-xl p-5 flex items-center gap-4 shadow-sm group hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-default">
+  <div className="bg-card border border-border rounded-2xl p-5 flex items-center gap-4 shadow-sm group hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-default">
      <div className={`w-14 h-14 rounded-xl ${bg} flex items-center justify-center ${color} group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-sm`}>
         {React.cloneElement(icon, { className: 'w-7 h-7' })}
      </div>
