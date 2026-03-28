@@ -27,7 +27,7 @@ export function LeaderboardTable({
           <TableShimmer />
         </div>
       ) : (
-        <div className=" flex-1 p-0  overflow-auto">
+        <div className=" flex-1 p-0  overflow-auto rounded-2xl">
           <Table className="no-scrollbar">
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50 border-border/80">

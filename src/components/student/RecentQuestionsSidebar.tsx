@@ -50,11 +50,12 @@ export function RecentQuestionsSidebar() {
     }
   };
 
+  // Fetch only when sidebar opens
   useEffect(() => {
-    fetchRecentQuestions();
-    const interval = setInterval(fetchRecentQuestions, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    if (isOpen) {
+      fetchRecentQuestions();
+    }
+  }, [isOpen]);
 
   // Time formatting
   const formatTimeAgo = (assigned_at: string) => {

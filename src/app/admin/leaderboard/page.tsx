@@ -8,12 +8,14 @@ import { Trophy, Clock } from 'lucide-react';
 import PodiumShimmer from '@/components/admin/leaderboard/shimmers/PodiumShimmer';
 import StatsShimmer from '@/components/admin/leaderboard/shimmers/StatsShimmer';
 import TableShimmer from '@/components/admin/leaderboard/shimmers/TableShimmer';
-import { PodiumSection } from '../../../components/admin/leaderboard/components/PodiumSection';
 import { StatsSection } from '../../../components/admin/leaderboard/components/StatsSection';
 import { LeaderboardTable } from '../../../components/admin/leaderboard/components/LeaderboardTable';
 import { FilterBar } from '../../../components/admin/leaderboard/components/FilterBar';
 import { EvaluationModal } from '../../../components/admin/leaderboard/components/EvaluationModal';
 import { TimerLeaderboard } from '../../../components/admin/leaderboard/components/TimerLeaderboard';
+import PodiumSection from '@/components/admin/leaderboard/components/PodiumSection';
+
+
 
 // Hook for Debounce
 function useDebounce<T>(value: T, delay: number): T {

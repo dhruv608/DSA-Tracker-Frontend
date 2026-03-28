@@ -12,7 +12,7 @@ export function FilterBar({
   mode = 'admin'
 }: any) {
   return (
-    <div className="p-4 border-border flex flex-wrap items-center gap-3 bg-card/60 backdrop-blur-md sticky top-0 z-20">
+    <div className="p-4 border-border flex flex-wrap rounded-2xl items-center gap-3 bg-card/60 backdrop-blur-md sticky top-0 z-20">
       <div className="flex items-center gap-1.5 text-foreground font-semibold px-2 border-r border-border mr-2 opacity-80">
           <Filter className="w-4 h-4"/> Filter
       </div>
