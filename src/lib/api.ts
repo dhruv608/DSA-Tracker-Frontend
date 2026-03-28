@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { handleApiError } from '@/utils/toast-system';
 
 // Helper function to read cookies
 const getCookie = (name: string): string | null => {
@@ -110,6 +111,21 @@ api.interceptors.response.use(
         (silentError as any).silent = true;
         return Promise.reject(silentError);
       }
+    }
+
+    // Normalize error message based on our new backend API structure
+    if (error.response?.data) {
+      const errObj = error.response.data;
+      if (errObj.message && !error.message) {
+         error.message = errObj.message;
+      } else if (errObj.error && !error.message) {
+         error.message = errObj.error;
+      }
+    }
+
+    // Handle error with our toast system for non-silent errors
+    if (!error.silent && !error.isSilent) {
+      handleApiError(error, 'API Request');
     }
 
     return Promise.reject(error);

@@ -8,6 +8,7 @@ import { getAllBatches, Batch } from '@/services/batch.service';
 import { Building2, Layers, Users, TrendingUp, Activity, MapPin, Users2, BarChart3, ArrowUpRight, Sparkles, Globe, Target } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { handleError } from "@/utils/handleError";
 
 interface Stats {
   totalCities: number;
@@ -47,6 +48,7 @@ export default function SuperAdminDashboard() {
 
         setCityBreakdown(breakdown);
       } catch (err) {
+        handleError(err);
         console.error("Dashboard error:", err);
       } finally {
         setLoading(false);
@@ -104,7 +106,7 @@ export default function SuperAdminDashboard() {
   }
 
   return (
-    <div className="space-y-8 pb-10 hero-gradient min-h-screen p-6">
+    <div className="space-y-8 pb-10  min-h-screen p-6">
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Cities */}
@@ -183,7 +185,8 @@ export default function SuperAdminDashboard() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
         {/* City Breakdown Panel */}
-      <div className="md:col-span-2 glass rounded-2xl p-6 border border-border/20">
+        <div className=" md:col-span-2 glass rounded-2xl p-6 border border-border/30
+">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <BarChart3 className="text-primary" />
             City Breakdown
@@ -191,19 +194,69 @@ export default function SuperAdminDashboard() {
 
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={cityBreakdown}>
-                <CartesianGrid strokeDasharray="3 6" vertical={false} />
+              <BarChart
+                data={cityBreakdown}
+                margin={{ top: 20, right: 10, left: -10, bottom: 5 }}
+              >
 
-                <XAxis dataKey="name" />
-                <YAxis />
+                {/* 🔹 GRID */}
+                <CartesianGrid
+                  stroke="var(--border)"
+                  strokeDasharray="4 6"
+                  vertical={false}
+                  opacity={1}
+                />
 
-                <Tooltip />
+                {/* 🔹 X AXIS */}
+                <XAxis
+                  dataKey="name"
+                  tick={{
+                    fill: "var(--foreground)",
+                    fontSize: 18,
+                  }}
+                  axisLine={false}
+                  tickLine={false}
+                />
 
-                <Bar dataKey="count" radius={[10, 10, 5, 5]}>
-                  {cityBreakdown.map((_, i) => (
-                    <Cell key={i} fill="hsl(var(--chart-3))" />
-                  ))}
-                </Bar>
+                {/* 🔹 Y AXIS */}
+                <YAxis
+                  tick={{
+                    fill: "var(--foreground)",
+                    fontSize: 16,
+                  }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+
+                {/* 🔥 TOOLTIP */}
+                <Tooltip
+                  cursor={{ fill: "rgba(255,255,255,0.03)" }}
+                  contentStyle={{
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "12px",
+                    backdropFilter: "blur(10px)",
+                  }}
+                />
+
+                {/* 🔥 GRADIENT DEFINITIONS */}
+                <defs>
+                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#00E5FF" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#6366F1" stopOpacity={0.5} />
+                  </linearGradient>
+                </defs>
+
+                {/* 🔥 BAR */}
+                <Bar
+                  dataKey="count"
+                  radius={[12, 12, 6, 6]}
+                  fill="url(#barGradient)"
+                  style={{
+                    filter: "drop-shadow(0 0 8px rgba(0,229,255,0.3))"
+                  }}
+                />
+
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -47,6 +47,7 @@ import CreateQuestion from './components/createQuestion';
 import UpdateQuestion from './components/updateQuestion';
 import DeleteQuestion from './components/deleteQuestion';
 import BulkUploadModal from './components/BulkUploadModal';
+import { handleError } from "@/utils/handleError";
 
 function BadgeByLevel({ level }: { level: string }) {
   const variant = level === 'EASY' ? 'default' :
@@ -55,7 +56,7 @@ function BadgeByLevel({ level }: { level: string }) {
   const colorClass = level === 'EASY' ? 'bg-green-100 text-green-800 border-green-200' :
     level === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
       'bg-red-100 text-red-800 border-red-200';
-  
+
   return (
     <Badge className={colorClass} variant="outline">
       {level}
@@ -71,9 +72,9 @@ function BadgeByType({ type }: { type: string }) {
 function PlatformIcon({ platform }: { platform: string }) {
   const Icon = platform === 'LEETCODE' ? Code :
     platform === 'GFG' ? BookOpen :
-    platform === 'INTERVIEWBIT' ? Brain :
-    HelpCircle;
-  
+      platform === 'INTERVIEWBIT' ? Brain :
+        HelpCircle;
+
   return <Icon className="w-4 h-4 mr-2" />;
 }
 
@@ -153,6 +154,7 @@ export default function AdminQuestionsBankPage() {
       setAllTopics(res.data.map((t: any) => ({ label: t.topic_name, value: t.slug })));
       setTopicsForBulkUpload(res.data.map((t: any) => ({ label: t.topic_name, value: t.id.toString() })));
     } catch (err) {
+      handleError(err);
       console.error(err);
     }
   }, []);
@@ -185,6 +187,7 @@ export default function AdminQuestionsBankPage() {
       setTotalPages(res.pagination.totalPages);
       setTotalRecords(res.pagination.total);
     } catch (err) {
+      handleError(err);
       console.error("Failed to load questions", err);
     } finally {
       setLoading(false);
@@ -216,6 +219,7 @@ export default function AdminQuestionsBankPage() {
       setIsCreateOpen(false);
       loadQuestions();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Failed to create question.');
     } finally {
       setSubmitting(false);
@@ -237,6 +241,7 @@ export default function AdminQuestionsBankPage() {
       setIsEditOpen(false);
       loadQuestions();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Failed to update question.');
     } finally {
       setSubmitting(false);
@@ -250,6 +255,7 @@ export default function AdminQuestionsBankPage() {
       setIsDeleteOpen(false);
       loadQuestions();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Cannot delete a question that is bound to classes or student progress.');
     } finally {
       setSubmitting(false);
@@ -333,22 +339,22 @@ export default function AdminQuestionsBankPage() {
 
         for (let i = 0; i < rows.length; i++) {
           const row = rows[i];
-          
+
           if (!row.question_name?.trim()) {
             setBulkValidationError(`Row ${i + 1}: Question name is required`);
             return;
           }
-          
+
           if (!row.question_link?.trim()) {
             setBulkValidationError(`Row ${i + 1}: Question link is required`);
             return;
           }
-          
+
           if (!validLevels.includes(row.level?.toUpperCase())) {
             setBulkValidationError(`Row ${i + 1}: Level must be EASY, MEDIUM, or HARD`);
             return;
           }
-          
+
           if (!validTypes.includes(row.type?.toUpperCase())) {
             setBulkValidationError(`Row ${i + 1}: Type must be HOMEWORK or CLASSWORK`);
             return;
@@ -357,6 +363,7 @@ export default function AdminQuestionsBankPage() {
 
         setBulkCsvData(rows);
       } catch (error) {
+        handleError(error);
         setBulkValidationError('Failed to parse CSV file');
       }
     };
@@ -389,10 +396,10 @@ export default function AdminQuestionsBankPage() {
       }
 
       const result = await response.json();
-      
+
       // Show success message using alert for now
       alert(`Successfully uploaded ${result.inserted} out of ${result.totalRows} questions`);
-      
+
       setIsBulkUploadOpen(false);
       setBulkFile(null);
       setBulkSelectedTopic('');
@@ -401,6 +408,7 @@ export default function AdminQuestionsBankPage() {
       setBulkCsvData([]);
       loadQuestions();
     } catch (error: any) {
+      handleError(error);
       setBulkUploadError(error.message || 'Upload failed');
     } finally {
       setBulkLoading(false);
@@ -427,260 +435,379 @@ export default function AdminQuestionsBankPage() {
   const [bulkCsvData, setBulkCsvData] = useState<any[]>([]);
 
   const isBulkUploadDisabled = !bulkFile || !!bulkValidationError || bulkLoading || !bulkSelectedTopic;
+  function TypeBadge({ type }: { type: string }) {
+    const isHomework = type === "HOMEWORK";
 
+    return (
+      <div
+        className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium w-fit
+      ${isHomework
+            ? "bg-primary/10 text-primary border border-primary/20"
+            : "bg-muted/40 text-muted-foreground border border-border"
+          }`}
+      >
+        {isHomework ? (
+          <BookOpen className="w-3.5 h-3.5" />
+        ) : (
+          <Code className="w-3.5 h-3.5" />
+        )}
+
+        {type}
+      </div>
+    );
+  }
+
+  function DifficultyBadge({ level }: { level: string }) {
+    const config = {
+      EASY: {
+        color: "bg-green-500/10 text-green-400 border-green-500/20",
+        
+      },
+      MEDIUM: {
+        color: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+        
+      },
+      HARD: {
+        color: "bg-red-500/10 text-red-400 border-red-500/20",
+        
+      },
+    };
+
+    const item = config[level as keyof typeof config];
+
+    return (
+      <div
+        className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border w-fit ${item.color}`}
+      >
+        {level}
+      </div>
+    );
+  }
+
+  function PlatformBadge({ platform }: { platform: string }) {
+    const config: any = {
+      LEETCODE: {
+        icon: Code,
+        color: "bg-[#FFA116]/10 text-[#FFA116] border-[#FFA116]/20",
+      },
+      GFG: {
+        icon: BookOpen,
+        color: "bg-[#2F8D46]/10 text-[#2F8D46] border-[#2F8D46]/20",
+      },
+      INTERVIEWBIT: {
+        icon: Brain,
+        color: "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20",
+      },
+      OTHER: {
+        icon: HelpCircle,
+        color: "bg-muted/40 text-muted-foreground border-border",
+      },
+    };
+
+    const item = config[platform] || config.OTHER;
+    const Icon = item.icon;
+
+    return (
+      <div
+        className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border w-fit ${item.color}`}
+      >
+        <Icon className="w-3.5 h-3.5" />
+        {platform}
+      </div>
+    );
+  }
   return (
-  <div className="flex flex-col space-y-6">
+    <div className="flex flex-col space-y-6">
 
-    <div className="flex items-end justify-between">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-          <HelpCircle className="w-6 h-6 text-primary" /> Global Question Bank
-        </h2>
-        <p className="text-muted-foreground mt-1 text-sm bg-muted inline-block px-2 py-0.5 rounded-md border border-border mt-2">
-          {totalRecords} Total Questions
-        </p>
-      </div>
-      <div className="flex items-center gap-3">
-        <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
-          <Plus className="w-4 h-4" /> Add Question
-        </Button>
-        <Button onClick={() => setIsBulkUploadOpen(true)} variant="outline" className="gap-2">
-          <Upload className="w-4 h-4" /> Bulk Upload
-        </Button>
-      </div>
-    </div>
+      {/* ================= HEADER ================= */}
+      <div className="glass card-premium rounded-2xl p-6 flex items-center justify-between">
 
-    <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden flex flex-col min-h-[600px]">
-      <div className="p-4 border-border flex flex-wrap items-center gap-3 bg-muted/20">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Search by name..."
-            value={qSearch}
-            onChange={(e) => { setQSearch(e.target.value); setPage(1); }}
-            className="pl-9 h-9"
-          />
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+            <HelpCircle className="w-6 h-6 text-primary" />
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold">
+              Global Question Bank
+            </h2>
+
+          </div>
         </div>
 
-          <Select
-            value={qLevel}
-            onChange={(v) => { setQLevel(v as string); setPage(1); }}
-            options={[
-              { label: 'All Difficulties', value: '' },
-              { label: 'Easy', value: 'EASY' },
-              { label: 'Medium', value: 'MEDIUM' },
-              { label: 'Hard', value: 'HARD' },
-            ]}
-            className="w-[140px] h-9 text-sm"
-            placeholder="Difficulty"
-          />
+        <div className="px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
+          {totalRecords} Questions
+        </div>
+      </div>
 
-          <Select
-            value={qPlatform}
-            onChange={(v) => { setQPlatform(v as string); setPage(1); }}
-            options={[
-              { label: 'All Platforms', value: '' },
-              { label: 'LeetCode', value: 'LEETCODE' },
-              { label: 'GeeksForGeeks', value: 'GFG' },
-              { label: 'InterviewBit', value: 'INTERVIEWBIT' },
-              { label: 'Other', value: 'OTHER' },
-            ]}
-            className="w-[160px] h-9 text-sm"
-            placeholder="Platform"
-          />
+      <div className="glass card-premium rounded-2xl p-4 flex flex-col gap-4">
 
-          <Select
-            value={searchParams.get('topic') || 'all'}
-            onChange={(v) => { 
-              const params = new URLSearchParams(searchParams.toString());
-              if (v && v !== 'all') params.set('topic', v.toString()); else params.delete('topic');
-              params.set('page', '1');
-              router.replace(`/admin/questions?${params.toString()}`);
-            }}
-            options={[
-              { label: 'All Topics', value: 'all' },
-              ...allTopics
-            ]}
-            className="w-[180px] h-9 text-sm"
-            placeholder={allTopics.length > 0 ? "All Topics" : "Loading..."}
-          />
-          
-          {hasActiveFilters() && (
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={clearAllFilters}
-              className="h-9 text-xs ml-auto"
+        {/* TOP ROW → SEARCH + BUTTONS */}
+        <div className="flex flex-col sm:flex-row  justify-between items-center">
+
+          {/* SEARCH */}
+          <div className="  relative w-full sm:max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search questions..."
+              value={qSearch}
+              onChange={(e) => {
+                setQSearch(e.target.value);
+                setPage(1);
+              }}
+              className="!pl-9 w-full h-11 rounded-xl bg-background/50"
+            />
+          </div>
+
+          {/* ACTION BUTTONS */}
+          <div className="flex items-center gap-3 flex-wrap">
+
+            <Button
+              onClick={() => setIsBulkUploadOpen(true)}
+              variant="outline"
+              className="h-11 rounded-xl px-4 border-border hover:bg-muted/40"
             >
-              <X className="w-3 h-3 mr-1" />
-              Clear
+              <Upload className="w-4 h-4 mr-2" />
+              Bulk Upload
             </Button>
-          )}
+
+            <Button
+              onClick={() => setIsCreateOpen(true)}
+              className="h-11 rounded-xl px-5 bg-primary text-black font-semibold hover:opacity-90"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Question
+            </Button>
+
+          </div>
         </div>
 
-        <ScrollArea className="flex-1">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead>Question Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Difficulty</TableHead>
-                <TableHead>Topic</TableHead>
-                <TableHead>Platform</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <>
-                  {[...Array(5)].map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell><Skeleton className="h-4 w-[250px]" /></TableCell>
+        {/* BOTTOM ROW → FILTERS */}
+        <div className='flex  justify-between'>
+
+          <div className="flex flex-wrap gap-3 items-center ">
+            <Select
+              value={qLevel}
+              onChange={(v) => { setQLevel(v as string); setPage(1); }}
+              options={[
+                { label: 'All Difficulties', value: '' },
+                { label: 'Easy', value: 'EASY' },
+                { label: 'Medium', value: 'MEDIUM' },
+                { label: 'Hard', value: 'HARD' },
+              ]}
+              className="w-[150px] border"
+            />
+
+            <Select
+              value={qPlatform}
+              onChange={(v) => { setQPlatform(v as string); setPage(1); }}
+              options={[
+                { label: 'All Platforms', value: '' },
+                { label: 'LeetCode', value: 'LEETCODE' },
+                { label: 'GFG', value: 'GFG' },
+                { label: 'InterviewBit', value: 'INTERVIEWBIT' },
+              ]}
+              className="w-[170px] border"
+            />
+
+            <Select
+              value={searchParams.get('topic') || 'all'}
+              onChange={(v) => {
+                const params = new URLSearchParams(searchParams.toString());
+                if (v && v !== 'all') params.set('topic', v.toString());
+                else params.delete('topic');
+                params.set('page', '1');
+                router.replace(`/admin/questions?${params.toString()}`);
+              }}
+              options={[
+                { label: 'All Topics', value: 'all' },
+                ...allTopics
+              ]}
+              className="w-[200px] border"
+            />
+          </div>
+          <div>
+            {/* CLEAR FILTER */}
+            {hasActiveFilters() && (
+              <Button
+                variant="ghost"
+                onClick={clearAllFilters}
+                className="h-10 p-4 py-5 fw-bold text-sm border border-border"
+              >
+                <X className="w-4 h-4 mr-1" />
+                Clear
+              </Button>
+            )}
+
+          </div>
+
+        </div>
+      </div>
+
+      {/* ================= TABLE ================= */}
+      <div className="glass card-premium rounded-2xl overflow-hidden">
+
+        <div className="glass card-premium rounded-2xl overflow-hidden">
+
+          <ScrollArea className="max-h-[600px]">
+
+            <Table className='border-0'>
+
+              {/* HEADER */}
+              <TableHeader>
+                <TableRow className="bg-muted/30 border-b border-border/40 p-6 ">
+                  <TableHead className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Question
+                  </TableHead>
+                  <TableHead className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Type
+                  </TableHead>
+                  <TableHead className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Difficulty
+                  </TableHead>
+                  <TableHead className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Topic
+                  </TableHead>
+                  <TableHead className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Platform
+                  </TableHead>
+                  <TableHead className="text-right text-xs uppercase tracking-wide text-muted-foreground">
+                    Actions
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+
+              {/* BODY */}
+              <TableBody>
+
+                {/* LOADING */}
+                {loading ? (
+                  [...Array(6)].map((_, i) => (
+                    <TableRow key={i} className="border-b border-border/20">
+                      <TableCell><Skeleton className="h-4 w-[220px]" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
                     </TableRow>
-                  ))}
-                </>
-              ) : questions.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-[400px] text-center text-muted-foreground">
-                    No questions found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                questions.map((q) => (
-                  <TableRow key={q.id} className="group hover:bg-muted/30">
-                    <TableCell>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <a 
-                              href={q.question_link} 
-                              target="_blank" 
-                              rel="noreferrer" 
-                              className="font-medium text-foreground hover:text-primary transition-colors hover:underline cursor-pointer"
-                            >
-                              {q.question_name}
-                            </a>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Open in new tab</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </TableCell>
-                    <TableCell>
-                      <BadgeByType type={q.type} />
-                    </TableCell>
-                    <TableCell>
-                      <BadgeByLevel level={q.level} />
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {q.topic?.topic_name || `ID:${q.topic_id}`}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <PlatformIcon platform={q.platform} />
-                        <span className="text-sm">{q.platform}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                onClick={() => openEdit(q)} 
-                                className="h-8 w-8 hover:bg-muted"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Edit</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                onClick={() => { setSelectedQ(q); setIsDeleteOpen(true); }} 
-                                className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Delete</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
+                  ))
+                ) : questions.length === 0 ? (
+
+                  /* EMPTY STATE */
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-24 text-center text-muted-foreground">
+                      No questions found
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </ScrollArea>
 
-        {/* Pagination Footer */}
-        <Pagination
-          currentPage={page}
-          totalItems={totalRecords}
-          limit={limit}
-          onPageChange={setPage}
-          onLimitChange={(newLimit: number) => {
-            setLimit(newLimit);
-            setPage(1);
-          }}
-          showLimitSelector={true}
-          loading={loading}
-        />
+                ) : (
+
+                  questions.map((q) => (
+                    <TableRow
+                      key={q.id}
+                      className="group border-b border-border/20 hover:bg-muted/30 transition-all duration-200"
+                    >
+
+                      {/* QUESTION */}
+                      <TableCell className="font-medium">
+                        <a
+                          href={q.question_link}
+                          target="_blank"
+                          className="flex items-center gap-2 hover:text-primary transition"
+                        >
+                          <span className="line-clamp-1">
+                            {q.question_name}
+                          </span>
+
+                          <ExternalLink className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 transition" />
+                        </a>
+                      </TableCell>
+
+                      <TableCell>
+                        <TypeBadge type={q.type} />
+                      </TableCell>
+
+                      <TableCell>
+                        <DifficultyBadge level={q.level} />
+                      </TableCell>
+
+
+                      {/* TOPIC */}
+                      <TableCell className="text-muted-foreground text-sm">
+                        {q.topic?.topic_name}
+                      </TableCell>
+
+                      {/* PLATFORM */}
+
+                      <TableCell>
+                        <PlatformBadge platform={q.platform} />
+                      </TableCell>
+
+                      {/* ACTIONS */}
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2 opacity-70 group-hover:opacity-100 transition">
+
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => openEdit(q)}
+                            className="h-8 w-8 rounded-lg hover:bg-primary/10"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => {
+                              setSelectedQ(q);
+                              setIsDeleteOpen(true);
+                            }}
+                            className="h-8 w-8 rounded-lg hover:bg-red-500/10"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-400" />
+                          </Button>
+
+                        </div>
+                      </TableCell>
+
+                    </TableRow>
+                  ))
+
+                )}
+
+              </TableBody>
+
+            </Table>
+
+          </ScrollArea>
+
+        </div>
+
+        {/* PAGINATION */}
+        <div className="p-4 border-t border-border/40">
+          <Pagination
+            currentPage={page}
+            totalItems={totalRecords}
+            limit={limit}
+            onPageChange={setPage}
+            onLimitChange={(newLimit) => {
+              setLimit(newLimit);
+              setPage(1);
+            }}
+            showLimitSelector={true}
+          />
+        </div>
+
       </div>
 
-      {/* CREATE MODAL */}
-          
-      <CreateQuestion
-        open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
-        onSuccess={loadQuestions}
-      />
+      {/* ================= MODALS ================= */}
+      <CreateQuestion open={isCreateOpen} onOpenChange={setIsCreateOpen} onSuccess={loadQuestions} />
+      <BulkUploadModal open={isBulkUploadOpen} onOpenChange={setIsBulkUploadOpen} onSuccess={loadQuestions} topics={topicsForBulkUpload} />
+      <UpdateQuestion open={isEditOpen} onOpenChange={setIsEditOpen} question={selectedQ} onSuccess={loadQuestions} />
+      <DeleteQuestion open={isDeleteOpen} onOpenChange={setIsDeleteOpen} question={selectedQ} onSuccess={loadQuestions} />
 
-      {/* BULK UPLOAD MODAL */}
-      
-      <BulkUploadModal
-        open={isBulkUploadOpen}
-        onOpenChange={setIsBulkUploadOpen}
-        onSuccess={loadQuestions}
-        topics={topicsForBulkUpload}
-      />
-
-      {/* UPDATE MODAL */}
-      <UpdateQuestion
-        open={isEditOpen}
-        onOpenChange={setIsEditOpen}
-        question={selectedQ}
-        onSuccess={loadQuestions}
-      />
-
-      {/* DELETE MODAL */}
-      <DeleteQuestion
-        open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
-        question={selectedQ}
-        onSuccess={loadQuestions}
-      />
     </div>
   );
 }

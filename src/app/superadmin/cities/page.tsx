@@ -10,6 +10,7 @@ import { CityFilters } from '@/components/superadmin/cities/CityFilters';
 import { CityTable } from '@/components/superadmin/cities/CityTable';
 import { CityCard } from '@/components/superadmin/cities/CityCard';
 import { CityModal } from '@/components/superadmin/cities/CityModal';
+import { handleError } from "@/utils/handleError";
 
 export default function CitiesPage() {
   const [cities, setCities] = useState<City[]>([]);
@@ -40,6 +41,7 @@ export default function CitiesPage() {
       setCities(Array.isArray(respCities) ? respCities : []);
       setAllBatches(Array.isArray(respBatches) ? respBatches : []);
     } catch (err) {
+      handleError(err);
       console.error(err);
     } finally {
       setLoading(false);
@@ -77,8 +79,8 @@ export default function CitiesPage() {
       }
       setModalOpen(false);
       fetchData();
-    } catch (err: any) {
-      alert(err?.response?.data?.message || "Operation failed.");
+    } catch (err) {
+      console.error('City operation failed:', err);
     } finally {
       setSubmitting(false);
     }
@@ -92,7 +94,7 @@ export default function CitiesPage() {
       setDelOpen(false);
       fetchData();
     } catch (err) {
-      alert("Failed to delete city. It may have linked batches.");
+      console.error('City deletion failed:', err);
     } finally {
       setSubmitting(false);
     }
@@ -118,7 +120,7 @@ export default function CitiesPage() {
         onViewModeChange={setViewMode}
       />
 
-      <div className="glass rounded-xl overflow-hidden border border-border/20">
+      <div className="glass rounded-2xl overflow-hidden border border-border/20">
         {viewMode === 'table' ? (
           <div className="p-6">
             <CityTable

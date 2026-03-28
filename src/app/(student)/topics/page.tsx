@@ -6,14 +6,14 @@ import { Pagination } from '@/components/Pagination';
 import { TopicsLoading } from '@/components/student/topics/TopicLoading';
 import { TopicsHeader } from '@/components/student/topics/TopicsHeader';
 import { TopicsGrid } from '@/components/student/topics/TopicsGrid';
-
+import { handleError } from "@/utils/handleError";
 
 export default function TopicsPage() {
   const [topics, setTopics] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
-  const ITEMS_PER_PAGE = 6;
+  const [itemsPerPage, setItemsPerPage] = useState(8);
 
   // Reset page when search changes
   useEffect(() => {
@@ -26,6 +26,7 @@ export default function TopicsPage() {
         const topicsData = await studentTopicService.getTopics();
         setTopics(topicsData);
       } catch (e) {
+        handleError(e);
         console.error("Topics fetch error", e);
       } finally {
         setLoading(false);
@@ -49,10 +50,10 @@ export default function TopicsPage() {
     return [...unlocked, ...locked];
   }, [topics, searchQuery]);
 
-  const start = (page - 1) * ITEMS_PER_PAGE;
-  const paginatedTopics = filteredAndSortedTopics.slice(start, start + ITEMS_PER_PAGE);
+  const start = (page - 1) * itemsPerPage;
+  const paginatedTopics = filteredAndSortedTopics.slice(start, start + itemsPerPage);
   const totalItems = filteredAndSortedTopics.length;
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   if (loading) {
     return <TopicsLoading />;
@@ -74,10 +75,13 @@ export default function TopicsPage() {
         <Pagination 
           currentPage={page}
           totalItems={totalItems}
-          limit={ITEMS_PER_PAGE}
+          limit={itemsPerPage || 10}
           onPageChange={setPage}
+          onLimitChange={setItemsPerPage}
+          showLimitSelector={true}
         />
       )}
+      
     </div>
   );
 }

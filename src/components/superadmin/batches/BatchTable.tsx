@@ -23,7 +23,7 @@ export function BatchTable({ batches, loading, cities, onEdit, onDelete }: Batch
   return (
     <div className="
       glass hover-glow
-      rounded-2xl
+      rounded
       border border-border/30
       overflow-hidden
       relative group
@@ -35,7 +35,7 @@ export function BatchTable({ batches, loading, cities, onEdit, onDelete }: Batch
         <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-chart-3/10 blur-3xl rounded-full"></div>
       </div>
 
-      <Table className="relative z-10">
+      <Table className="relative z-10 ">
 
         {/* 🔹 HEADER */}
         <TableHeader className="bg-accent/40 backdrop-blur border-b border-border/40">

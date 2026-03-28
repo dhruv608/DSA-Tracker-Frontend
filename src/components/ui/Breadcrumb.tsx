@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
 
 interface BreadcrumbItem {
@@ -12,6 +12,7 @@ interface BreadcrumbItem {
 
 export function Breadcrumb() {
   const pathname = usePathname();
+  const router = useRouter();
   
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
     if (pathname === '/superadmin/login') {
@@ -24,21 +25,21 @@ export function Breadcrumb() {
     
     if (pathname.includes('/superadmin/admins')) {
       return [
-        { label: 'SuperAdmin' },
+        { label: 'SuperAdmin', href: '/superadmin' },
         { label: 'Admins', isCurrent: true }
       ];
     }
     
     if (pathname.includes('/superadmin/cities')) {
       return [
-        { label: 'SuperAdmin' },
+        { label: 'SuperAdmin', href: '/superadmin' },
         { label: 'Cities', isCurrent: true }
       ];
     }
     
     if (pathname.includes('/superadmin/batches')) {
       return [
-        { label: 'SuperAdmin' },
+        { label: 'SuperAdmin', href: '/superadmin' },
         { label: 'Batches', isCurrent: true }
       ];
     }
@@ -49,6 +50,12 @@ export function Breadcrumb() {
 
   const breadcrumbs = generateBreadcrumbs();
 
+  const handleBreadcrumbClick = (item: BreadcrumbItem) => {
+    if (item.href && !item.isCurrent) {
+      router.push(item.href);
+    }
+  };
+
   return (
     <nav className="flex items-center space-x-1 text-sm" aria-label="Breadcrumb">
       {breadcrumbs.map((item, index) => (
@@ -57,10 +64,11 @@ export function Breadcrumb() {
             <ChevronRight className="h-3 w-3 text-muted-foreground/60 mx-1 flex-shrink-0" />
           )}
           <span
+            onClick={() => handleBreadcrumbClick(item)}
             className={`${
               item.isCurrent
-                ? 'text-foreground font-medium'
-                : 'text-muted-foreground hover:text-foreground transition-colors'
+                ? 'text-foreground font-medium cursor-default'
+                : 'text-muted-foreground hover:text-foreground transition-colors cursor-pointer hover:underline'
             } truncate max-w-[100px] sm:max-w-none`}
           >
             {item.label}

@@ -10,6 +10,7 @@ import { BatchFilters } from '@/components/superadmin/batches/BatchFilters';
 import { BatchTable } from '@/components/superadmin/batches/BatchTable';
 import { BatchCard } from '@/components/superadmin/batches/BatchCard';
 import { BatchModal } from '@/components/superadmin/batches/BatchModal';
+import { handleError } from "@/utils/handleError";
 
 export default function BatchesPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -46,6 +47,7 @@ export default function BatchesPage() {
       setBatches(Array.isArray(batchesRes) ? batchesRes : []);
       setCities(Array.isArray(citiesRes) ? citiesRes : []);
     } catch (err) {
+      handleError(err);
       console.error(err);
     } finally {
       setLoading(false);
@@ -83,8 +85,9 @@ export default function BatchesPage() {
       }
       setModalOpen(false);
       fetchData();
-    } catch (err: any) {
-      alert(err?.response?.data?.message || "Operation failed.");
+    } catch (err) {
+      // Error is already handled by the service with toast notifications
+      console.error('Batch operation failed:', err);
     } finally {
       setSubmitting(false);
     }
@@ -98,7 +101,8 @@ export default function BatchesPage() {
       setDelOpen(false);
       fetchData();
     } catch (err) {
-      alert("Failed to delete batch.");
+      // Error is already handled by the service with toast notifications
+      console.error('Batch deletion failed:', err);
     } finally {
       setSubmitting(false);
     }
@@ -142,7 +146,7 @@ export default function BatchesPage() {
         onViewModeChange={setViewMode}
       />
 
-      <div className="glass rounded-xl overflow-hidden border border-border/20">
+      <div className="glass rounded-2xl overflow-hidden border border-border">
         {viewMode === 'table' ? (
           <div className="p-6">
             <BatchTable

@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { loginSuperAdmin } from '@/services/auth.service';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { handleError } from "@/utils/handleError";
 
 export default function SuperAdminLoginPage() {
   
@@ -38,6 +39,7 @@ export default function SuperAdminLoginPage() {
       // Redirect to superadmin dashboard - the protected route will handle authentication
       router.push('/superadmin');
     } catch (err: any) {
+      handleError(err);
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);

@@ -3,16 +3,17 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import { Menu, LayoutDashboard, Users, Building2, Layers } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { Sidebar, SidebarNavItems } from '@/components/sidebar/Sidebar';
 import { getCurrentSuperAdmin } from '@/services/superadmin.service';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { isAdminToken, clearAuthTokens } from '@/lib/auth-utils';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { handleError } from "@/utils/handleError";
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
 
   const pathname = usePathname();
-  const [user, setUser] = React.useState<{name: string, role: string, email?: string} | null>(null);
+  const [user, setUser] = React.useState<{ name: string, role: string, email?: string } | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
@@ -28,11 +29,12 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         window.location.href = '/superadmin/login';
         return;
       }
-      
+
       try {
         const userData = await getCurrentSuperAdmin();
         setUser(userData.data); // Service returns unwrapped data directly
       } catch (err) {
+        handleError(err);
         console.error('Failed to load superadmin user:', err);
         window.location.href = '/superadmin/login';
       } finally {
@@ -80,11 +82,37 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         <Menu className="w-5 h-5" />
       </button>
 
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <div className={`
+        lg:hidden fixed top-0 left-0 h-full z-40 transition-transform duration-300
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <Sidebar
+          role="superadmin"
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          user={user}
+          navItems={navItems}
+          onLogout={handleLogout}
+          portalLabel="SuperAdmin Portal"
+          isCollapsed={false}
+          onToggleCollapse={() => {}}
+        />
+      </div>
+
       {/* Reusable Sidebar Component */}
       <Sidebar
         role="superadmin"
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        isOpen={true}
+        onClose={() => {}}
         user={user}
         navItems={navItems}
         onLogout={handleLogout}
@@ -95,14 +123,14 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col relative z-20 min-w-0 ps-2 mt-3 ">
-        
+
         {/* Topbar */}
         <header className="h-14 glass rounded-2xl border border-border/20 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-30 w-full">
           <div className="flex items-center gap-3">
             <Breadcrumb />
           </div>
           <div className="flex items-center gap-4">
-            <ThemeToggle />
+            <ThemeToggle/>
           </div>
         </header>
 

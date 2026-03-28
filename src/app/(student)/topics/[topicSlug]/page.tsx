@@ -10,6 +10,7 @@ import { SubtopicBackNav } from '@/components/student/subtopics/SubtopicBackNav'
 import { SubtopicHeader } from '@/components/student/subtopics/SubtopicHeader';
 import { SubtopicLoading } from '@/components/student/subtopics/SubtopicLoading';
 import { Pagination } from '@/components/Pagination';
+import { handleError } from "@/utils/handleError";
 
 export default function TopicDetailsPage() {
   const { topicSlug } = useParams() as { topicSlug: string };
@@ -28,6 +29,7 @@ export default function TopicDetailsPage() {
         const data = await studentTopicService.getTopicOverview(topicSlug);
         setTopic(data);
       } catch (e) {
+        handleError(e);
         console.error("Topic fetch error", e);
         router.push('/topics');
       } finally {
@@ -78,6 +80,7 @@ export default function TopicDetailsPage() {
       const data = await studentTopicService.getTopicOverviewWithPagination(topicSlug, queryParams.toString());
       setTopic(data);
     } catch (e) {
+      handleError(e);
       console.error("Topic fetch error", e);
       router.push('/topics');
     } finally {

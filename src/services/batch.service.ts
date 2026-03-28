@@ -1,5 +1,6 @@
 import api from '../lib/api';
 import { City } from './city.service';
+import { showSuccess, showDeleteSuccess, handleError } from '@/utils/handleError';
 
 export interface Batch {
   id: number;
@@ -27,16 +28,34 @@ export const getAllBatches = async (city?: string, year?: number): Promise<Batch
 };
 
 export const createBatch = async (data: { batch_name: string; year: number; city_id: number }) => {
-  const response = await api.post('/api/superadmin/batches', data);
-  return response.data;
+  try {
+    const response = await api.post('/api/superadmin/batches', data);
+    showSuccess('BATCH_CREATED');
+    return response.data;
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
 };
 
 export const updateBatch = async (id: number, data: { batch_name?: string; year?: number; city_id?: number }) => {
-  const response = await api.patch(`/api/superadmin/batches/${id}`, data);
-  return response.data;
+  try {
+    const response = await api.patch(`/api/superadmin/batches/${id}`, data);
+    showSuccess('BATCH_UPDATED');
+    return response.data;
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
 };
 
 export const deleteBatch = async (id: number) => {
-  const response = await api.delete(`/api/superadmin/batches/${id}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/api/superadmin/batches/${id}`);
+    showDeleteSuccess('Batch');
+    return response.data;
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
 };

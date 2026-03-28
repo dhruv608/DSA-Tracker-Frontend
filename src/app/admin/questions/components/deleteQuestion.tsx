@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import { deleteAdminQuestion } from '@/services/admin.service';
 import { Question } from '@/types/admin/question';
+import { handleError } from "@/utils/handleError";
 
 interface DeleteQuestionProps {
   open: boolean;
@@ -42,6 +43,7 @@ export default function DeleteQuestion({
       onSuccess();
       onOpenChange(false);
     } catch (err: any) {
+      handleError(err);
       setError(err.response?.data?.error || err.message || 'Failed to delete question');
     } finally {
       setLoading(false);

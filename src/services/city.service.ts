@@ -1,4 +1,5 @@
 import api from '../lib/api';
+import { showSuccess, showDeleteSuccess, handleError } from '@/utils/handleError';
 
 export interface City {
   id: number;
@@ -14,16 +15,34 @@ export const getAllCities = async (search?: string): Promise<City[]> => {
 };
 
 export const createCity = async (data: { city_name: string }) => {
-  const response = await api.post('/api/superadmin/cities', data);
-  return response.data;
+  try {
+    const response = await api.post('/api/superadmin/cities', data);
+    showSuccess('CITY_CREATED');
+    return response.data;
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
 };
 
 export const updateCity = async (id: number, data: { city_name: string }) => {
-  const response = await api.patch(`/api/superadmin/cities/${id}`, data);
-  return response.data;
+  try {
+    const response = await api.patch(`/api/superadmin/cities/${id}`, data);
+    showSuccess('CITY_UPDATED');
+    return response.data;
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
 };
 
 export const deleteCity = async (id: number) => {
-  const response = await api.delete(`/api/superadmin/cities/${id}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/api/superadmin/cities/${id}`);
+    showDeleteSuccess('City');
+    return response.data;
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
 };

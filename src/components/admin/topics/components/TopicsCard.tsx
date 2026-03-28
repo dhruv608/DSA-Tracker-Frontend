@@ -2,103 +2,124 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TopicCardProps } from "@/types/admin/topic";
-import { ArrowRight, BookOpen, FileQuestion, FolderEdit, ImageIcon, Trash2 } from "lucide-react";
+import { ArrowRight, BookOpen, Calendar, FileQuestion, FolderEdit, ImageIcon, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 
-export default function TopicCard({ topic, onEdit, onDelete }
-   : TopicCardProps
-) {
-   const router = useRouter();
-   return (
-      <Card
-         onClick={(e) => {
-            if (!(e.target as HTMLElement).closest("button")) {
-               router.push(`/admin/topics/${topic.slug}`);
-            }
-         }}
-         className="group cursor-pointer"
-      >
-         <div className="aspect-video bg-muted/20 relative overflow-hidden flex items-center justify-center shrink-0 border-border/30">
-            {topic.photo_url ? (
-               <img
-                  src={topic.photo_url}
-                  alt={topic.topic_name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
-               />
-            ) : (
-               <ImageIcon className="w-10 h-10 text-muted-foreground/20 transition-transform duration-500 group-hover:scale-110" />
-            )}
+export default function TopicCard({
+  topic,
+  onEdit,
+  onDelete,
+}: TopicCardProps) {
+  const router = useRouter();
 
-            {/* Floating Action Menu (Edit/Delete) - Subtle rounded icons */}
-            <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all -translate-y-1.25 group-hover:translate-y-0 duration-200">
-               <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={(e) => { e.stopPropagation(); onEdit(topic); }}
-                  className="h-8 w-8 bg-background/90 hover:bg-background border-border/50 text-foreground shadow-sm rounded-full"
-               >
-                  <FolderEdit className="w-3.5 h-3.5" />
-               </Button>
-               <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     onDelete(topic);
-                  }
-                  }
-                  className="h-8 w-8 bg-background/90 hover:bg-background border-border/50 text-destructive hover:text-destructive shadow-sm rounded-full"
-               >
-                  <Trash2 className="w-3.5 h-3.5" />
-               </Button>
-            </div>
-         </div>
+  return (
+    <div
+      onClick={(e) => {
+        if (!(e.target as HTMLElement).closest("button")) {
+          router.push(`/admin/topics/${topic.slug}`);
+        }
+      }}
+      className="group glass card-premium hover-glow rounded-2xl overflow-hidden cursor-pointer transition-all duration-300"
+    >
 
-         <CardContent className="flex flex-col flex-1 p-5 justify-between gap-4">
-            <div>
-               {/* Title - max 2 lines truncated */}
-               <h3 className="font-semibold text-base sm:text-[1.125rem] leading-snug text-foreground line-clamp-2">
-                  {topic.topic_name}
-               </h3>
-            </div>
+      {/* IMAGE */}
+      <div className="aspect-video relative overflow-hidden">
 
-            <div className="flex flex-col gap-4 mt-auto">
-               {/* Inline Minimal Stats */}
-               <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                     <BookOpen className="w-3.5 h-3.5 opacity-70" />
-                     <span>Classes: <span className="text-foreground ml-0.5">{topic.classCount || 0}</span></span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                     <FileQuestion className="w-3.5 h-3.5 opacity-70" />
-                     <span>Questions: <span className="text-foreground ml-0.5">{topic.questionCount || 0}</span></span>
-                  </div>
+        {topic.photo_url ? (
+          <img
+            src={topic.photo_url}
+            alt={topic.topic_name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-muted/30">
+            <ImageIcon className="w-10 h-10 text-muted-foreground/30" />
+          </div>
+        )}
 
-               </div>
-               <div className="flex items-center gap-1.5">
-                  {/* <Calendar className="w-3.5 h-3.5 opacity-70" /> */}
-                  <p>Started At</p>
-                  <span className="text-foreground ml-0.5">
-                     {topic.firstClassCreated_at
-                        ? new Date(topic.firstClassCreated_at).toLocaleDateString('en-GB').replace(/\//g, '-')
-                        : "No Classes Yet"}
-                  </span>
-               </div>
+        {/* GRADIENT OVERLAY */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-80" />
 
-               {/* Minimal CTA */}
-               <Button
-                  variant="secondary"
-                  className="w-full h-9 bg-muted/50 hover:bg-muted text-sm font-medium gap-1.5 transition-colors group-hover:bg-primary/10 group-hover:text-primary"
-                  onClick={(e) => { e.stopPropagation(); router.push(`/admin/topics/${topic.slug}`); }}
-               >
-                  View Classes <ArrowRight className="w-3.5 h-3.5" />
-               </Button>
-            </div>
-         </CardContent>
+        {/* ACTION BUTTONS */}
+        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition">
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(topic);
+            }}
+            className="h-8 w-8 rounded-full bg-background/80 backdrop-blur border-border hover:bg-primary/10"
+          >
+            <FolderEdit className="w-4 h-4" />
+          </Button>
 
-      </Card>
-   )
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(topic);
+            }}
+            className="h-8 w-8 rounded-full bg-background/80 backdrop-blur border-border text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
 
+        {/* TITLE OVER IMAGE */}
+        <div className="absolute bottom-3 left-4 right-4">
+          <h3 className="text-sm font-semibold text-white line-clamp-2">
+            {topic.topic_name}
+          </h3>
+        </div>
+      </div>
+
+      {/* CONTENT */}
+      <div className="p-5 flex flex-col gap-4">
+
+        {/* STATS */}
+        <div className="flex flex-wrap gap-3 text-xs">
+
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/40">
+            <BookOpen className="w-3.5 h-3.5 text-primary" />
+            <span>{topic.classCount || 0} Classes</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/40">
+            <FileQuestion className="w-3.5 h-3.5 text-primary" />
+            <span>{topic.questionCount || 0} Questions</span>
+          </div>
+
+        </div>
+
+        {/* DATE */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Calendar className="w-3.5 h-3.5" />
+          <span>
+            {topic.firstClassCreated_at
+              ? new Date(topic.firstClassCreated_at)
+                  .toLocaleDateString("en-GB")
+                  .replace(/\//g, "-")
+              : "No Classes Yet"}
+          </span>
+        </div>
+
+        {/* CTA */}
+        <Button
+          variant="secondary"
+          className="w-full h-10 rounded-xl font-medium flex items-center justify-center gap-2 group-hover:bg-primary/10 group-hover:text-primary transition-all"
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/admin/topics/${topic.slug}`);
+          }}
+        >
+          View Classes
+          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+        </Button>
+
+      </div>
+    </div>
+  );
 }

@@ -42,19 +42,16 @@ import {
 import { Pagination } from '@/components/Pagination';
 import BulkUploadModal from './components/BulkUploadModal';
 import DownloadReportModal from './components/DownloadReportModal';
-import { useToast } from '@/app/(auth)/shared/hooks/useToast';
-import { Toast } from '@/app/(auth)/shared/components/Toast';
-
-
-
+import { Avatar } from '@/components/ui/Avatar';
+import { AdminStudent } from '@/types/student';
+import { handleError } from "@/utils/handleError";
 
 export default function AdminStudentsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { selectedBatch, isLoadingContext } = useAdminStore();
-  const { toasts } = useToast();
 
-  const [students, setStudents] = useState<any[]>([]);
+  const [students, setStudents] = useState<AdminStudent[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -69,7 +66,7 @@ export default function AdminStudentsPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [isDownloadReportOpen, setIsDownloadReportOpen] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [selectedStudent, setSelectedStudent] = useState<AdminStudent | null>(null);
 
   // Form states
   const [formName, setFormName] = useState('');
@@ -104,6 +101,7 @@ export default function AdminStudentsPage() {
       setTotalPages(res.pagination.totalPages);
       setTotalRecords(res.pagination.total);
     } catch (err) {
+      handleError(err);
       console.error("Failed to load students", err);
     } finally {
       setLoading(false);
@@ -141,6 +139,7 @@ export default function AdminStudentsPage() {
       resetForms();
       fetchStudents();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Failed to onboard student.');
     } finally {
       setSubmitting(false);
@@ -149,6 +148,7 @@ export default function AdminStudentsPage() {
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedStudent) return;
     setFormError(''); setSubmitting(true);
     try {
       await updateAdminStudent(selectedStudent.id, {
@@ -163,6 +163,7 @@ export default function AdminStudentsPage() {
       resetForms();
       fetchStudents();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Failed to update student.');
     } finally {
       setSubmitting(false);
@@ -170,6 +171,7 @@ export default function AdminStudentsPage() {
   };
 
   const handleDeleteSubmit = async () => {
+    if (!selectedStudent) return;
     setFormError(''); setSubmitting(true);
     try {
       await deleteAdminStudent(selectedStudent.id);
@@ -177,6 +179,7 @@ export default function AdminStudentsPage() {
       resetForms();
       fetchStudents();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Operation failed.');
     } finally {
       setSubmitting(false);
@@ -223,392 +226,577 @@ export default function AdminStudentsPage() {
     );
   }
 
-  return (
-    <div className="flex flex-col space-y-6">
+return (
+  <div className="flex flex-col space-y-6">
 
-      <div className="flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-            <Users className="w-6 h-6 text-primary" /> Roster Management
-          </h2>
-          <p className="text-muted-foreground mt-1 text-sm bg-muted inline-block px-2 py-0.5 rounded-md border border-border mt-2">
-            {selectedBatch.name} - {totalRecords} Total Enrollments
-          </p>
+    {/* ================= HEADER ================= */}
+    <div className="glass card-premium rounded-2xl p-6 flex items-center justify-between">
+
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+          <Users className="w-6 h-6 text-primary" />
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setIsDownloadReportOpen(true)} variant="outline" className="gap-2">
-            <Download className="w-4 h-4" /> Download Report
-          </Button>
-          <Button onClick={() => setIsBulkUploadOpen(true)} variant="outline" className="gap-2">
-            <Upload className="w-4 h-4" /> Bulk Upload
-          </Button>
-          <Button onClick={() => { resetForms(); setIsCreateOpen(true); }} className="gap-2">
-            <Plus className="w-4 h-4" /> Onboard Student
-          </Button>
+
+        <div>
+          <h2 className="text-xl font-semibold">Student Management</h2>
+          <p className="text-sm text-muted-foreground">
+            {selectedBatch.name} • {totalRecords} Enrollments
+          </p>
         </div>
       </div>
 
-      <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden flex flex-col min-h-[600px]">
-        <div className="p-4 border-border flex items-center bg-muted/20">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Search by name, email, or enrollment ID..."
-              value={sSearch}
-              onChange={(e) => { setSSearch(e.target.value); setPage(1); }}
-              className="pl-9 h-9 bg-background focus-visible:ring-1"
-            />
-          </div>
-        </div>
+      <div className="px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
+        {totalRecords} Students
+      </div>
+    </div>
 
-        <div className="overflow-x-auto flex-1">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50 hover:bg-muted/50">
-                <TableHead>Student</TableHead>
-                <TableHead>Username</TableHead>
-                <TableHead className="text-center">Platforms</TableHead>
-                <TableHead className="text-center">Total Solved</TableHead>
-                <TableHead className="text-center">Difficulty</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+    {/* ================= SEARCH + ACTION ================= */}
+    <div className="glass card-premium rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-center">
+
+      {/* SEARCH */}
+      <div className="relative w-full sm:max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        <Input
+          placeholder="Search by name or email..."
+          value={sSearch}
+          onChange={(e) => { setSSearch(e.target.value); setPage(1); }}
+          className="!pl-9 w-full h-11 rounded-xl bg-background/50"
+        />
+      </div>
+
+      {/* BUTTONS */}
+      <div className="flex items-center gap-3 flex-wrap">
+
+        <Button
+          onClick={() => setIsDownloadReportOpen(true)}
+          variant="outline"
+          className="h-11 rounded-xl px-4"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Report
+        </Button>
+
+        <Button
+          onClick={() => setIsBulkUploadOpen(true)}
+          variant="outline"
+          className="h-11 rounded-xl px-4"
+        >
+          <Upload className="w-4 h-4 mr-2" />
+          Bulk Upload
+        </Button>
+
+        <Button
+          onClick={() => { resetForms(); setIsCreateOpen(true); }}
+          className="h-11 rounded-xl px-5 bg-primary text-black font-semibold"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Student
+        </Button>
+
+      </div>
+    </div>
+
+    {/* ================= TABLE ================= */}
+    <div className="glass card-premium rounded-2xl overflow-hidden">
+
+      <div className="overflow-x-auto">
+
+        <Table>
+
+          {/* HEADER */}
+          <TableHeader>
+            <TableRow className="bg-muted/30 border-b border-border/40 ">
+              <TableHead>Student</TableHead>
+              <TableHead>Username</TableHead>
+              <TableHead className="text-center">Solved</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          {/* BODY */}
+          <TableBody>
+
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="h-[300px] text-center text-muted-foreground">
+                  Loading students...
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-[400px] text-center text-muted-foreground">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-primary inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    Retrieving assignments...
-                  </TableCell>
-                </TableRow>
-              ) : students.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-[400px] text-center text-muted-foreground">
-                    No students found matching your query within this batch.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                students.map((student) => (
-                  <TableRow
-                    key={student.id}
-                    className="group hover:bg-muted/30 transition-colors"
-                  >
-                    <TableCell>
-                      <Link 
-                        href={`/profile/${student.username}`}  target="_blank"
-                        className="hover:text-primary transition-colors"
-                      >
-                        <div className="font-bold text-foreground">{student.name}</div>
-                        <div className="text-xs text-muted-foreground font-mono">{student.email}</div>
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm font-medium text-muted-foreground">@{student.username}</span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        {student.leetcode_id ? (
-                          <span className="text-[10px] bg-amber-500/10 text-amber-500 font-bold px-1.5 py-0.5 rounded" title="LeetCode linked">LC</span>
-                        ) : null}
-                        {student.gfg_id ? (
-                          <span className="text-[10px] bg-emerald-500/10 text-emerald-500 font-bold px-1.5 py-0.5 rounded" title="GFG linked">GFG</span>
-                        ) : null}
-                        {!student.leetcode_id && !student.gfg_id && <span className="text-xs text-muted-foreground italic">None</span>}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center font-bold text-sm">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <Award className="w-4 h-4 text-primary opacity-60 flex-shrink-0" />
-                        <span className="text-foreground text-base tracking-tight">{student.stats?.total_solved || student.totalSolved || 0}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <span className="flex items-center justify-center text-[11px] font-bold bg-emerald-500/10 text-emerald-500 rounded px-1.5 py-[2px] min-w-[28px]" title="Easy Solved">{student.stats?.easy_solved || 0}</span>
-                        <span className="flex items-center justify-center text-[11px] font-bold bg-amber-500/10 text-amber-500 rounded px-1.5 py-[2px] min-w-[28px]" title="Medium Solved">{student.stats?.medium_solved || 0}</span>
-                        <span className="flex items-center justify-center text-[11px] font-bold bg-rose-500/10 text-rose-500 rounded px-1.5 py-[2px] min-w-[28px]" title="Hard Solved">{student.stats?.hard_solved || 0}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); router.push(`/admin/students/${student.username}`); }} className="h-8 hover:bg-primary hover:text-white transition-colors">
-                          View
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEdit(student); }} className="h-8 w-8 hover:bg-muted text-muted-foreground">
-                          <FolderEdit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedStudent(student); setIsDeleteOpen(true); }} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive text-muted-foreground">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+            ) : students.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="h-[300px] text-center text-muted-foreground">
+                  No students found
+                </TableCell>
+              </TableRow>
+            ) : (
+              students.map((student) => (
+                <TableRow
+                  key={student.id}
+                  className="group border-b border-border/20 hover:bg-muted/30 transition"
+                >
 
-        {/* Pagination Footer */}
+                  {/* STUDENT */}
+                  <TableCell>
+                    <Link
+                      href={`/profile/${student.username}`}
+                      target="_blank"
+                      className="flex items-center gap-3 group/link"
+                    >
+                      <Avatar
+                        name={student.name}
+                        profileImageUrl={student.profile_image_url}
+                        username={student.username}
+                        size="sm"
+                      />
+
+                      <div className="flex flex-col">
+                        <span className="font-medium group-hover/link:text-primary transition flex items-center gap-1">
+                          {student.name}
+                          <ExternalLink className="w-3 h-3 opacity-40 group-hover/link:opacity-100" />
+                        </span>
+
+                        <span className="text-xs text-muted-foreground">
+                          {student.email}
+                        </span>
+                      </div>
+                    </Link>
+                  </TableCell>
+
+                  {/* USERNAME */}
+                  <TableCell className="text-sm text-muted-foreground">
+                    @{student.username}
+                  </TableCell>
+
+                  {/* SOLVED */}
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <Award className="w-4 h-4 text-primary/70" />
+                      <span className="font-semibold text-foreground">
+                        {student.totalSolved || 0}
+                      </span>
+                    </div>
+                  </TableCell>
+
+                  {/* ACTIONS */}
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2 opacity-70 group-hover:opacity-100 transition">
+
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={(e) => { e.stopPropagation(); openEdit(student); }}
+                        className="h-8 w-8 rounded-lg hover:bg-primary/10"
+                      >
+                        <FolderEdit className="w-4 h-4" />
+                      </Button>
+
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedStudent(student);
+                          setIsDeleteOpen(true);
+                        }}
+                        className="h-8 w-8 rounded-lg hover:bg-red-500/10"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </Button>
+
+                    </div>
+                  </TableCell>
+
+                </TableRow>
+              ))
+            )}
+
+          </TableBody>
+
+        </Table>
+
+      </div>
+
+      {/* PAGINATION */}
+      <div className="p-4 border-t border-border/40">
         <Pagination
           currentPage={page}
           totalItems={totalRecords}
           limit={limit}
           onPageChange={setPage}
-          onLimitChange={(newLimit: number) => {
+          onLimitChange={(newLimit) => {
             setLimit(newLimit);
             setPage(1);
           }}
           showLimitSelector={true}
-          loading={loading}
         />
       </div>
 
-      {/* CREATE / EDIT Modals */}
-      {[
-        { open: isCreateOpen, setOpen: setIsCreateOpen, title: "Onboard Student", submit: handleCreateSubmit, isEdit: false },
-        { open: isEditOpen, setOpen: setIsEditOpen, title: "Modify Identity", submit: handleEditSubmit, isEdit: true }
-      ].map((modalProps, idx) => (
-        <Dialog key={idx} open={modalProps.open} onOpenChange={modalProps.setOpen}>
+    </div>
 
-          <DialogContent className="sm:max-w-[520px] p-0 overflow-hidden">
-
-            {/* HEADER */}
-            <DialogHeader className="px-6 py-4 bg-muted/40">
-              <DialogTitle className="text-lg font-semibold">
-                {modalProps.title}
-              </DialogTitle>
-
-              <DialogDescription className="text-xs text-muted-foreground">
-                {modalProps.isEdit
-                  ? "Updating student details directly overrides DB values."
-                  : "Manually bind a student into the active batch context."}
-              </DialogDescription>
-            </DialogHeader>
-
-            {/* BODY */}
-            <div className="p-6 space-y-5">
-              <form onSubmit={modalProps.submit} className="space-y-5 tracking-tight">
-
-                {/* ERROR */}
-                {formError && (
-                  <div className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 font-medium">
-                    {formError}
-                  </div>
-                )}
-
-                {/* BASIC INFO */}
-                <div className="space-y-4 p-4 rounded-xl border bg-muted/30">
-                  <p className="text-xs font-semibold text-muted-foreground">
-                    Basic Information
-                  </p>
-
-                  <div className=" gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-muted-foreground font-medium">
-                        Full Name <span className="text-destructive">*</span>
-                      </label>
-                      <Input
-                        className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-primary/50"
-                        value={formName}
-                        onChange={e => setFormName(e.target.value)}
-                        placeholder="Enter your name"
-                        disabled={submitting}
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-muted-foreground font-medium">
-                        Email <span className="text-destructive">*</span>
-                      </label>
-                      <Input
-                        type="email"
-                        className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-primary/50"
-                        value={formEmail}
-                        onChange={e => setFormEmail(e.target.value)}
-                        placeholder="Enter your email"
-                        disabled={submitting}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-muted-foreground font-medium">
-                        Enrollment ID
-                      </label>
-                      <Input
-                        className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-primary/50"
-                        value={formEnrollmentId}
-                        onChange={e => setFormEnrollmentId(e.target.value)}
-                        placeholder="23****24"
-                        disabled={submitting}
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      {/* Empty space for layout balance */}
-                    </div>
-                  </div>
-                </div>
-
-                {/* PASSWORD (CREATE ONLY) */}
-                {!modalProps.isEdit && (
-                  <div className="space-y-2 p-4 rounded-xl border bg-muted/30">
-                    <p className="text-xs font-semibold text-muted-foreground">
-                      Password
-                    </p>
-
-                    <Input
-                      type="password"
-                      className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-primary/50"
-                      value={formPassword}
-                      onChange={e => setFormPassword(e.target.value)}
-                      placeholder="••••••••"
-                      disabled={submitting}
-                    />
-                  </div>
-                )}
-
-                {/* FOOTER */}
-                <DialogFooter className="pt-2 flex gap-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => modalProps.setOpen(false)}
-                    disabled={submitting}
-                    className="h-11"
-                  >
-                    Cancel
-                  </Button>
-
-                  <Button
-                    type="submit"
-                    disabled={submitting}
-                    className="h-11 w-full font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    {submitting
-                      ? "Saving..."
-                      : modalProps.isEdit
-                        ? "Save Changes"
-                        : "Onboard User"}
-                  </Button>
-                </DialogFooter>
-
-              </form>
+    {/* ================= CREATE MODAL ================= */}
+    <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+      <DialogContent className="sm:max-w-[520px] p-0 overflow-hidden rounded-2xl">
+        
+        {/* HEADER */}
+        <DialogHeader className="px-6 py-5 bg-muted/30 border-b border-border/50">
+          <DialogTitle className="flex items-center gap-3 text-lg font-semibold">
+            <div className="p-2 rounded bg-primary/10 border border-primary/20">
+              <Plus className="w-4 h-4 text-primary" />
             </div>
-          </DialogContent>
-        </Dialog>
-      ))}
+            Add Student
+          </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Onboard a new student to the batch
+          </DialogDescription>
+        </DialogHeader>
 
-      {/* DELETE MODAL */}
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="sm:max-w-[520px] p-0 overflow-hidden">
-
-          {/* HEADER */}
-          <DialogHeader className="px-6 py-4 bg-red-500/5">
-            <DialogTitle className="text-red-500 flex items-center gap-3 font-semibold">
-              <div className="p-2 rounded-lg bg-red-500/10">
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </div>
-              Terminate Account
-            </DialogTitle>
-          </DialogHeader>
-
-          {/* BODY */}
-          <div className="p-6 space-y-5">
-
-            {/* DESCRIPTION */}
-            <div className="text-sm text-foreground space-y-2">
-              <p>
-                You are about to permanently remove this student profile from the system.
-              </p>
-
-              <p className="text-red-400 font-medium">
-                This action cannot be undone.
-              </p>
-            </div>
-
-            {/* USER INFO CARD */}
-            <div className="p-4 bg-muted/40 rounded-xl border text-xs font-mono space-y-1.5">
-              <div>
-                <span className="text-muted-foreground">NAME:</span>{" "}
-                <span className="font-semibold text-foreground">
-                  {selectedStudent?.name}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-muted-foreground">EMAIL:</span>{" "}
-                {selectedStudent?.email}
-              </div>
-
-              <div>
-                <span className="text-muted-foreground">ENROLL:</span>{" "}
-                {selectedStudent?.enrollment_id}
-              </div>
-            </div>
+        {/* BODY */}
+        <div className="p-6 space-y-6">
+          <form onSubmit={handleCreateSubmit} className="space-y-5">
 
             {/* ERROR */}
             {formError && (
-              <div className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 font-semibold">
+              <div className="flex items-center gap-2 text-sm px-3 py-2 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400">
+                <AlertTriangle className="w-4 h-4" />
                 {formError}
               </div>
             )}
 
-            {/* EXTRA WARNING */}
-            <div className="flex gap-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-400">
-              <AlertTriangle className="w-4 h-4 mt-[2px]" />
-              <div>
-                All associated progress and records will be permanently lost.
+            {/* NAME */}
+            <div className="grid grid-cols-3  items-center">
+              <label className="text-s text-muted-foreground font-medium">
+                Full Name <span className="text-destructive">*</span>
+              </label>
+              <Input
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                placeholder="Enter student name"
+                disabled={submitting}
+                className="col-span-2 h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+            </div>
+
+            {/* EMAIL */}
+            <div className="grid grid-cols-3  items-center">
+              <label className="text-s text-muted-foreground font-medium">
+                Email <span className="text-destructive">*</span>
+              </label>
+              <Input
+                type="email"
+                value={formEmail}
+                onChange={(e) => setFormEmail(e.target.value)}
+                placeholder="student@example.com"
+                disabled={submitting}
+                className="col-span-2 h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+            </div>
+
+            {/* USERNAME */}
+            <div className="grid grid-cols-3  items-center">
+              <label className="text-s text-muted-foreground font-medium">
+                Username
+              </label>
+              <Input
+                value={formUsername}
+                onChange={(e) => setFormUsername(e.target.value)}
+                placeholder="username"
+                disabled={submitting}
+                className="col-span-2 h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+            </div>
+
+            {/* ENROLLMENT */}
+            <div className="grid grid-cols-3  items-center">
+              <label className="text-s text-muted-foreground font-medium">
+                Enrollment ID
+              </label>
+              <Input
+                value={formEnrollmentId}
+                onChange={(e) => setFormEnrollmentId(e.target.value)}
+                placeholder="ENR123456"
+                disabled={submitting}
+                className="col-span-2 h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+            </div>
+
+            {/* PASSWORD */}
+            <div className="grid grid-cols-3  items-center">
+              <label className="text-s text-muted-foreground font-medium">
+                Password
+              </label>
+              <Input
+                type="password"
+                value={formPassword}
+                onChange={(e) => setFormPassword(e.target.value)}
+                placeholder="Enter password (optional)"
+                disabled={submitting}
+                className="col-span-2 h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+            </div>
+
+            {/* PLATFORM IDs */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-s text-muted-foreground font-medium">
+                  LeetCode ID
+                </label>
+                <Input
+                  value={formLeetcodeId}
+                  onChange={(e) => setFormLeetcodeId(e.target.value)}
+                  placeholder="leetcode_id"
+                  disabled={submitting}
+                  className="h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-s text-muted-foreground font-medium">
+                  GFG ID
+                </label>
+                <Input
+                  value={formGfgId}
+                  onChange={(e) => setFormGfgId(e.target.value)}
+                  placeholder="gfg_id"
+                  disabled={submitting}
+                  className="h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+                />
               </div>
             </div>
 
             {/* FOOTER */}
-            <DialogFooter className="mt-2 border-t pt-4 flex gap-2">
-
+            <DialogFooter className="pt-2 flex gap-2">
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => setIsDeleteOpen(false)}
+                onClick={() => setIsCreateOpen(false)}
                 disabled={submitting}
                 className="h-11"
               >
                 Cancel
               </Button>
+              <Button
+                type="submit"
+                disabled={submitting || !formName || !formEmail}
+                className="h-11 w-full font-semibold bg-primary text-black hover:opacity-90 transition-all"
+              >
+                {submitting ? "Adding..." : "Add Student"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
 
+    {/* ================= EDIT MODAL ================= */}
+    <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+      <DialogContent className="sm:max-w-[520px] p-0 overflow-hidden rounded-2xl">
+        
+        {/* HEADER */}
+        <DialogHeader className="px-6 py-5 bg-muted/30 border-b border-border/50">
+          <DialogTitle className="flex items-center gap-3 text-lg font-semibold">
+            <div className="p-2 rounded bg-primary/10 border border-primary/20">
+              <FolderEdit className="w-4 h-4 text-primary" />
+            </div>
+            Edit Student
+          </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Update student information
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* BODY */}
+        <div className="p-6 space-y-6">
+          <form onSubmit={handleEditSubmit} className="space-y-5">
+
+            {/* ERROR */}
+            {formError && (
+              <div className="flex items-center gap-2 text-sm px-3 py-2 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400">
+                <AlertTriangle className="w-4 h-4" />
+                {formError}
+              </div>
+            )}
+
+            {/* NAME */}
+            <div className="grid grid-cols-3 item-center">
+              <label className="text-s text-muted-foreground font-medium">
+                Full Name <span className="text-destructive">*</span>
+              </label>
+              <Input
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                placeholder="Enter student name"
+                disabled={submitting}
+                className="col-span-2 h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+            </div>
+
+            {/* EMAIL */}
+            <div className="grid grid-cols-3 item-center">
+              <label className="text-xs text-muted-foreground font-medium">
+                Email <span className="text-destructive">*</span>
+              </label>
+              <Input
+                type="email"
+                value={formEmail}
+                onChange={(e) => setFormEmail(e.target.value)}
+                placeholder="student@example.com"
+                disabled={submitting}
+                className="col-span-2 h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+            </div>
+
+            {/* USERNAME */}
+            <div className="grid grid-cols-3 item-center">
+              <label className="text-xs text-muted-foreground font-medium">
+                Username
+              </label>
+              <Input
+                value={formUsername}
+                onChange={(e) => setFormUsername(e.target.value)}
+                placeholder="username"
+                disabled={submitting}
+                className="col-span-2 h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+            </div>
+
+            {/* ENROLLMENT */}
+            <div className="grid grid-cols-3 item-center">
+              <label className="text-s text-muted-foreground font-medium">
+                Enrollment ID
+              </label>
+              <Input
+                value={formEnrollmentId}
+                onChange={(e) => setFormEnrollmentId(e.target.value)}
+                placeholder="ENR123456"
+                disabled={submitting}
+                className="col-span-2 h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+            </div>
+
+            {/* PLATFORM IDs */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-s text-muted-foreground font-medium">
+                  LeetCode ID
+                </label>
+                <Input
+                  value={formLeetcodeId}
+                  onChange={(e) => setFormLeetcodeId(e.target.value)}
+                  placeholder="leetcode_id"
+                  disabled={submitting}
+                  className="h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-s text-muted-foreground font-medium">
+                  GFG ID
+                </label>
+                <Input
+                  value={formGfgId}
+                  onChange={(e) => setFormGfgId(e.target.value)}
+                  placeholder="gfg_id"
+                  disabled={submitting}
+                  className="h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+                />
+              </div>
+            </div>
+
+            {/* FOOTER */}
+            <DialogFooter className="pt-2 flex gap-2">
               <Button
                 type="button"
-                variant="destructive"
-                onClick={handleDeleteSubmit}
+                variant="ghost"
+                onClick={() => setIsEditOpen(false)}
                 disabled={submitting}
-                className="h-11 w-full font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="h-11"
               >
-                {submitting ? "Terminating..." : "Confirm Purge"}
+                Cancel
               </Button>
-
+              <Button
+                type="submit"
+                disabled={submitting || !formName || !formEmail}
+                className="h-11 w-full font-semibold bg-primary text-black hover:opacity-90 transition-all"
+              >
+                {submitting ? "Saving..." : "Save Changes"}
+              </Button>
             </DialogFooter>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    {/* ================= DELETE MODAL ================= */}
+    <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+      <DialogContent className="glass card-premium rounded-2xl p-0 overflow-hidden shadow-xl max-w-[480px] z-50">
+
+        {/* HEADER */}
+        <DialogHeader className="px-6 py-5 border-b border-red-500/20">
+          <DialogTitle className="text-lg font-semibold text-red-400">
+            Delete Student
+          </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Are you sure you want to delete "{selectedStudent?.name}"? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* BODY */}
+        <div className="p-6 space-y-6">
+
+          {/* WARNING ICON */}
+          <div className="flex flex-col items-center justify-center py-4">
+            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
+              <Trash2 className="w-7 h-7 text-red-500" />
+            </div>
+            <p className="text-sm text-muted-foreground text-center mt-4 px-6">
+              This action cannot be undone and will remove all associated data.
+            </p>
           </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* BULK UPLOAD MODAL */}
-      <BulkUploadModal
-        open={isBulkUploadOpen}
-        onOpenChange={setIsBulkUploadOpen}
-        onSuccess={handleBulkUploadSuccess}
-      />
+          {/* STUDENT INFO CARD */}
+          <div className="glass rounded-2xl p-4 flex items-center gap-3 border border-border/40">
+            <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+              <Trash2 className="w-4 h-4 text-red-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {selectedStudent?.name}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {selectedStudent?.email}
+              </p>
+            </div>
+          </div>
 
-      {/* DOWNLOAD REPORT MODAL */}
-      <DownloadReportModal
-        open={isDownloadReportOpen}
-        onOpenChange={setIsDownloadReportOpen}
-      />
+        </div>
 
-      {/* TOAST NOTIFICATIONS */}
-      <Toast />
-    </div>
-  );
+        {/* FOOTER */}
+        <DialogFooter className="border-t border-border/40 px-6 py-4 flex gap-3">
+          <Button
+            variant="destructive"
+            onClick={handleDeleteSubmit}
+            disabled={submitting}
+            className="h-11 w-full font-semibold bg-red-500 hover:bg-red-600 text-white mb-4"
+          >
+            {submitting ? "Deleting..." : "Delete Student"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    {/* ================= BULK UPLOAD MODAL ================= */}
+    <BulkUploadModal
+      open={isBulkUploadOpen}
+      onOpenChange={setIsBulkUploadOpen}
+      onSuccess={handleBulkUploadSuccess}
+    />
+
+    {/* ================= DOWNLOAD REPORT MODAL ================= */}
+    <DownloadReportModal
+      open={isDownloadReportOpen}
+      onOpenChange={setIsDownloadReportOpen}
+    />
+
+  </div>
+);
 }
 
 function Skeletons() {

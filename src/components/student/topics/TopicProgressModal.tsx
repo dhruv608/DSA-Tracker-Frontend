@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { handleError } from "@/utils/handleError";
 
 interface Topic {
   id: number;
@@ -63,6 +64,7 @@ export default function TopicProgressModal({
       const res = await api.get(`/api/topicprogress/${username}`);
       setData(res.data);
     } catch (err) {
+      handleError(err);
       console.error(err);
     } finally {
       setLoading(false);

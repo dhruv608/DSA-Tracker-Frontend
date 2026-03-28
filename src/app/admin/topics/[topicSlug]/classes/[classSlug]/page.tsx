@@ -51,6 +51,7 @@ import {
    DialogFooter,
    DialogDescription,
 } from "@/components/ui/dialog";
+import { handleError } from "@/utils/handleError";
 
 function BadgeByLevel({ level }: { level: string }) {
    const cn = level === 'EASY' ? 'bg-green-500/10 text-green-500' :
@@ -107,6 +108,7 @@ export default function AdminClassDetailsPage() {
          setAssignedTotalPages(data.pagination?.totalPages || 1);
          setAssignedTotalCount(data.pagination?.total || 0);
       } catch (err: any) {
+       handleError(err);
          console.error("Failed to fetch assigned questions", err);
          // If current deeply tracked class does not exist in active batch context, redirect out safely.
          if (err.response?.status === 400 || err.response?.status === 404) {
@@ -141,6 +143,7 @@ export default function AdminClassDetailsPage() {
          setBankQuestions(res.data);
          setBankTotalPages(res.pagination.totalPages);
       } catch (err) {
+       handleError(err);
          console.error("Failed to fetch bank questions", err);
       } finally {
          setBankLoading(false);
@@ -171,6 +174,7 @@ export default function AdminClassDetailsPage() {
          setSelectedQuestionIds([]);
          fetchAssigned();
       } catch (err: any) {
+       handleError(err);
          setErrorMsg(err.response?.data?.error || 'Failed to assign questions');
       } finally {
          setSubmitting(false);
@@ -200,6 +204,7 @@ export default function AdminClassDetailsPage() {
          setIsDeleteOpen(false);
          setDeletingQuestion(null);
       } catch (err: any) {
+       handleError(err);
          alert(err.response?.data?.error || "Failed to remove question");
       } finally {
          setSubmitting(false);

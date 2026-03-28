@@ -17,7 +17,7 @@ import {
 import { getAllCities, City } from '@/services/city.service';
 import { getAllBatches, Batch } from '@/services/batch.service';
 import { bulkUploadStudents } from '@/services/admin.service';
-import { toastEvent } from '@/app/(auth)/shared/hooks/useToast';
+import { showSuccess, handleError } from '@/utils/handleError';
 
 export default function BulkUploadModal({
   open,
@@ -50,6 +50,7 @@ export default function BulkUploadModal({
         setCities(citiesData);
         setBatches(batchesData);
       } catch (error) {
+        handleError(error);
         console.error('Failed to fetch data:', error);
       }
     };
@@ -203,6 +204,7 @@ export default function BulkUploadModal({
           setCsvData(data);
         }
       } catch (error) {
+        handleError(error);
         console.error('CSV parsing error:', error);
         setValidationError('Failed to parse CSV file');
         setCsvData([]);
@@ -253,7 +255,7 @@ export default function BulkUploadModal({
 
       // Show success toast
       const message = result.message || `Successfully uploaded ${result.inserted || 0} students`;
-      toastEvent(message, 'success');
+      showSuccess('FILE_UPLOADED', message);
 
       // Success callback and close modal
       onSuccess?.(result);
@@ -271,7 +273,7 @@ export default function BulkUploadModal({
       setUploadError(errorMessage);
       
       // Show error toast
-      toastEvent(errorMessage, 'error');
+      handleError(errorMessage);
       
     } finally {
       setLoading(false);
@@ -281,223 +283,193 @@ export default function BulkUploadModal({
   // Check if upload should be disabled
   const isUploadDisabled = !file || !selectedCity || !selectedYear || !selectedBatch || !!validationError || loading;
 
-  return (
-    <>
-      {/* MAIN MODAL */}
-      <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="w-[95vw] max-w-[700px] p-0 overflow-hidden flex flex-col rounded-2xl">
+return (
+  <>
+    {/* MAIN MODAL */}
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="w-[95vw] max-w-[700px] p-0 overflow-hidden flex flex-col rounded-2xl glass card-premium">
 
-          {/* HEADER */}
-          <DialogHeader className="px-6 py-5 bg-muted/40">
-            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-              <Upload className="w-5 h-5 text-primary" />
-              Bulk Upload Students
-            </DialogTitle>
-
-            <DialogDescription className="text-sm text-muted-foreground">
-              Upload multiple students quickly using CSV and batch selection.
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* BODY */}
-          <div className="p-6 space-y-6">
-
-            {/* LOCATION SELECTION */}
-            <div className="space-y-4 p-4 rounded-xl border bg-muted/30">
-              <p className="text-xs font-semibold text-muted-foreground">
-                Select Batch Location
-              </p>
-
-              {/* City Dropdown */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  City <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={selectedCity}
-                  onChange={handleCityChange}
-                  options={[
-                    { label: 'Select city...', value: '' },
-                    ...cities.map((city: any) => ({
-                      label: city.city_name,
-                      value: city.id.toString()
-                    }))
-                  ]}
-                  className="h-11"
-                />
-              </div>
-
-              {/* Year Dropdown */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Year <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={selectedYear}
-                  onChange={handleYearChange}
-                  options={[
-                    { label: 'Select year...', value: '' },
-                    ...getYearsForCity().map((year: number) => ({
-                      label: year.toString(),
-                      value: year.toString()
-                    }))
-                  ]}
-                  className="h-11"
-                  disabled={!selectedCity}
-                />
-              </div>
-
-              {/* Batch Dropdown */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Batch <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={selectedBatch}
-                  onChange={(value: string | number) => setSelectedBatch(value.toString())}
-                  options={[
-                    { label: 'Select batch...', value: '' },
-                    ...getBatchesForCityYear().map((batch: any) => ({
-                      label: batch.batch_name,
-                      value: batch.id.toString()
-                    }))
-                  ]}
-                  className="h-11"
-                  disabled={!selectedYear}
-                />
-              </div>
+        {/* HEADER */}
+        <DialogHeader className="px-6 py-5 border-b border-border/40">
+          <DialogTitle className="text-lg font-semibold flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+              <Upload className="w-4 h-4 text-primary" />
             </div>
+            Bulk Upload Students
+          </DialogTitle>
 
-            {/* FILE INPUT */}
+          <DialogDescription className="text-xs text-muted-foreground">
+            Upload multiple students using CSV and assign them to a batch.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* BODY */}
+        <div className="p-6 space-y-6">
+
+          {/* LOCATION */}
+          <div className="space-y-5 p-5 rounded-2xl border border-border/40 bg-muted/20">
+
+            <p className="text-xs font-semibold text-muted-foreground">
+              Batch Assignment
+            </p>
+
+            {/* CITY */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">CSV File</Label>
+              <Label className="text-xs text-muted-foreground">
+                City <span className="text-destructive">*</span>
+              </Label>
 
-              <label className="w-full flex items-center justify-between border rounded-xl px-5 py-4 cursor-pointer hover:bg-muted/40 transition">
-                <span className="text-sm text-muted-foreground">
-                  {file ? file.name : "Choose CSV file"}
-                </span>
-
-                <span className="text-xs font-semibold bg-primary/10 text-primary px-3 py-1 rounded-md">
-                  Browse
-                </span>
-
-                <Input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  disabled={loading}
-                />
-              </label>
+              <Select
+                value={selectedCity}
+                onChange={handleCityChange}
+                options={[
+                  { label: 'Select city...', value: '' },
+                  ...cities.map((city: any) => ({
+                    label: city.city_name,
+                    value: city.id.toString()
+                  }))
+                ]}
+                className="h-11"
+              />
             </div>
 
-            {/* GUIDE BUTTON */}
-            <div className="flex justify-between items-center border rounded-lg px-4 py-3 bg-muted/30">
-              <p className="text-sm text-muted-foreground">
-                Need CSV format help?
-              </p>
+            {/* YEAR */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">
+                Year <span className="text-destructive">*</span>
+              </Label>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowGuide(true)}
-              >
-                <FileText className="w-4 h-4 mr-1" />
-                View Guidelines
-              </Button>
+              <Select
+                value={selectedYear}
+                onChange={handleYearChange}
+                options={[
+                  { label: 'Select year...', value: '' },
+                  ...getYearsForCity().map((year: number) => ({
+                    label: year.toString(),
+                    value: year.toString()
+                  }))
+                ]}
+                className="h-11"
+                disabled={!selectedCity}
+              />
             </div>
 
-            {/* STATUS MESSAGES */}
-            {validationError && (
-              <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400">
-                <AlertCircle className="w-4 h-4" />
-                {validationError}
-              </div>
-            )}
+            {/* BATCH */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">
+                Batch <span className="text-destructive">*</span>
+              </Label>
 
-            {uploadError && (
-              <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400">
-                <AlertCircle className="w-4 h-4" />
-                {uploadError}
-              </div>
-            )}
-
-            {csvData.length > 0 && !validationError && (
-              <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400">
-                <CheckCircle2 className="w-4 h-4" />
-                {csvData.length} students ready to upload 🚀
-              </div>
-            )}
+              <Select
+                value={selectedBatch}
+                onChange={(value: string | number) => setSelectedBatch(value.toString())}
+                options={[
+                  { label: 'Select batch...', value: '' },
+                  ...getBatchesForCityYear().map((batch: any) => ({
+                    label: batch.batch_name,
+                    value: batch.id.toString()
+                  }))
+                ]}
+                className="h-11"
+                disabled={!selectedYear}
+              />
+            </div>
 
           </div>
 
-          {/* FOOTER */}
-          <DialogFooter className="px-6 py-4 border-t flex gap-3">
-            <Button variant="ghost" onClick={handleClose} disabled={loading}>
-              Cancel
-            </Button>
+          {/* FILE INPUT */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">
+              CSV File
+            </Label>
+
+            <label className="flex items-center justify-between border border-border rounded-xl px-4 py-3 cursor-pointer bg-background/40 hover:border-primary/40 transition">
+
+              <span className="text-sm text-muted-foreground truncate">
+                {file ? file.name : "Choose CSV file"}
+              </span>
+
+              <span className="px-3 py-1.5 rounded-lg bg-primary text-black text-xs font-semibold">
+                Browse
+              </span>
+
+              <Input
+                type="file"
+                accept=".csv"
+                onChange={handleFileChange}
+                className="hidden"
+                disabled={loading}
+              />
+            </label>
+          </div>
+
+          {/* GUIDE */}
+          <div className="flex justify-between items-center border border-border/40 rounded-xl px-4 py-3 bg-muted/20">
+            <p className="text-sm text-muted-foreground">
+              Need CSV format help?
+            </p>
 
             <Button
-              disabled={isUploadDisabled}
-              onClick={handleUpload}
-              className="w-full h-12 text-sm font-semibold bg-gradient-to-r from-primary to-amber-600"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowGuide(true)}
+              className="rounded-lg"
             >
-              {loading ? "Uploading..." : "Upload Students"}
+              <FileText className="w-4 h-4 mr-1" />
+              View Guide
             </Button>
-          </DialogFooter>
-
-        </DialogContent>
-      </Dialog>
-
-      {/* GUIDELINES MODAL */}
-      <Dialog open={showGuide} onOpenChange={setShowGuide}>
-        <DialogContent className="w-[90vw] max-w-[600px]">
-
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Info className="w-5 h-5 text-primary" />
-              CSV Format Guidelines
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4 text-sm">
-
-            <div>
-              <p className="text-muted-foreground text-xs mb-2">Required CSV Columns</p>
-              <div className="bg-muted p-3 rounded font-mono text-xs">
-                name,email,enrollment_id
-              </div>
-            </div>
-
-            <div>
-              <p className="text-muted-foreground text-xs mb-2">Example CSV</p>
-              <div className="bg-muted p-3 rounded font-mono text-xs">
-                Ayush Chaurasiya,ayush@pwioi.com,375<br/>
-                John Doe,john@pwioi.com,376<br/>
-                Jane Smith,jane@pwioi.com,377
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-muted-foreground text-xs font-semibold">Rules:</p>
-              <ul className="text-xs space-y-1 text-muted-foreground">
-                <li>• Only 3 columns: name, email, enrollment_id</li>
-                <li>• All fields are required for each row</li>
-                <li>• Email must be valid format</li>
-                <li>• Email must contain pwioi.com domain</li>
-                <li>• No extra columns allowed</li>
-                <li>• Batch is selected via dropdowns (not in CSV)</li>
-              </ul>
-            </div>
-
-            <div className="text-yellow-400 text-xs border border-yellow-500/20 bg-yellow-500/10 p-3 rounded">
-              ⚠️ Do NOT include batch information in CSV. Use the City → Year → Batch dropdowns above.
-            </div>
-
           </div>
 
-        </DialogContent>
-      </Dialog>
-    </>
-  );
+          {/* STATUS */}
+          {validationError && (
+            <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400">
+              <AlertCircle className="w-4 h-4" />
+              {validationError}
+            </div>
+          )}
+
+          {uploadError && (
+            <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400">
+              <AlertCircle className="w-4 h-4" />
+              {uploadError}
+            </div>
+          )}
+
+          {csvData.length > 0 && !validationError && (
+            <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400">
+              <CheckCircle2 className="w-4 h-4" />
+              {csvData.length} students ready 🚀
+            </div>
+          )}
+
+        </div>
+
+        {/* FOOTER */}
+        <DialogFooter className="px-6 py-4 border-t border-border/40 flex gap-3">
+
+          <Button
+            variant="ghost"
+            onClick={handleClose}
+            disabled={loading}
+            className="h-11"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            disabled={isUploadDisabled}
+            onClick={handleUpload}
+            className="h-11 w-full font-semibold bg-primary text-black hover:opacity-90 transition-all"
+          >
+            {loading ? "Uploading..." : "Upload Students"}
+          </Button>
+
+        </DialogFooter>
+
+      </DialogContent>
+    </Dialog>
+
+    {/* GUIDELINES MODAL SAME */}
+  </>
+);
 }

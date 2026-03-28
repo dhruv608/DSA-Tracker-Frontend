@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { loginAdmin } from '@/services/auth.service';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { handleError } from "@/utils/handleError";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -37,6 +39,7 @@ export default function AdminLoginPage() {
 
       router.push('/admin');
     } catch (err: any) {
+      handleError(err);
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
@@ -45,7 +48,9 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-
+         <div className="absolute top-6 right-6 z-50">
+                <ThemeToggle />
+              </div>
       {/* 🔥 BACKGROUND GLOW */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 blur-[120px]" />
@@ -137,6 +142,7 @@ export default function AdminLoginPage() {
         )}
       </Button>
         </form>
+        
       </div>
     </div>
   );

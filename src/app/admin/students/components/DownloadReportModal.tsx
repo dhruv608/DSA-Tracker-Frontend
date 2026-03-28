@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { getAllCities, City } from '@/services/city.service';
 import { getAllBatches, Batch } from '@/services/batch.service';
-import { toastEvent } from '@/app/(auth)/shared/hooks/useToast';
+import { showSuccess, handleError } from '@/utils/handleError';
 import api from '@/lib/api';
 
 export default function DownloadReportModal({
@@ -45,6 +45,7 @@ export default function DownloadReportModal({
         setCities(citiesData);
         setBatches(batchesData);
       } catch (error) {
+        handleError(error);
         console.error('Failed to fetch data:', error);
       }
     };
@@ -125,7 +126,7 @@ export default function DownloadReportModal({
       window.URL.revokeObjectURL(url);
 
       // Show success toast
-      toastEvent('Report downloaded successfully!', 'success');
+      showSuccess('FILE_DOWNLOADED', 'Report downloaded successfully!');
       
       // Close modal
       handleClose();
@@ -142,7 +143,7 @@ export default function DownloadReportModal({
       setDownloadError(errorMessage);
       
       // Show error toast
-      toastEvent(errorMessage, 'error');
+      handleError(errorMessage);
       
     } finally {
       setLoading(false);
@@ -152,136 +153,150 @@ export default function DownloadReportModal({
   // Check if download should be disabled
   const isDownloadDisabled = !selectedCity || !selectedYear || !selectedBatch || !selectedFormat || loading;
 
-  return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] max-w-[500px] p-0 overflow-hidden flex flex-col rounded-2xl">
+ return (
+  <Dialog open={open} onOpenChange={handleClose}>
+    <DialogContent className="w-[95vw] max-w-[520px] p-0 overflow-hidden flex flex-col rounded-2xl glass card-premium">
 
-        {/* HEADER */}
-        <DialogHeader className="px-6 py-5 bg-muted/40">
-          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-            <Download className="w-5 h-5 text-primary" />
-            Download Student Report
-          </DialogTitle>
+      {/* HEADER */}
+      <DialogHeader className="px-6 py-5 border-b border-border/40">
+        <DialogTitle className="text-lg font-semibold flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+            <Download className="w-4 h-4 text-primary" />
+          </div>
+          Download Student Report
+        </DialogTitle>
 
-          <DialogDescription className="text-sm text-muted-foreground">
-            Generate and download student reports for any batch in CSV format.
-          </DialogDescription>
-        </DialogHeader>
+        <DialogDescription className="text-xs text-muted-foreground">
+          Generate and download student reports for any batch in CSV format.
+        </DialogDescription>
+      </DialogHeader>
 
-        {/* BODY */}
-        <div className="p-6 space-y-6">
+      {/* BODY */}
+      <div className="p-6 space-y-6">
 
-          {/* LOCATION SELECTION */}
-          <div className="space-y-4 p-4 rounded-xl border bg-muted/30">
-            <p className="text-xs font-semibold text-muted-foreground">
-              Select Batch Location
-            </p>
+        {/* LOCATION */}
+        <div className="space-y-5 p-5 rounded-2xl border border-border/40 bg-muted/20">
 
-            {/* City Dropdown */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                City <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={selectedCity}
-                onChange={handleCityChange}
-                options={[
-                  { label: 'Select city...', value: '' },
-                  ...cities.map((city: any) => ({
-                    label: city.city_name,
-                    value: city.id.toString()
-                  }))
-                ]}
-                className="h-11"
-              />
-            </div>
+          <p className="text-xs font-semibold text-muted-foreground">
+            Batch Selection
+          </p>
 
-            {/* Year Dropdown */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                Year <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={selectedYear}
-                onChange={handleYearChange}
-                options={[
-                  { label: 'Select year...', value: '' },
-                  ...getYearsForCity().map((year: number) => ({
-                    label: year.toString(),
-                    value: year.toString()
-                  }))
-                ]}
-                className="h-11"
-                disabled={!selectedCity}
-              />
-            </div>
+          {/* CITY */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">
+              City <span className="text-destructive">*</span>
+            </Label>
 
-            {/* Batch Dropdown */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                Batch <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={selectedBatch}
-                onChange={(value: string | number) => setSelectedBatch(value.toString())}
-                options={[
-                  { label: 'Select batch...', value: '' },
-                  ...getBatchesForCityYear().map((batch: any) => ({
-                    label: batch.batch_name,
-                    value: batch.id.toString()
-                  }))
-                ]}
-                className="h-11"
-                disabled={!selectedYear}
-              />
-            </div>
+            <Select
+              value={selectedCity}
+              onChange={handleCityChange}
+              options={[
+                { label: 'Select city...', value: '' },
+                ...cities.map((city: any) => ({
+                  label: city.city_name,
+                  value: city.id.toString()
+                }))
+              ]}
+              className="h-11"
+            />
           </div>
 
+          {/* YEAR */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">
+              Year <span className="text-destructive">*</span>
+            </Label>
 
+            <Select
+              value={selectedYear}
+              onChange={handleYearChange}
+              options={[
+                { label: 'Select year...', value: '' },
+                ...getYearsForCity().map((year: number) => ({
+                  label: year.toString(),
+                  value: year.toString()
+                }))
+              ]}
+              className="h-11"
+              disabled={!selectedCity}
+            />
+          </div>
 
-          {/* STATUS MESSAGES */}
-          {downloadError && (
-            <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400">
-              <AlertCircle className="w-4 h-4" />
-              {downloadError}
-            </div>
-          )}
+          {/* BATCH */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">
+              Batch <span className="text-destructive">*</span>
+            </Label>
 
-          {selectedBatch && !downloadError && (
-            <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400">
-              <CheckCircle2 className="w-4 h-4" />
-              Ready to download report for selected batch 
-            </div>
-          )}
+            <Select
+              value={selectedBatch}
+              onChange={(value: string | number) =>
+                setSelectedBatch(value.toString())
+              }
+              options={[
+                { label: 'Select batch...', value: '' },
+                ...getBatchesForCityYear().map((batch: any) => ({
+                  label: batch.batch_name,
+                  value: batch.id.toString()
+                }))
+              ]}
+              className="h-11"
+              disabled={!selectedYear}
+            />
+          </div>
 
         </div>
 
-        {/* FOOTER */}
-        <DialogFooter className="px-6 py-4 border-t flex gap-3">
-          <Button variant="ghost" onClick={handleClose} disabled={loading}>
-            Cancel
-          </Button>
+        {/* STATUS */}
+        {downloadError && (
+          <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400">
+            <AlertCircle className="w-4 h-4" />
+            {downloadError}
+          </div>
+        )}
 
-          <Button
-            disabled={isDownloadDisabled}
-            onClick={handleDownload}
-            className="w-full h-12 text-sm font-semibold bg-gradient-to-r from-primary to-amber-600"
-          >
-            {loading ? (
-              <>
-                <div className="animate-spin -ml-1 mr-3 h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                Generating Report...
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4 mr-2" />
-                Download Report
-              </>
-            )}
-          </Button>
-        </DialogFooter>
+        {selectedBatch && !downloadError && (
+          <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400">
+            <CheckCircle2 className="w-4 h-4" />
+            Ready to download report for selected batch
+          </div>
+        )}
 
-      </DialogContent>
-    </Dialog>
-  );
+      </div>
+
+      {/* FOOTER */}
+      <DialogFooter className="px-6 py-4 border-t border-border/40 flex gap-3">
+
+        <Button
+          variant="ghost"
+          onClick={handleClose}
+          disabled={loading}
+          className="h-11"
+        >
+          Cancel
+        </Button>
+
+        <Button
+          disabled={isDownloadDisabled}
+          onClick={handleDownload}
+          className="h-11 w-full font-semibold bg-primary text-black hover:opacity-90 transition-all"
+        >
+          {loading ? (
+            <>
+              <div className="animate-spin mr-2 h-4 w-4 border-2 border-black border-t-transparent rounded-full"></div>
+              Generating...
+            </>
+          ) : (
+            <>
+              <Download className="w-4 h-4 mr-2" />
+              Download Report
+            </>
+          )}
+        </Button>
+
+      </DialogFooter>
+
+    </DialogContent>
+  </Dialog>
+);
 }

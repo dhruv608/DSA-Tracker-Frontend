@@ -1,5 +1,6 @@
 import api from '@/lib/api';
 import { isStudentToken, clearAuthTokens } from '@/lib/auth-utils';
+import { handleError } from "@/utils/handleError";
 
 export const studentTopicService = {
   getTopics: async () => {
@@ -15,6 +16,7 @@ export const studentTopicService = {
       const res = await api.get('/api/students/topics');
       return res.data || [];
     } catch (e: any) {
+        handleError(e);
       if (e.response?.status === 400) {
         // Missing batchId in token. Return empty topics instead of crashing app.
         return [];

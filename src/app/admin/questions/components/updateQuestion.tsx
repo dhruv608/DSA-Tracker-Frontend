@@ -16,6 +16,7 @@ import { Select } from "@/components/Select";
 import { AlertTriangle, Edit, Save } from 'lucide-react';
 import { updateAdminQuestion, getAllTopics } from '@/services/admin.service';
 import { Question, UpdateQuestionData } from '@/types/admin/question';
+import { handleError } from "@/utils/handleError";
 
 interface UpdateQuestionProps {
   open: boolean;
@@ -24,11 +25,11 @@ interface UpdateQuestionProps {
   onSuccess: () => void;
 }
 
-export default function UpdateQuestion({ 
-  open, 
-  onOpenChange, 
-  question, 
-  onSuccess 
+export default function UpdateQuestion({
+  open,
+  onOpenChange,
+  question,
+  onSuccess
 }: UpdateQuestionProps) {
 
   const [loading, setLoading] = useState(false);
@@ -69,6 +70,7 @@ export default function UpdateQuestion({
       }));
       setTopics(formattedTopics);
     } catch (err) {
+      handleError(err);
       console.error(err);
     }
   };
@@ -97,6 +99,7 @@ export default function UpdateQuestion({
       onSuccess();
       onOpenChange(false);
     } catch (err: any) {
+      handleError(err);
       setError(err.response?.data?.error || err.message || 'Failed to update question');
     } finally {
       setLoading(false);
@@ -143,26 +146,29 @@ export default function UpdateQuestion({
           <form onSubmit={handleSubmit} className="space-y-5">
 
             {/* NAME */}
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">
+            <div className="grid grid-cols-3 items-center gap-4">
+
+              <Label className="text-s text-muted-foreground">
                 Question Name
               </Label>
+
               <Input
-                className="h-11 rounded border-border/60 bg-background/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="col-span-2 h-11 rounded-xl bg-background/60 border-border/60 focus-visible:ring-2 focus-visible:ring-primary/40"
                 value={formData.question_name}
                 onChange={(e) => handleInputChange('question_name', e.target.value)}
                 placeholder="Enter question name"
                 disabled={loading}
               />
+
             </div>
 
             {/* LINK */}
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">
+            <div className="grid grid-cols-3 items-center gap-4">
+              <Label className="text-s text-muted-foreground">
                 Question Link
               </Label>
               <Input
-                className="h-11 rounded border-border/60 bg-background/60 focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="col-span-2 h-11 rounded border-border/60 bg-background/60 focus-visible:ring-2 focus-visible:ring-primary/40"
                 value={formData.question_link}
                 onChange={(e) => handleInputChange('question_link', e.target.value)}
                 placeholder="https://leetcode.com/problems/..."
@@ -202,8 +208,8 @@ export default function UpdateQuestion({
                       type="button"
                       onClick={() => handleInputChange('level', lvl)}
                       className={`flex-1 py-2 text-xs font-semibold rounded transition-all ${formData.level === lvl
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground hover:bg-muted"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-muted"
                         }`}
                     >
                       {lvl}

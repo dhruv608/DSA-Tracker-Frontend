@@ -15,6 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { getAllTopics } from '@/services/admin.service';
+import { handleError } from "@/utils/handleError";
 
 export default function BulkUploadModal({
   open,
@@ -56,6 +57,7 @@ export default function BulkUploadModal({
         setTopics(formattedTopics);
         
       } catch (error: any) {
+        handleError(error);
         console.error('❌ Error fetching topics:', error);
         console.error('❌ Error details:', {
           message: error.message,
@@ -80,7 +82,7 @@ export default function BulkUploadModal({
     <>
       {/* MAIN MODAL */}
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="w-[95vw]  max-w-[1500px] p-0 overflow-hidden flex flex-col rounded-2xl">
+        <DialogContent className="w-[95vw]   max-w-[1500px] p-0 overflow-hidden flex flex-col rounded-2xl">
 
           {/* HEADER */}
           <DialogHeader className="px-6 py-5 bg-muted/40">

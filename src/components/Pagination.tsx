@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface PaginationProps {
@@ -25,7 +25,7 @@ export function Pagination({ currentPage, totalItems, limit, onPageChange, onLim
           <Skeleton className="h-4 w-32" />
           {showLimitSelector && (
             <div className="flex items-center gap-2">
-              <Skeleton className="h-8 w-[70px]" />
+              <Skeleton className="h-8 w-[70px] rounded-full" />
               <Skeleton className="h-4 w-12" />
             </div>
           )}
@@ -77,32 +77,28 @@ export function Pagination({ currentPage, totalItems, limit, onPageChange, onLim
         <div className="flex items-center gap-3 text-sm">
           <span className="text-muted-foreground font-medium">Show</span>
 
-          <Select
+          <Input
+            type="number"
+            min="1"
+            max="100"
             value={String(limit)}
-            onValueChange={(value) => {
-              onLimitChange(Number(value));
-              onPageChange(1);
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              if (value >= 1 && value <= 100) {
+                onLimitChange(value);
+                onPageChange(1);
+              }
             }}
-          >
-            <SelectTrigger
-              className="
-                w-[70px] h-9 rounded-full
-                bg-accent/40 border border-border
-                hover:bg-accent/60
-                transition
-              "
-            >
-              <SelectValue />
-            </SelectTrigger>
-
-            <SelectContent className="border border-border bg-popover">
-              <SelectItem value="5">5</SelectItem>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
+            className="
+              w-[90px] h-9 rounded-full
+              bg-accent/40 border border-border
+              hover:bg-accent/60
+              transition
+              text-center
+              focus:ring-2 focus:ring-primary/20
+            "
+            placeholder="6"
+          />
 
           <span className="text-muted-foreground font-medium">
             per page
