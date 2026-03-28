@@ -557,33 +557,33 @@ body {
   }
 }
 
-/* Hide scrollbar but allow scroll */
+/* Hide scrollbar but allow scroll
 .no-scrollbar::-webkit-scrollbar {
   display: none;
-}
+} */
 
-.no-scrollbar {
-  -ms-overflow-style: none;
+/* .no-scrollbar { */
+  /* -ms-overflow-style: none; */
   /* IE & Edge */
-  scrollbar-width: none;
+  /* scrollbar-width: none; */
   /* Firefox */
-}
+/* } */
 
 
 /* Hidden by default */
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   width: 0px;
-}
+} */
 
 /* Show on hover */
-body:hover::-webkit-scrollbar {
+/* body:hover::-webkit-scrollbar {
   width: 8px;
 }
 
 body:hover::-webkit-scrollbar-thumb {
   background: var(--primary);
   border-radius: 9999px;
-}
+} */
 
 
 /* Neon Animated Border */

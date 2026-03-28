@@ -1,5 +1,6 @@
 import api from '@/lib/api';
 import { ProfileUpdateData } from '@/types/student';
+import { handleError } from "@/utils/handleError";
 
 export const studentProfileService = {
   getProfile: async () => {
@@ -12,6 +13,7 @@ export const studentProfileService = {
       const res = await api.get(`/api/students/profile/${username}`);
       return res.data;
     } catch (error: any) {
+      handleError(error);
       console.error('Profile fetch error:', error);
       // If network error or server not available, throw a more descriptive error
       if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
@@ -41,6 +43,7 @@ export const studentProfileService = {
       
       return res.data;
     } catch (error: any) {
+      handleError(error);
       throw error;
     }
   },
@@ -54,6 +57,7 @@ export const studentProfileService = {
       
       return res.data;
     } catch (error: any) {
+      handleError(error);
       throw error;
     }
   },

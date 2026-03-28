@@ -47,6 +47,7 @@ import CreateQuestion from './components/createQuestion';
 import UpdateQuestion from './components/updateQuestion';
 import DeleteQuestion from './components/deleteQuestion';
 import BulkUploadModal from './components/BulkUploadModal';
+import { handleError } from "@/utils/handleError";
 
 function BadgeByLevel({ level }: { level: string }) {
   const variant = level === 'EASY' ? 'default' :
@@ -153,6 +154,7 @@ export default function AdminQuestionsBankPage() {
       setAllTopics(res.data.map((t: any) => ({ label: t.topic_name, value: t.slug })));
       setTopicsForBulkUpload(res.data.map((t: any) => ({ label: t.topic_name, value: t.id.toString() })));
     } catch (err) {
+      handleError(err);
       console.error(err);
     }
   }, []);
@@ -185,6 +187,7 @@ export default function AdminQuestionsBankPage() {
       setTotalPages(res.pagination.totalPages);
       setTotalRecords(res.pagination.total);
     } catch (err) {
+      handleError(err);
       console.error("Failed to load questions", err);
     } finally {
       setLoading(false);
@@ -216,6 +219,7 @@ export default function AdminQuestionsBankPage() {
       setIsCreateOpen(false);
       loadQuestions();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Failed to create question.');
     } finally {
       setSubmitting(false);
@@ -237,6 +241,7 @@ export default function AdminQuestionsBankPage() {
       setIsEditOpen(false);
       loadQuestions();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Failed to update question.');
     } finally {
       setSubmitting(false);
@@ -250,6 +255,7 @@ export default function AdminQuestionsBankPage() {
       setIsDeleteOpen(false);
       loadQuestions();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Cannot delete a question that is bound to classes or student progress.');
     } finally {
       setSubmitting(false);
@@ -357,6 +363,7 @@ export default function AdminQuestionsBankPage() {
 
         setBulkCsvData(rows);
       } catch (error) {
+        handleError(error);
         setBulkValidationError('Failed to parse CSV file');
       }
     };
@@ -401,6 +408,7 @@ export default function AdminQuestionsBankPage() {
       setBulkCsvData([]);
       loadQuestions();
     } catch (error: any) {
+      handleError(error);
       setBulkUploadError(error.message || 'Upload failed');
     } finally {
       setBulkLoading(false);

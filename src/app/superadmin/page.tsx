@@ -8,6 +8,7 @@ import { getAllBatches, Batch } from '@/services/batch.service';
 import { Building2, Layers, Users, TrendingUp, Activity, MapPin, Users2, BarChart3, ArrowUpRight, Sparkles, Globe, Target } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { handleError } from "@/utils/handleError";
 
 interface Stats {
   totalCities: number;
@@ -47,6 +48,7 @@ export default function SuperAdminDashboard() {
 
         setCityBreakdown(breakdown);
       } catch (err) {
+        handleError(err);
         console.error("Dashboard error:", err);
       } finally {
         setLoading(false);

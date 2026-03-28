@@ -117,10 +117,12 @@ export class ErrorHandler {
   static showAlert(error: any, context?: string) {
     const userError = this.handle(error, context);
     
-    if (userError.action) {
-      alert(`${userError.message}\n\n${userError.action}`);
-    } else {
-      alert(userError.message);
+    // Use toast instead of alert for better UX
+    if (typeof window !== 'undefined') {
+      // Import toast dynamically to avoid circular dependencies
+      import('@/utils/toast-system').then(({ showToast }) => {
+        showToast.error(userError.message);
+      });
     }
 
     return userError;

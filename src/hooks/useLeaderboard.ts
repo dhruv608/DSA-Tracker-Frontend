@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { studentLeaderboardService } from '@/services/student/leaderboard.service';
+import { handleError } from "@/utils/handleError";
 
 export interface LeaderboardEntry {
   student_id: number;
@@ -94,6 +95,7 @@ export function useLeaderboard({
         console.log('📊 Full API response:', JSON.stringify(result, null, 2));
         return result;
       } catch (error) {
+        handleError(error);
         console.error('❌ Query function FAILED:', error);
         throw error;
       }

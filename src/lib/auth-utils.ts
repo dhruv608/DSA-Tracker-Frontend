@@ -1,3 +1,5 @@
+import { handleError } from "@/utils/handleError";
+
 /**
  * Authentication utilities for token validation and user type checking
  */
@@ -15,6 +17,7 @@ export const parseJWT = (token: string) => {
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
+    handleError(error);
     console.error('Failed to parse JWT token:', error);
     return null;
   }
@@ -33,6 +36,7 @@ export const isStudentToken = (): boolean => {
     const decoded = parseJWT(token);
     return decoded?.userType === 'student';
   } catch (error) {
+    handleError(error);
     console.error('Error checking token type:', error);
     return false;
   }
@@ -51,6 +55,7 @@ export const isAdminToken = (): boolean => {
     const decoded = parseJWT(token);
     return decoded?.userType === 'admin';
   } catch (error) {
+    handleError(error);
     console.error('Error checking token type:', error);
     return false;
   }

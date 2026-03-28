@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { LogOut, User, Home, BookOpen, PenTool, Trophy, Lock, Activity } from 'lucide-react';
 import { useRecentQuestions } from '@/contexts/RecentQuestionsContext';
+import { handleError } from "@/utils/handleError";
 
 export default function StudentHeader() {
   const pathname = usePathname();
@@ -37,6 +38,7 @@ export default function StudentHeader() {
         const data = await studentAuthService.getCurrentStudent();
         setProfile(data);
       } catch (e: any) {
+        handleError(e);
         // Handle different error types gracefully
         if (e?.response?.status === 401) {
           // Token expired - will be handled by interceptors
@@ -74,6 +76,7 @@ export default function StudentHeader() {
     try {
       await studentAuthService.logout();
     } catch (e) {
+      handleError(e);
       // Handle logout error silently
     } finally {
       localStorage.removeItem('accessToken');

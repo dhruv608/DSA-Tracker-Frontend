@@ -17,7 +17,7 @@ import {
 import { getAllCities, City } from '@/services/city.service';
 import { getAllBatches, Batch } from '@/services/batch.service';
 import { bulkUploadStudents } from '@/services/admin.service';
-import { toastEvent } from '@/app/(auth)/shared/hooks/useToast';
+import { showSuccess, handleError } from '@/utils/handleError';
 
 export default function BulkUploadModal({
   open,
@@ -50,6 +50,7 @@ export default function BulkUploadModal({
         setCities(citiesData);
         setBatches(batchesData);
       } catch (error) {
+        handleError(error);
         console.error('Failed to fetch data:', error);
       }
     };
@@ -203,6 +204,7 @@ export default function BulkUploadModal({
           setCsvData(data);
         }
       } catch (error) {
+        handleError(error);
         console.error('CSV parsing error:', error);
         setValidationError('Failed to parse CSV file');
         setCsvData([]);
@@ -253,7 +255,7 @@ export default function BulkUploadModal({
 
       // Show success toast
       const message = result.message || `Successfully uploaded ${result.inserted || 0} students`;
-      toastEvent(message, 'success');
+      showSuccess('FILE_UPLOADED', message);
 
       // Success callback and close modal
       onSuccess?.(result);
@@ -271,7 +273,7 @@ export default function BulkUploadModal({
       setUploadError(errorMessage);
       
       // Show error toast
-      toastEvent(errorMessage, 'error');
+      handleError(errorMessage);
       
     } finally {
       setLoading(false);

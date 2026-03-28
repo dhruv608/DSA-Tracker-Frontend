@@ -11,6 +11,7 @@ import { AdminTable } from '@/components/superadmin/admins/AdminTable';
 import { AdminModal } from '@/components/superadmin/admins/AdminModal';
 import { AdminCard } from '@/components/superadmin/admins/AdminCard';
 import { AdminFilters } from '@/components/superadmin/admins/AdminFilters';
+import { handleError } from "@/utils/handleError";
 
 export default function AdminsPage() {
   const [admins, setAdmins] = useState<Admin[]>([]);
@@ -52,6 +53,7 @@ export default function AdminsPage() {
       setBatches(Array.isArray(batchesRes) ? batchesRes : []);
       setRoles(Array.isArray(rolesRes) ? rolesRes : []);
     } catch (err) {
+      handleError(err);
       console.error(err);
     } finally {
       setLoading(false);
@@ -89,8 +91,9 @@ export default function AdminsPage() {
       }
       setModalOpen(false);
       fetchData();
-    } catch (err: any) {
-      alert(err?.response?.data?.message || "Operation failed.");
+    } catch (err) {
+      // Error is already handled by the service with toast notifications
+      console.error('Admin operation failed:', err);
     } finally {
       setSubmitting(false);
     }
@@ -104,7 +107,8 @@ export default function AdminsPage() {
       setDelOpen(false);
       fetchData();
     } catch (err) {
-      alert("Failed to delete admin.");
+      // Error is already handled by the service with toast notifications
+      console.error('Admin deletion failed:', err);
     } finally {
       setSubmitting(false);
     }

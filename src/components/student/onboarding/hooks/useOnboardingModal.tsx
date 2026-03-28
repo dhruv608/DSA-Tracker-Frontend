@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '../../../../app/(auth)/shared/hooks/useToast';
+import { handleError } from "@/utils/handleError";
 
 export function useOnboardingModal(onComplete?: () => void) {
   const { showToast } = useToast();
@@ -78,6 +79,7 @@ export function useOnboardingModal(onComplete?: () => void) {
       }
       
     } catch (err) {
+      handleError(err);
       showToast("Profile verification failed.", 'error');
     } finally {
       setLoading(false);

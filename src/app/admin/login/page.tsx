@@ -6,6 +6,7 @@ import { loginAdmin } from '@/services/auth.service';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { handleError } from "@/utils/handleError";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function AdminLoginPage() {
 
       router.push('/admin');
     } catch (err: any) {
+      handleError(err);
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);

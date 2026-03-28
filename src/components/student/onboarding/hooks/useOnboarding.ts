@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../../../../app/(auth)/shared/hooks/useToast';
 import { useLocalStorage } from '../../../../app/(auth)/shared/hooks/useLocalStorage';
+import { handleError } from "@/utils/handleError";
 
 export function useOnboarding() {
   const router = useRouter();
@@ -49,6 +50,7 @@ export function useOnboarding() {
       localStorage.removeItem('onboardingUser');
       router.push('/');
     } catch (err) {
+      handleError(err);
       showToast("Profile verification failed.", 'error');
     } finally {
       setLoading(false);

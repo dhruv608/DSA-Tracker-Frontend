@@ -11,6 +11,7 @@ import { getCurrentAdmin } from '@/services/admin.service';
 import { useAdminStore } from '@/store/adminStore';
 import { getAdminCities, getAdminBatches } from '@/services/admin.service';
 import { isAdminToken, clearAuthTokens } from '@/lib/auth-utils';
+import { handleError } from "@/utils/handleError";
 
 function decodeJwt(token: string) {
   try {
@@ -24,6 +25,7 @@ function decodeJwt(token: string) {
     );
     return JSON.parse(jsonPayload);
   } catch (err) {
+    handleError(err);
     return null;
   }
 }
@@ -176,6 +178,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }
         }
       } catch (err: any) {
+        handleError(err);
         console.error("Failed to load admin data", err);
         
         // Handle specific error cases
@@ -294,7 +297,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!user) return null;
 
   return (
-    <div className="flex h-[100vh] bg-background text-foreground selection:bg-primary/20">
+    <div className="flex h-screen bg-background text-foreground selection:bg-primary/20">
       {/* Mobile Menu Toggle */}
       <button
         onClick={() => setIsMobileSidebarOpen(true)}
@@ -303,25 +306,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Menu className="w-5 h-5" />
       </button>
 
-      {/* Collapsible Sidebar Container */}
-      <div className={`
-        relative transition-all duration-300 ease-in-out
-        ${isSidebarCollapsed ? 'w-[60px]' : 'w-[240px]'}
-        lg:block hidden
-      `}>
-        {/* Reusable Sidebar Component */}
-        <Sidebar
-          role="admin"
-          isOpen={isMobileSidebarOpen}
-          onClose={() => setIsMobileSidebarOpen(false)}
-          user={user}
-          navItems={navItems}
-          onLogout={handleLogout}
-          portalLabel="Admin Portal"
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        />
-      </div>
+      {/* Reusable Sidebar Component */}
+      <Sidebar
+        role="admin"
+        isOpen={true}
+        onClose={() => setIsMobileSidebarOpen(false)}
+        user={user}
+        navItems={navItems}
+        onLogout={handleLogout}
+        portalLabel="Admin Portal"
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
 
       {/* Mobile Sidebar Overlay */}
       {isMobileSidebarOpen && (

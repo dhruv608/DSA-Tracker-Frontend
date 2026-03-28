@@ -1,4 +1,5 @@
 import api from '@/lib/api';
+import { handleError } from "@/utils/handleError";
 
 export const studentLeaderboardService = {
   getLeaderboard: async (filters: { city?: string; year?: number; type?: string } = {}, search?: string) => {
@@ -10,6 +11,7 @@ export const studentLeaderboardService = {
       const res = await api.post(url, filters);
       return res.data;
     } catch (error: any) {
+        handleError(error);
       // Handle silent errors (like token refresh failures) without throwing
       if (error?.silent) {
         // Return empty leaderboard data for silent failures

@@ -4,6 +4,13 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { Toaster } from "sonner";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+
+// Import test utilities in development
+if (process.env.NODE_ENV === 'development') {
+  import('@/utils/test-toast-system');
+}
 
 
 const geistSans = Geist({
@@ -64,9 +71,12 @@ export default function RootLayout({
       <body className="min-h-full overflow-y-auto custom-scrollbar flex flex-col ">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <QueryProvider>
-            {children}
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
           </QueryProvider>
         </ThemeProvider>
+        <Toaster position="top-center" theme="dark" richColors closeButton />
       </body>
     </html>
   );

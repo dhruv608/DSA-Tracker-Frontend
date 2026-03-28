@@ -14,6 +14,7 @@ import { ClassQuestions } from '@/components/student/classes/ClassQuestions';
 import { ClassLoading } from '@/components/student/classes/ClassLoading';
 import { Pagination } from '@/components/Pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { handleError } from "@/utils/handleError";
 
 export default function ClassDetailsPage() {
   const { topicSlug, classSlug } = useParams() as { topicSlug: string; classSlug: string };
@@ -39,6 +40,7 @@ export default function ClassDetailsPage() {
         const data = await studentClassService.getClassDetailsWithPagination(topicSlug, classSlug, queryParams.toString());
         setClassData(data);
       } catch (e) {
+        handleError(e);
         console.error("Class detail fetch error", e);
         router.push(`/topics/${topicSlug}`);
       } finally {

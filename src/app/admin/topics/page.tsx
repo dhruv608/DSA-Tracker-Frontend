@@ -38,7 +38,7 @@ import TopicsPageShimmer from '@/components/admin/topics/shimmers/TopicsPageShim
 import TopicsGridShimmer from '@/components/admin/topics/shimmers/TopicsGridShimmer';
 import { Topic } from '@/types/admin/topic';
 import { useTopics } from '@/hooks/admin/useTopics';
-
+import { handleError } from "@/utils/handleError";
 
 export default function AdminTopicsPage() {
    const { selectedBatch, isLoadingContext } = useAdminStore();
@@ -148,6 +148,7 @@ export default function AdminTopicsPage() {
          resetForms();
          refetch();
       } catch (err: any) {
+       handleError(err);
          setFormError(err.response?.data?.error || err.response?.data?.message || 'Failed to create topic');
       } finally {
          setSubmitting(false);
@@ -174,6 +175,7 @@ export default function AdminTopicsPage() {
          resetForms();
          refetch();
       } catch (err: any) {
+       handleError(err);
          setFormError(err.response?.data?.error || err.response?.data?.message || 'Failed to update topic');
       } finally {
          setSubmitting(false);
@@ -191,6 +193,7 @@ export default function AdminTopicsPage() {
          resetForms();
          refetch();
       } catch (err: any) {
+       handleError(err);
          setFormError(err.response?.data?.error || err.response?.data?.message || 'Failed to delete topic. Ensure it has no classes or questions associated with it.');
       } finally {
          setSubmitting(false);

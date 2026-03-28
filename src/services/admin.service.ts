@@ -1,6 +1,8 @@
 import api from '../lib/api';
 import { isAdminToken, clearAuthTokens } from '../lib/auth-utils';
 import { Batch } from './batch.service';
+import { handleError, showSuccess, showDeleteSuccess } from "@/utils/handleError";
+import { useEnhancedToast } from '@/hooks/useEnhancedToast';
 
 export interface Admin {
   id: number;
@@ -42,18 +44,33 @@ export const getAdminRoles = async (): Promise<string[]> => {
 };
 
 export const createAdmin = async (data: any) => {
-  const response = await api.post('/api/superadmin/admins', data);
-  return response.data.data;
+  try {
+    const response = await api.post('/api/superadmin/admins', data);
+    showSuccess('ADMIN_CREATED');
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const updateAdmin = async (id: number, data: any) => {
-  const response = await api.patch(`/api/superadmin/admins/${id}`, data);
-  return response.data.data;
+  try {
+    const response = await api.patch(`/api/superadmin/admins/${id}`, data);
+    showSuccess('ADMIN_UPDATED');
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const deleteAdmin = async (id: number) => {
-  const response = await api.delete(`/api/superadmin/admins/${id}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/api/superadmin/admins/${id}`);
+    showDeleteSuccess('Admin');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // ==========================================
@@ -95,22 +112,37 @@ export const getAdminBatchTopics = async (batchSlug: string, params?: any) => {
 };
 
 export const createAdminTopic = async (formData: FormData) => {
-  const response = await api.post('/api/admin/topics', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
-  return response.data;
+  try {
+    const response = await api.post('/api/admin/topics', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    showSuccess('TOPIC_CREATED');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const updateAdminTopic = async (topicSlug: string, formData: FormData) => {
-  const response = await api.put(`/api/admin/topics/${topicSlug}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
-  return response.data;
+  try {
+    const response = await api.put(`/api/admin/topics/${topicSlug}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    showSuccess('TOPIC_UPDATED');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const deleteAdminTopic = async (topicSlug: string) => {
-  const response = await api.delete(`/api/admin/topics/${topicSlug}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/api/admin/topics/${topicSlug}`);
+    showDeleteSuccess('Topic');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const getAllTopics = async () => {
@@ -128,18 +160,33 @@ export const getAdminTopicClasses = async (batchSlug: string, topicSlug: string)
 };
 
 export const createAdminClass = async (batchSlug: string, topicSlug: string, data: any) => {
-  const response = await api.post(`/api/admin/${batchSlug}/topics/${topicSlug}/classes`, data);
-  return response.data;
+  try {
+    const response = await api.post(`/api/admin/${batchSlug}/topics/${topicSlug}/classes`, data);
+    showSuccess('CLASS_CREATED');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const updateAdminClass = async (batchSlug: string, topicSlug: string, classSlug: string, data: any) => {
-  const response = await api.patch(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`, data);
-  return response.data;
+  try {
+    const response = await api.patch(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`, data);
+    showSuccess('CLASS_UPDATED');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const deleteAdminClass = async (batchSlug: string, topicSlug: string, classSlug: string) => {
-  const response = await api.delete(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`);
+    showDeleteSuccess('Class');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // ==========================================
@@ -167,18 +214,33 @@ export const getAdminQuestions = async (params: any) => {
 };
 
 export const createAdminQuestion = async (data: any) => {
-  const response = await api.post('/api/admin/questions', data);
-  return response.data;
+  try {
+    const response = await api.post('/api/admin/questions', data);
+    showSuccess('QUESTION_CREATED');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const updateAdminQuestion = async (id: number, data: any) => {
-  const response = await api.patch(`/api/admin/questions/${id}`, data);
-  return response.data;
+  try {
+    const response = await api.patch(`/api/admin/questions/${id}`, data);
+    showSuccess('QUESTION_UPDATED');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const deleteAdminQuestion = async (id: number) => {
-  const response = await api.delete(`/api/admin/questions/${id}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/api/admin/questions/${id}`);
+    showDeleteSuccess('Question');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // ==========================================
@@ -191,25 +253,45 @@ export const getAdminStudents = async (params: any) => {
 };
 
 export const createAdminStudent = async (data: any) => {
-  const response = await api.post('/api/admin/students', data);
-  return response.data;
+  try {
+    const response = await api.post('/api/admin/students', data);
+    showSuccess('STUDENT_CREATED');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const updateAdminStudent = async (id: number, data: any) => {
-  const response = await api.patch(`/api/admin/students/${id}`, data);
-  return response.data;
+  try {
+    const response = await api.patch(`/api/admin/students/${id}`, data);
+    showSuccess('STUDENT_UPDATED');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const deleteAdminStudent = async (id: number) => {
-  const response = await api.delete(`/api/admin/students/${id}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/api/admin/students/${id}`);
+    showDeleteSuccess('Student');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const bulkUploadStudents = async (formData: FormData) => {
-  const response = await api.post('/api/admin/bulk-operations', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
-  return response.data;
+  try {
+    const response = await api.post('/api/admin/bulk-operations', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    showSuccess('FILE_UPLOADED', 'Students uploaded successfully!');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const getAdminStudentProfile = async (username: string) => {
@@ -227,10 +309,7 @@ export const getAdminLeaderboard = async (query: { page?: number; limit?: number
     const response = await api.post('/api/admin/leaderboard', body, { params: query });
     return response.data;
   } catch (err: any) {
-    if (err.response && err.response.data) {
-      console.error("Raw Leaderboard error payload:", err.response.data);
-      throw new Error((err.response.data.message || err.response.data.error) + " | Status 500 payload attached.");
-    }
+    handleError(err);
     throw err;
   }
 };
@@ -240,7 +319,7 @@ export const getAvailableYears = async () => {
     const response = await api.get('/api/admin/leaderboard/years');
     return response.data.years;
   } catch (err: any) {
-    console.error("Failed to fetch available years:", err);
+    handleError(err);
     // Return fallback years if API fails
     return [2026, 2025, 2024, 2023];
   }

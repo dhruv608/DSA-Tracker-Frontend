@@ -1,5 +1,6 @@
 import api from '@/lib/api';
 import { isStudentToken, clearAuthTokens } from '@/lib/auth-utils';
+import { handleError, showSuccess } from "@/utils/handleError";
 
 export const studentAuthService = {
   getCurrentStudent: async () => {
@@ -15,43 +16,68 @@ export const studentAuthService = {
       const response = await api.get('/api/students/me');
       return response.data;
     } catch (error) {
+        handleError(error);
       throw error;
     }
   },
 
   login: async (credentials: any) => {
-    const res = await api.post('/api/auth/student/login', credentials);
-    return res.data;
+    try {
+      const res = await api.post('/api/auth/student/login', credentials);
+      showSuccess('LOGIN');
+      return res.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   register: async (data: any) => {
-    const res = await api.post('/api/auth/student/register', data);
-    return res.data;
+    try {
+      const res = await api.post('/api/auth/student/register', data);
+      showSuccess('REGISTER');
+      return res.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   logout: async () => {
-    const res = await api.post('/api/auth/student/logout');
-    return res.data;
+    try {
+      const res = await api.post('/api/auth/student/logout');
+      showSuccess('LOGOUT');
+      return res.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   googleLogin: async (idToken: string) => {
-    const res = await api.post('/api/auth/google-login', { idToken });
-    return res.data;
+    try {
+      const res = await api.post('/api/auth/google-login', { idToken });
+      showSuccess('LOGIN');
+      return res.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   forgotPassword: async (email: string) => {
-    const res = await api.post('/api/auth/forgot-password', { email });
-    return res.data;
+    try {
+      const res = await api.post('/api/auth/forgot-password', { email });
+      showSuccess('EMAIL_SENT', 'Password reset email sent!');
+      return res.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   resetPassword: async (data: any) => {
-    console.log('🚀 Auth Service: resetPassword called with:', { ...data, newPassword: '[HIDDEN]' });
     try {
       const res = await api.post('/api/auth/reset-password', data);
-      console.log('✅ Auth Service: API call successful', res.status, res.data);
+      showSuccess('PASSWORD_RESET');
       return res.data;
     } catch (error: any) {
-      console.log('❌ Auth Service: API call failed', error.response?.status, error.response?.data);
+      handleError(error);
       throw error;
     }
   }

@@ -11,6 +11,7 @@ import { Target, Flame, Trophy } from 'lucide-react';
 import { OnboardingModal } from '@/components/student/onboarding/OnboardingModal';
 import { HeroSection } from '@/components/student/home/HeroSection';
 import { TopicsSection } from '@/components/student/home/TopicsSection';
+import { handleError } from "@/utils/handleError";
 
 interface User {
   username?: string;
@@ -100,6 +101,7 @@ export default function StudentHomePage() {
         topicsActive: activeTopics
       });
     } catch (e) {
+      handleError(e);
       console.error("Error refreshing user data", e);
     }
   };
@@ -115,6 +117,7 @@ export default function StudentHomePage() {
 
         await refreshUserData();
       } catch (e) {
+        handleError(e);
         console.error("Dashboard data fetch error", e);
         // Handle auth error
         if ((e as any).response?.status === 401) {

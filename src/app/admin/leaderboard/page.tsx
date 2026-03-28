@@ -14,8 +14,7 @@ import { FilterBar } from '../../../components/admin/leaderboard/components/Filt
 import { EvaluationModal } from '../../../components/admin/leaderboard/components/EvaluationModal';
 import { TimerLeaderboard } from '../../../components/admin/leaderboard/components/TimerLeaderboard';
 import PodiumSection from '@/components/admin/leaderboard/components/PodiumSection';
-
-
+import { handleError } from "@/utils/handleError";
 
 // Hook for Debounce
 function useDebounce<T>(value: T, delay: number): T {
@@ -103,6 +102,7 @@ export default function AdminLeaderboardPage() {
       console.log("AdminLeaderboardPage - API Response (Refresh):", response);
       setLeaderboardData(response);
     } catch (err: any) {
+      handleError(err);
       console.error('Failed to refresh leaderboard data:', err);
       setLeaderboardError(err.message || 'Failed to refresh leaderboard data');
       setLeaderboardData(null);
@@ -155,6 +155,7 @@ export default function AdminLeaderboardPage() {
         
         setLeaderboardData(response);
       } catch (err: any) {
+        handleError(err);
         console.error('Failed to fetch leaderboard data:', err);
         setLeaderboardError(err.message || 'Failed to fetch leaderboard data');
         setLeaderboardData(null);

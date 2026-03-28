@@ -44,9 +44,7 @@ import BulkUploadModal from './components/BulkUploadModal';
 import DownloadReportModal from './components/DownloadReportModal';
 import { Avatar } from '@/components/ui/Avatar';
 import { AdminStudent } from '@/types/student';
-
-
-
+import { handleError } from "@/utils/handleError";
 
 export default function AdminStudentsPage() {
   const router = useRouter();
@@ -103,6 +101,7 @@ export default function AdminStudentsPage() {
       setTotalPages(res.pagination.totalPages);
       setTotalRecords(res.pagination.total);
     } catch (err) {
+      handleError(err);
       console.error("Failed to load students", err);
     } finally {
       setLoading(false);
@@ -140,6 +139,7 @@ export default function AdminStudentsPage() {
       resetForms();
       fetchStudents();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Failed to onboard student.');
     } finally {
       setSubmitting(false);
@@ -163,6 +163,7 @@ export default function AdminStudentsPage() {
       resetForms();
       fetchStudents();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Failed to update student.');
     } finally {
       setSubmitting(false);
@@ -178,6 +179,7 @@ export default function AdminStudentsPage() {
       resetForms();
       fetchStudents();
     } catch (err: any) {
+      handleError(err);
       setFormError(err.response?.data?.error || 'Operation failed.');
     } finally {
       setSubmitting(false);

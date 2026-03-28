@@ -15,6 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { getAllTopics } from '@/services/admin.service';
+import { handleError } from "@/utils/handleError";
 
 export default function BulkUploadModal({
   open,
@@ -56,6 +57,7 @@ export default function BulkUploadModal({
         setTopics(formattedTopics);
         
       } catch (error: any) {
+        handleError(error);
         console.error('❌ Error fetching topics:', error);
         console.error('❌ Error details:', {
           message: error.message,

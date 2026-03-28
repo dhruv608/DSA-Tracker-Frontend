@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { getAllCities, City } from '@/services/city.service';
 import { getAllBatches, Batch } from '@/services/batch.service';
-import { toastEvent } from '@/app/(auth)/shared/hooks/useToast';
+import { showSuccess, handleError } from '@/utils/handleError';
 import api from '@/lib/api';
 
 export default function DownloadReportModal({
@@ -45,6 +45,7 @@ export default function DownloadReportModal({
         setCities(citiesData);
         setBatches(batchesData);
       } catch (error) {
+        handleError(error);
         console.error('Failed to fetch data:', error);
       }
     };
@@ -125,7 +126,7 @@ export default function DownloadReportModal({
       window.URL.revokeObjectURL(url);
 
       // Show success toast
-      toastEvent('Report downloaded successfully!', 'success');
+      showSuccess('FILE_DOWNLOADED', 'Report downloaded successfully!');
       
       // Close modal
       handleClose();
@@ -142,7 +143,7 @@ export default function DownloadReportModal({
       setDownloadError(errorMessage);
       
       // Show error toast
-      toastEvent(errorMessage, 'error');
+      handleError(errorMessage);
       
     } finally {
       setLoading(false);

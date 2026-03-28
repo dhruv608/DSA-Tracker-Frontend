@@ -1,4 +1,5 @@
 import api from '@/lib/api';
+import { handleError } from "@/utils/handleError";
 
 export interface PracticeFilters {
   search?: string;
@@ -27,6 +28,7 @@ export const studentPracticeService = {
       const res = await api.get(`/api/students/addedQuestions?${params.toString()}`);
       return res.data; // expects { questions: [...], totalPages: N }
     } catch (e: any) {
+        handleError(e);
       if (e.response?.status === 400) {
         // Missing batchId in token. Return empty questions list instead of crashing app.
         return { questions: [], totalPages: 1 };

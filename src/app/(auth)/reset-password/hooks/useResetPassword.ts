@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { studentAuthService } from '@/services/student/auth.service';
 import { useToast } from '../../shared/hooks/useToast';
+import { handleError } from "@/utils/handleError";
 
 export function useResetPassword() {
   const router = useRouter();
@@ -59,6 +60,7 @@ export function useResetPassword() {
       showToast("Password reset successful ✅", "success");
       setTimeout(() => router.push('/login'), 1500);
     } catch (err: any) {
+      handleError(err);
       console.log('❌ API Error occurred:', err);
       console.log('📊 Error response:', err.response);
       console.log('📊 Error status:', err.response?.status);

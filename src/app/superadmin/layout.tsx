@@ -8,6 +8,7 @@ import { getCurrentSuperAdmin } from '@/services/superadmin.service';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { isAdminToken, clearAuthTokens } from '@/lib/auth-utils';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { handleError } from "@/utils/handleError";
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
 
@@ -33,6 +34,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         const userData = await getCurrentSuperAdmin();
         setUser(userData.data); // Service returns unwrapped data directly
       } catch (err) {
+        handleError(err);
         console.error('Failed to load superadmin user:', err);
         window.location.href = '/superadmin/login';
       } finally {
@@ -80,11 +82,37 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         <Menu className="w-5 h-5" />
       </button>
 
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <div className={`
+        lg:hidden fixed top-0 left-0 h-full z-40 transition-transform duration-300
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <Sidebar
+          role="superadmin"
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          user={user}
+          navItems={navItems}
+          onLogout={handleLogout}
+          portalLabel="SuperAdmin Portal"
+          isCollapsed={false}
+          onToggleCollapse={() => {}}
+        />
+      </div>
+
       {/* Reusable Sidebar Component */}
       <Sidebar
         role="superadmin"
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        isOpen={true}
+        onClose={() => {}}
         user={user}
         navItems={navItems}
         onLogout={handleLogout}

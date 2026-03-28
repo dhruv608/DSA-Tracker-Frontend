@@ -6,7 +6,7 @@ import { studentAuthService } from '@/services/student/auth.service';
 import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
-
+import { handleError } from "@/utils/handleError";
 
 export function LoginForm() {
   const router = useRouter();
@@ -54,6 +54,7 @@ export function LoginForm() {
         setError('Login failed: No token received.');
       }
     } catch (err: any) {
+      handleError(err);
       setError(
         err.response?.data?.error ||
         err.response?.data?.message ||

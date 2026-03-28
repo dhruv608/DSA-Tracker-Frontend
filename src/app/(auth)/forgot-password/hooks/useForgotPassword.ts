@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { studentAuthService } from '@/services/student/auth.service';
 import { useToast } from '../../shared/hooks/useToast';
+import { handleError } from "@/utils/handleError";
 
 export function useForgotPassword() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export function useForgotPassword() {
       showToast("Email sent successfully ✅");
       router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
+      handleError(err);
       const msg = err.response?.data?.error || err.response?.data?.message || 'Failed to send OTP.';
       setError(msg);
       showToast(msg, 'error');
