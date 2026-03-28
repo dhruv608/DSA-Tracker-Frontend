@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Edit2, BarChart3, GraduationCap, MapPin, Edit3 } from 'lucide-react';
 import { StudentProfile } from '@/types/student';
+import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 
 interface ProfileHeaderProps {
     student: StudentProfile;
@@ -13,9 +14,7 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ student, canEdit, onEditProfile, onShowTopicProgress, onEditUsername }: ProfileHeaderProps) {
-    const initials = student.name
-        ? student.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
-        : 'ME';
+   
 
     return (
         <div className="glass borderless p-8 mb-8 rounded-[var(--radius-xl)]">
@@ -28,9 +27,7 @@ export function ProfileHeader({ student, canEdit, onEditProfile, onShowTopicProg
                             {student.profileImageUrl ? (
                                 <img src={student.profileImageUrl} alt={student.name} className="w-full h-full object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center font-bold rounded-full bg-[var(--accent-primary)] text-[var(--primary-foreground)] text-[var(--text-xl)]">
-                                    {initials}
-                                </div>
+                               <ProfileAvatar username={student.name} size={140} />
                             )}
                         </div>
                     </div>

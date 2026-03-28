@@ -1,9 +1,12 @@
 "use client";
 
-import { Award, Crown, Trophy } from "lucide-react";
+import { Award, Crown, ExternalLink, Trophy } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation"
+import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
+import Link from "next/link"
+
 export const PodiumCard = ({ student, rank, isCenter }: any) => {
     const router = useRouter();
     if (!student) return null;
@@ -58,6 +61,7 @@ export const PodiumCard = ({ student, rank, isCenter }: any) => {
         >
 
             {/* 💎 Card */}
+
             <div
                 className={`relative glass rounded-3xl px-8 py-10 w-[230px] md:w-[260px] text-center border ${borderColor} shadow-xl backdrop-blur-xl`}
             >
@@ -68,7 +72,7 @@ export const PodiumCard = ({ student, rank, isCenter }: any) => {
                 )}
 
                 {rank == 2 && (
-                    <Crown className="absolute -top-1 left-1/2 -translate-x-1/2 text-[color:var(--chart-2)] w-10 h-10 crown-float" />
+                    <Award className="absolute -top-1 left-1/2 -translate-x-1/2 text-[color:var(--chart-2)] w-10 h-10 crown-float" />
                 )}
 
 
@@ -101,9 +105,12 @@ export const PodiumCard = ({ student, rank, isCenter }: any) => {
                                     unoptimized
                                 />
                             ) : (
-                                <span className="text-xl font-bold text-primary">
-                                    {student?.name?.slice(0, 2)?.toUpperCase() || "U"}
-                                </span>
+                                <ProfileAvatar username={student?.username || ""} bgcolor={
+                                    rank === 1 ? "var(--chart-1)" :
+                                        rank === 2 ? "var(--chart-2)" :
+                                            "var(--chart-5)"
+                                }
+                                    size={173} />
                             )}
                         </div>
 
@@ -122,13 +129,20 @@ export const PodiumCard = ({ student, rank, isCenter }: any) => {
                 </h3>
 
                 {/* Username */}
-                <p className={`text-xs   ${textColor} truncate `} onClick={() => router.push(`profile/${student.username}`)}>
-                    @{student.username}
+
+                <p className={`text-xs ${textColor} truncate flex justify-center`}>
+                    <Link
+                        href={`/profile/${student?.username}`}
+                        className="flex items-center gap-1"
+                    >
+                        <span>@{student.username}</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                    </Link>
                 </p>
 
                 {/* Location */}
                 <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">
-                    {student.city_name || "Unknown"}
+                    {student.city_name || "PW IOI"}
                 </p>
 
                 {/* Score */}
@@ -143,6 +157,7 @@ export const PodiumCard = ({ student, rank, isCenter }: any) => {
                     </p>
                 </div>
             </div>
+
         </motion.div >
     );
 };

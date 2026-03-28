@@ -97,8 +97,8 @@ export default function StudentHeader() {
         {/* Logo - Clean text-only branding */}
         <Link href="/" className="group">
           <h1
-            className="font-serif italic text-xl font-bold text-logo transition-all duration-300 group-hover:shadow-[0_0_20px_var(--hover-glow)]"
-            style={{ fontSize: 'var(--text-xl)', letterSpacing: '-0.025em' }}
+            className="font-sans italic text-xl font-bold text-logo transition-all duration-300 group-hover:shadow-[0_0_20px_var(--hover-glow)]"
+            style={{ fontSize: 'var(--text-lg)', letterSpacing: '-0.025em' }}
           >
             BruteForce
           </h1>

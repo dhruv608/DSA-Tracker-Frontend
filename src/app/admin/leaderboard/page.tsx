@@ -5,15 +5,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAdminStore } from '@/store/adminStore';
 import { getAdminLeaderboard } from '@/services/admin.service';
 import { Trophy, Clock } from 'lucide-react';
-import PodiumShimmer from '@/components/admin/leaderboard/shimmers/PodiumShimmer';
-import StatsShimmer from '@/components/admin/leaderboard/shimmers/StatsShimmer';
-import TableShimmer from '@/components/admin/leaderboard/shimmers/TableShimmer';
-import { StatsSection } from '../../../components/admin/leaderboard/components/StatsSection';
-import { LeaderboardTable } from '../../../components/admin/leaderboard/components/LeaderboardTable';
-import { FilterBar } from '../../../components/admin/leaderboard/components/FilterBar';
-import { EvaluationModal } from '../../../components/admin/leaderboard/components/EvaluationModal';
-import { TimerLeaderboard } from '../../../components/admin/leaderboard/components/TimerLeaderboard';
-import PodiumSection from '@/components/admin/leaderboard/components/PodiumSection';
+import PodiumShimmer from '@/components/leaderboard/shimmers/PodiumShimmer';
+import StatsShimmer from '@/components/leaderboard/shimmers/StatsShimmer';
+import TableShimmer from '@/components/leaderboard/shimmers/TableShimmer';
+import { StatsSection } from '../../../components/leaderboard/components/StatsSection';
+import { LeaderboardTable } from '../../../components/leaderboard/components/LeaderboardTable';
+import { FilterBar } from '../../../components/leaderboard/components/FilterBar';
+import { EvaluationModal } from '../../../components/leaderboard/components/EvaluationModal';
+import { TimerLeaderboard } from '../../../components/leaderboard/components/TimerLeaderboard';
+import PodiumSection from '@/components/leaderboard/components/PodiumSection';
 
 
 

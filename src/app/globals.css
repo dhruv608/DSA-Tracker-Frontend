@@ -84,7 +84,7 @@
 
   /* ===== NEW ADDITIONS (SAFE) ===== */
 
-  --glass-bg: rgba(22, 24, 33, 0.6);
+  --glass-bg: rgba(22, 24, 33, 0.522);
   --glass-border: rgba(255, 255, 255, 0.06);
   --hover-glow: rgba(204, 255, 0, 0.15);
 

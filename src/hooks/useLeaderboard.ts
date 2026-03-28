@@ -11,9 +11,6 @@ export interface LeaderboardEntry {
   batch_year: number;
   city_name: string;
   max_streak: number;
-  easy_completion: number;
-  medium_completion: number;
-  hard_completion: number;
   total_solved: number;
   score: number;
   global_rank: number;

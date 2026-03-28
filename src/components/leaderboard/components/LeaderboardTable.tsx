@@ -3,7 +3,7 @@ import React from 'react';
 import { Trophy } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination } from '@/components/Pagination';
-import TableShimmer from '@/components/admin/leaderboard/shimmers/TableShimmer';
+import TableShimmer from '@/components/leaderboard/shimmers/TableShimmer';
 import { LeaderboardTableRow } from './LeaderboardTableRow';
 
 export function LeaderboardTable({
@@ -17,7 +17,7 @@ export function LeaderboardTable({
   const errorMsg = error;
   
   // Determine rank column name based on city selection
-  const isGlobalView = selectedCity === 'All Cities';
+  const isGlobalView = selectedCity === 'all';
   const rankColumnName = isGlobalView ? 'Global Rank' : 'City Rank';
   
     return (
@@ -31,19 +31,18 @@ export function LeaderboardTable({
           <Table className="no-scrollbar">
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50 border-border/80">
-                <TableHead className="w-[80px] text-center font-bold">{rankColumnName}</TableHead>
-                <TableHead className="font-bold">Student</TableHead>
+                <TableHead className="font-bold px-4">Student</TableHead>
+                <TableHead className=" text-center font-bold">{rankColumnName}</TableHead>
                 <TableHead className="font-bold">Location</TableHead>
                 <TableHead className="font-bold text-center">Score</TableHead>
-                <TableHead className="font-bold w-[200px]">Completion</TableHead>
-                <TableHead className="font-bold text-center">Streak</TableHead>
+                <TableHead className="font-bold text-center">Max Streak</TableHead>
                 <TableHead className="font-bold text-center">Solved</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {errorMsg ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-[300px] text-center text-red-500">
+                  <TableCell colSpan={6} className="h-[300px] text-center text-red-500">
                     <div className="flex flex-col items-center justify-center">
                       <p className="font-bold">Error Fetching Data</p>
                       <p className="text-sm opacity-80 mt-1">{errorMsg}</p>
@@ -52,7 +51,7 @@ export function LeaderboardTable({
                 </TableRow>
               ) : leaderboard.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-[300px] text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="h-[300px] text-center text-muted-foreground">
                     <div className="flex flex-col items-center justify-center opacity-70">
                       <Trophy className="w-12 h-12 mb-4 text-muted-foreground/50" />
                       <p>No students found for the current filters.</p>
@@ -60,8 +59,8 @@ export function LeaderboardTable({
                   </TableCell>
                 </TableRow>
               ) : (
-                leaderboard.map((entry: any, index: number) => (
-                  <LeaderboardTableRow key={entry.student_id || entry.username} entry={entry} index={index} selectedCity={selectedCity} />
+                leaderboard.map((entry: any) => (
+                  <LeaderboardTableRow key={entry.student_id || entry.username} entry={entry}  selectedCity={selectedCity} />
                 ))
               )}
             </TableBody>
