@@ -6,7 +6,6 @@ import { OnboardingStep1 } from './components/OnboardingStep1';
 import { OnboardingStep2 } from './components/OnboardingStep2';
 import { OnboardingStep3 } from './components/OnboardingStep3';
 import { Modal } from '../../../app/(auth)/shared/components/Modal';
-import { Toast } from '../../../app/(auth)/shared/components/Toast';
 
 export default function OnboardingPage() {
   const { step, setStep, data, setData, confirmChecked, setConfirmChecked, loading, submitOnboarding } = useOnboarding();
@@ -19,7 +18,6 @@ export default function OnboardingPage() {
         {step === 2 && <OnboardingStep2 data={data} setData={setData} setStep={setStep} />}
         {step === 3 && <OnboardingStep3 data={data} setStep={setStep} confirmChecked={confirmChecked} setConfirmChecked={setConfirmChecked} submitOnboarding={submitOnboarding} loading={loading} />}
       </Modal>
-      <Toast />
     </div>
   );
 }

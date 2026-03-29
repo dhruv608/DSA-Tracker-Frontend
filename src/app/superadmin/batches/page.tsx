@@ -10,7 +10,7 @@ import { BatchFilters } from '@/components/superadmin/batches/BatchFilters';
 import { BatchTable } from '@/components/superadmin/batches/BatchTable';
 import { BatchCard } from '@/components/superadmin/batches/BatchCard';
 import { BatchModal } from '@/components/superadmin/batches/BatchModal';
-import { handleError } from "@/utils/handleError";
+import { handleToastError, showSuccess, showDeleteSuccess } from "@/utils/toast-system";
 
 export default function BatchesPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -47,7 +47,7 @@ export default function BatchesPage() {
       setBatches(Array.isArray(batchesRes) ? batchesRes : []);
       setCities(Array.isArray(citiesRes) ? citiesRes : []);
     } catch (err) {
-      handleError(err);
+      // handleToastError(err);
       console.error(err);
     } finally {
       setLoading(false);
@@ -80,14 +80,15 @@ export default function BatchesPage() {
     try {
       if (modalMode === 'create') {
         await createBatch(data);
+        // showSuccess('BATCH_CREATED');
       } else if (targetBatch) {
         await updateBatch(targetBatch.id, data);
+        // showSuccess('BATCH_UPDATED');
       }
       setModalOpen(false);
       fetchData();
     } catch (err) {
-      // Error is already handled by the service with toast notifications
-      console.error('Batch operation failed:', err);
+      // handleToastError(err, 'Batch operation failed');
     } finally {
       setSubmitting(false);
     }
@@ -98,11 +99,11 @@ export default function BatchesPage() {
     setSubmitting(true);
     try {
       await deleteBatch(targetBatch.id);
+      // showDeleteSuccess('Batch');
       setDelOpen(false);
       fetchData();
     } catch (err) {
-      // Error is already handled by the service with toast notifications
-      console.error('Batch deletion failed:', err);
+      //   handleToastError(err, 'Batch deletion failed');
     } finally {
       setSubmitting(false);
     }

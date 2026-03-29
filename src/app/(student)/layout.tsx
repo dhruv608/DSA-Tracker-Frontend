@@ -7,7 +7,7 @@ import { studentAuthService } from '@/services/student/auth.service';
 import { isStudentToken, clearAuthTokens } from '@/lib/auth-utils';
 import { RecentQuestionsSidebar } from '@/components/student/RecentQuestionsSidebar';
 import { RecentQuestionsProvider } from '@/contexts/RecentQuestionsContext';
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 export default function StudentLayout({
   children,
@@ -59,7 +59,7 @@ export default function StudentLayout({
           setShowProfileModal(true);
         }
       } catch (err: any) {
-        handleError(err);
+        handleToastError(err);
         if (err.response?.status === 401 || err.response?.status === 403) {
           router.push('/login');
         }
@@ -80,7 +80,7 @@ export default function StudentLayout({
       // Optimistically update local profile state
       setProfile((prev: any) => ({ ...prev, leetcode: leetcodeId, gfg: gfgId }));
     } catch (e) {
-      handleError(e);
+      handleToastError(e);
       console.error("Failed to update profile", e);
       alert("Failed to update profile. Please try again.");
     } finally {

@@ -44,7 +44,7 @@ import BulkUploadModal from './components/BulkUploadModal';
 import DownloadReportModal from './components/DownloadReportModal';
 import { Avatar } from '@/components/ui/Avatar';
 import { AdminStudent } from '@/types/student';
-import { handleError } from "@/utils/handleError";
+import { handleToastError, showSuccess, showDeleteSuccess } from "@/utils/toast-system";
 
 export default function AdminStudentsPage() {
   const router = useRouter();
@@ -101,7 +101,7 @@ export default function AdminStudentsPage() {
       setTotalPages(res.pagination.totalPages);
       setTotalRecords(res.pagination.total);
     } catch (err) {
-      handleError(err);
+      handleToastError(err);
       console.error("Failed to load students", err);
     } finally {
       setLoading(false);
@@ -135,12 +135,12 @@ export default function AdminStudentsPage() {
         leetcode_id: formLeetcodeId || undefined,
         gfg_id: formGfgId || undefined
       });
+      showSuccess('STUDENT_CREATED');
       setIsCreateOpen(false);
       resetForms();
       fetchStudents();
     } catch (err: any) {
-      handleError(err);
-      setFormError(err.response?.data?.error || 'Failed to onboard student.');
+      handleToastError(err);
     } finally {
       setSubmitting(false);
     }
@@ -159,12 +159,12 @@ export default function AdminStudentsPage() {
         leetcode_id: formLeetcodeId || undefined,
         gfg_id: formGfgId || undefined
       });
+      showSuccess('STUDENT_UPDATED');
       setIsEditOpen(false);
       resetForms();
       fetchStudents();
     } catch (err: any) {
-      handleError(err);
-      setFormError(err.response?.data?.error || 'Failed to update student.');
+      handleToastError(err);
     } finally {
       setSubmitting(false);
     }
@@ -175,12 +175,12 @@ export default function AdminStudentsPage() {
     setFormError(''); setSubmitting(true);
     try {
       await deleteAdminStudent(selectedStudent.id);
+      showDeleteSuccess('Student');
       setIsDeleteOpen(false);
       resetForms();
       fetchStudents();
     } catch (err: any) {
-      handleError(err);
-      setFormError(err.response?.data?.error || 'Operation failed.');
+      handleToastError(err);
     } finally {
       setSubmitting(false);
     }

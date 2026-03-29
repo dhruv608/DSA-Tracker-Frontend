@@ -1,12 +1,23 @@
 import api from '../lib/api';
+import { handleToastError, showSuccess } from '@/utils/toast-system';
 
 export const loginAdmin = async (data: { email: string; password: string }) => {
   const response = await api.post('/api/auth/admin/login', data);
+  // Check if response is undefined (network error handled by interceptor)
+   if (!response) {
+    return undefined;
+  }
+  // showSuccess('LOGIN');
   return response.data;
 };
 
 export const loginSuperAdmin = async (data: { email: string; password: string }) => {
   const response = await api.post('/api/auth/admin/login', data);
+  // Check if response is undefined (network error handled by interceptor)
+  if (!response) {
+    return undefined;
+  }
+  // showSuccess('LOGIN');
   return response.data;
 };
 

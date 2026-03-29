@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { getAdminBatchTopics } from "@/services/admin.service";
 import { Topic, TopicsResponse } from "@/types/admin/topic";
-import { handleError } from "@/utils/handleError";
+import { handleToastError, showSuccess } from '@/utils/toast-system';
 
 type UseTopicsParams = {
   batchSlug?: string;
@@ -42,7 +42,7 @@ export function useTopics({
         setTotalRecords(data.length);
       }
     } catch (err) {
-      handleError(err);
+      handleToastError(err);
       console.error("Failed to fetch topics", err);
     } finally {
       setLoading(false);

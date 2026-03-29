@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import { deleteAdminQuestion } from '@/services/admin.service';
 import { Question } from '@/types/admin/question';
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 interface DeleteQuestionProps {
   open: boolean;
@@ -43,7 +43,7 @@ export default function DeleteQuestion({
       onSuccess();
       onOpenChange(false);
     } catch (err: any) {
-      handleError(err);
+      handleToastError(err);
       setError(err.response?.data?.error || err.message || 'Failed to delete question');
     } finally {
       setLoading(false);

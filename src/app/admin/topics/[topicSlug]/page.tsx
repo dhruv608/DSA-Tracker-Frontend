@@ -41,7 +41,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Pagination } from '@/components/Pagination';
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 export default function AdminClassesPage() {
   const params = useParams();
@@ -84,7 +84,7 @@ export default function AdminClassesPage() {
       setClassesList(response.data.data || []);
       setTotalRecords(response.data.pagination?.total || 0);
     } catch (err) {
-      handleError(err);
+      handleToastError(err);
       console.error("Failed to fetch classes", err);
     } finally {
       setLoading(false);
@@ -115,7 +115,7 @@ export default function AdminClassesPage() {
       resetForms();
       fetchClasses();
     } catch (err: any) {
-      handleError(err);
+      handleToastError(err);
       setFormError(err.response?.data?.error || 'Failed to create class');
     } finally {
       setSubmitting(false);
@@ -138,7 +138,7 @@ export default function AdminClassesPage() {
       resetForms();
       fetchClasses();
     } catch (err: any) {
-      handleError(err);
+      handleToastError(err);
       setFormError(err.response?.data?.error || 'Failed to update class');
     } finally {
       setSubmitting(false);
@@ -154,7 +154,7 @@ export default function AdminClassesPage() {
       resetForms();
       fetchClasses();
     } catch (err: any) {
-      handleError(err);
+      handleToastError(err);
       setFormError(err.response?.data?.error || 'Failed to delete class.');
     } finally {
       setSubmitting(false);

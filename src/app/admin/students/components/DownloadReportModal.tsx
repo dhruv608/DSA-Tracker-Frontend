@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { getAllCities, City } from '@/services/city.service';
 import { getAllBatches, Batch } from '@/services/batch.service';
-import { showSuccess, handleError } from '@/utils/handleError';
+import { showSuccess, handleToastError } from '@/utils/toast-system';
 import api from '@/lib/api';
 
 export default function DownloadReportModal({
@@ -28,7 +28,6 @@ export default function DownloadReportModal({
   const [selectedBatch, setSelectedBatch] = useState<string>('');
   const [selectedFormat, setSelectedFormat] = useState<string>('csv');
   const [loading, setLoading] = useState(false);
-  const [downloadError, setDownloadError] = useState('');
 
   // Data states
   const [cities, setCities] = useState<City[]>([]);
@@ -45,7 +44,7 @@ export default function DownloadReportModal({
         setCities(citiesData);
         setBatches(batchesData);
       } catch (error) {
-        handleError(error);
+        handleToastError(error);
         console.error('Failed to fetch data:', error);
       }
     };
@@ -91,7 +90,6 @@ export default function DownloadReportModal({
       setSelectedYear('');
       setSelectedBatch('');
       setSelectedFormat('csv');
-      setDownloadError('');
     }
   };
 
@@ -100,7 +98,6 @@ export default function DownloadReportModal({
     if (!selectedBatch) return;
 
     setLoading(true);
-    setDownloadError('');
 
     try {
       // Call the download API using axios
@@ -140,10 +137,8 @@ export default function DownloadReportModal({
                           error.message || 
                           'Download failed. Please try again.';
       
-      setDownloadError(errorMessage);
-      
       // Show error toast
-      handleError(errorMessage);
+      handleToastError(errorMessage);
       
     } finally {
       setLoading(false);
@@ -247,21 +242,7 @@ export default function DownloadReportModal({
 
         </div>
 
-        {/* STATUS */}
-        {downloadError && (
-          <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400">
-            <AlertCircle className="w-4 h-4" />
-            {downloadError}
-          </div>
-        )}
-
-        {selectedBatch && !downloadError && (
-          <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400">
-            <CheckCircle2 className="w-4 h-4" />
-            Ready to download report for selected batch
-          </div>
-        )}
-
+        
       </div>
 
       {/* FOOTER */}

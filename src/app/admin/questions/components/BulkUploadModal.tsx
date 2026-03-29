@@ -15,7 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { getAllTopics } from '@/services/admin.service';
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 export default function BulkUploadModal({
   open,
@@ -26,8 +26,6 @@ export default function BulkUploadModal({
   const [file, setFile] = useState<File | null>(null);
   const [selectedTopic, setSelectedTopic] = useState('');
   const [loading, setLoading] = useState(false);
-  const [validationError, setValidationError] = useState('');
-  const [uploadError, setUploadError] = useState('');
   const [topics, setTopics] = useState([]);
   const [csvData, setCsvData] = useState([]);
   const [topicsLoading, setTopicsLoading] = useState(false);
@@ -57,13 +55,13 @@ export default function BulkUploadModal({
         setTopics(formattedTopics);
         
       } catch (error: any) {
-        handleError(error);
-        console.error('❌ Error fetching topics:', error);
-        console.error('❌ Error details:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status
-        });
+        handleToastError(error);
+        // console.error('❌ Error fetching topics:', error);
+        // console.error('❌ Error details:', {
+        //   message: error.message,
+        //   response: error.response?.data,
+        //   status: error.response?.status
+        // });
       } finally {
         setTopicsLoading(false);
       }
@@ -76,7 +74,7 @@ export default function BulkUploadModal({
     if (!loading) onOpenChange(false);
   };
 
-  const isUploadDisabled = !file || !!validationError || loading || !selectedTopic;
+  const isUploadDisabled = !file || loading || !selectedTopic;
 
   return (
     <>
@@ -164,28 +162,6 @@ export default function BulkUploadModal({
                 View Format Guide
               </Button>
             </div>
-
-            {/* STATUS */}
-            {validationError && (
-              <div className="flex items-center gap-2 text-sm p-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400">
-                <AlertCircle className="w-4 h-4" />
-                {validationError}
-              </div>
-            )}
-
-            {uploadError && (
-              <div className="flex items-center gap-2 text-sm p-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400">
-                <AlertCircle className="w-4 h-4" />
-                {uploadError}
-              </div>
-            )}
-
-            {csvData.length > 0 && (
-              <div className="flex items-center gap-2 text-sm p-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
-                <CheckCircle2 className="w-4 h-4" />
-                {csvData.length} questions ready to upload
-              </div>
-            )}
 
           </div>
 

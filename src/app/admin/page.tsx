@@ -17,7 +17,7 @@ import {
 import DifficultyChart from "@/components/admin/charts/DifficultyChart";
 import PlatformChart from "@/components/admin/charts/PlatformChart";
 import TypeChart from "@/components/admin/charts/Type";
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 export default function AdminDashboardPage() {
   const { selectedBatch, isLoadingContext } = useAdminStore();
@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
         const data = await getAdminStats(selectedBatch.id);
         if (isMounted) setStats(data);
       } catch (err: any) {
-        handleError(err);
+        handleToastError(err);
         if (isMounted)
           setError(err?.response?.data?.message || "Failed to fetch stats");
       } finally {

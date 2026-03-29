@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { loginSuperAdmin } from '@/services/auth.service';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { handleError } from "@/utils/handleError";
+import { showLoginPromise } from '@/utils/toast-system';
 
 export default function SuperAdminLoginPage() {
   
@@ -13,21 +13,24 @@ export default function SuperAdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     
     if (!email || !password) {
-      setError('Please fill in all fields');
       return;
     }
 
     setLoading(true);
     try {
-      const data = await loginSuperAdmin({ email, password });
+      const loginPromise = loginSuperAdmin({ email, password });
+      
+      // Show promise toast and wait for it to complete
+      await showLoginPromise(loginPromise);
+      
+      // After successful toast, get actual data
+      const data = await loginPromise;
       
       const { accessToken } = data;
       
@@ -36,11 +39,10 @@ export default function SuperAdminLoginPage() {
         document.cookie = `accessToken=${accessToken}; path=/`;
       }
       
-      // Redirect to superadmin dashboard - the protected route will handle authentication
       router.push('/superadmin');
     } catch (err: any) {
-      handleError(err);
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      // Error is already handled by showLoginPromise
+      // console.error('Superadmin login error:', err);
     } finally {
       setLoading(false);
     }
@@ -51,21 +53,21 @@ export default function SuperAdminLoginPage() {
       <div className="absolute top-6 right-6">
         <ThemeToggle />
       </div>
-      <div className="w-full max-w-md bg-card rounded-2xl shadow-lg p-8">
+      {/* 🔥 BACKGROUND GLOW */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 blur-[120px]" />
+        <div className="absolute bottom-10 right-10 w-72 h-72 bg-blue-500/10 blur-[120px]" />
+      </div>
+      <div className="w-full max-w-md rounded-2xl shadow-lg p-8 glass card-premium">
         <div className="mb-8 text-center space-y-3">
-          <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent-foreground flex items-center justify-center p-2.5 shadow-lg shadow-primary/20 mb-2">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-full h-full text-primary-foreground"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">BruteForce</h1>
+         
+          <h1 className="font-serif italic text-4xl font-bold text-logo tracking-tight">
+            BruteForce
+          </h1>
           <p className="text-muted-foreground text-sm font-medium">Super Admin Portal</p>
         </div>
 
-        {error && (
-          <div className="mb-6 p-3 bg-destructive/10 text-destructive text-sm rounded-lg text-center animate-in slide-in-from-top-2">
-            {error}
-          </div>
-        )}
-
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Email</label>

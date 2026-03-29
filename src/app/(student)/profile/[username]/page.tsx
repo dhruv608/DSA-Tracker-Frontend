@@ -15,7 +15,6 @@ import {
 } from '@/types/student';
 import { EditProfileModal } from '@/components/student/profile/EditProfileModal';
 import { EditUsernameModal } from '@/components/student/profile/EditUsernameModal';
-import { Toast } from '@/app/(auth)/shared/components/Toast';
 
 import { ProfilePageShimmer } from '@/components/student/profile/shimmers';
 import { ProfileHeader } from '@/components/student/profile/ProfileHeader';
@@ -26,7 +25,7 @@ import { ProblemSolvingStats } from '@/components/student/profile/ProblemSolving
 import { ActivityHeatmap } from '@/components/student/profile/ActivityHeatmap';
 import { RecentActivity } from '@/components/student/profile/RecentActivity';
 import TopicProgressModal from '@/components/student/topics/TopicProgressModal';
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from '@/utils/toast-system';
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -80,7 +79,7 @@ export default function PublicProfilePage() {
       }
 
     } catch (error: unknown) {
-      handleError(error);
+      handleToastError(error);
       const apiError = error as ApiError;
       if (apiError?.response?.status === 403) {
         setCurrentUser(null);
@@ -111,7 +110,7 @@ export default function PublicProfilePage() {
         username: data?.student?.username || ''
       });
     } catch (err: unknown) {
-      handleError(err);
+      handleToastError(err);
       const apiError = err as ApiError;
       const userError = ErrorHandler.handle(apiError, 'fetchProfileByUsername');
       setProfileError(userError.message);
@@ -134,7 +133,7 @@ export default function PublicProfilePage() {
 
       await Promise.race([fetchProfileByUsername(), refreshTimeout]);
     } catch (err: unknown) {
-      handleError(err);
+      handleToastError(err);
       const apiError = err as ApiError;
       if (apiError.message === 'Profile refresh timeout') {
         alert('Profile image uploaded successfully!');
@@ -170,7 +169,7 @@ export default function PublicProfilePage() {
         const decoded = JSON.parse(jsonPayload);
         tokenUsername = decoded.email?.split('@')[0];
       } catch (e) {
-        handleError(e);
+        handleToastError(e);
         console.log('🔍 Token decode failed:', e);
       }
     }
@@ -190,7 +189,7 @@ export default function PublicProfilePage() {
       setShowEditModal(false);
       
     } catch (error) {
-      handleError(error);
+      handleToastError(error);
       ErrorHandler.showAlert(error, 'handleSaveProfile');
     } finally {
       setSavingProfile(false);
@@ -229,7 +228,7 @@ export default function PublicProfilePage() {
       }
       alert('Username updated successfully!');
     } catch (error: unknown) {
-      handleError(error);
+      handleToastError(error);
       if (error instanceof Error) {
         if (error.message === 'Token refresh failed' ||
           error.message.includes('401') ||
@@ -274,7 +273,7 @@ export default function PublicProfilePage() {
         throw new Error('Failed to remove profile image');
       }
     } catch (error) {
-      handleError(error);
+      handleToastError(error);
       alert('Failed to remove profile image. Please try again.');
     } finally {
       setUploading(false);
@@ -391,8 +390,6 @@ export default function PublicProfilePage() {
         onClose={() => setShowTopicProgressModal(false)}
         username={username}
       />
-
-      <Toast />
     </div>
   );
 }

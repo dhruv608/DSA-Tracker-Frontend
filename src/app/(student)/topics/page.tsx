@@ -6,7 +6,7 @@ import { Pagination } from '@/components/Pagination';
 import { TopicsLoading } from '@/components/student/topics/TopicLoading';
 import { TopicsHeader } from '@/components/student/topics/TopicsHeader';
 import { TopicsGrid } from '@/components/student/topics/TopicsGrid';
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 export default function TopicsPage() {
   const [topics, setTopics] = useState<any[]>([]);
@@ -26,7 +26,7 @@ export default function TopicsPage() {
         const topicsData = await studentTopicService.getTopics();
         setTopics(topicsData);
       } catch (e) {
-        handleError(e);
+        handleToastError(e);
         console.error("Topics fetch error", e);
       } finally {
         setLoading(false);

@@ -12,7 +12,7 @@ import { FilterBar } from '@/components/leaderboard/components/FilterBar';
 import { EvaluationModal } from '@/components/leaderboard/components/EvaluationModal';
 import { TimerLeaderboard } from '@/components/leaderboard/components/TimerLeaderboard';
 import PodiumSection from '@/components/leaderboard/components/PodiumSection';
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 // Hook for Debounce
 function useDebounce<T>(value: T, delay: number): T {
@@ -100,7 +100,7 @@ export default function AdminLeaderboardPage() {
       console.log("AdminLeaderboardPage - API Response (Refresh):", response);
       setLeaderboardData(response);
     } catch (err: any) {
-      handleError(err);
+      handleToastError(err);
       console.error('Failed to refresh leaderboard data:', err);
       setLeaderboardError(err.message || 'Failed to refresh leaderboard data');
       setLeaderboardData(null);
@@ -153,7 +153,7 @@ export default function AdminLeaderboardPage() {
         
         setLeaderboardData(response);
       } catch (err: any) {
-        handleError(err);
+        handleToastError(err);
         console.error('Failed to fetch leaderboard data:', err);
         setLeaderboardError(err.message || 'Failed to fetch leaderboard data');
         setLeaderboardData(null);

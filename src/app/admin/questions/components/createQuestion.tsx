@@ -16,7 +16,7 @@ import { Select } from "@/components/Select";
 import { AlertTriangle, Plus, Save } from "lucide-react";
 import { createAdminQuestion, getAllTopics } from "@/services/admin.service";
 import { CreateQuestionData } from "@/types/admin/question";
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 interface CreateQuestionProps {
   open: boolean;
@@ -72,7 +72,7 @@ export default function CreateQuestion({
         setFormData((prev) => ({ ...prev, topic_id: formatted[0].value }));
       }
     } catch (err) {
-      handleError(err);
+      handleToastError(err);
       console.error(err);
     }
   };
@@ -101,7 +101,7 @@ export default function CreateQuestion({
       onSuccess();
       onOpenChange(false);
     } catch (err: any) {
-      handleError(err);
+      handleToastError(err);
       setError(err.response?.data?.error || err.message);
     } finally {
       setLoading(false);

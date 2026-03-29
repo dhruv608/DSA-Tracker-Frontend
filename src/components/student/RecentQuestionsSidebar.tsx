@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 import { useRecentQuestions } from "@/contexts/RecentQuestionsContext";
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 interface RecentQuestion {
   question_id: number;
@@ -42,7 +42,7 @@ export function RecentQuestionsSidebar() {
       );
       setQuestions(response.data.questions);
     } catch (err: any) {
-      handleError(err);
+      handleToastError(err);
       setError(
         err.response?.data?.error ||
           "Failed to fetch recent questions"

@@ -1,3 +1,5 @@
+import { glassToast } from '@/utils/toast-system';
+
 /**
  * Centralized error handling utility
  * Provides user-friendly error messages while maintaining security
@@ -91,7 +93,7 @@ export class ErrorHandler {
    */
   static logError(error: any, context?: string) {
     if (process.env.NODE_ENV === 'development') {
-      console.group(`🔥 Error ${context ? `in ${context}` : ''}`);
+      console.group(` Error ${context ? `in ${context}` : ''}`);
       console.error('Technical details:', error);
       console.error('Status:', error?.response?.status);
       console.error('Data:', error?.response?.data);
@@ -119,10 +121,7 @@ export class ErrorHandler {
     
     // Use toast instead of alert for better UX
     if (typeof window !== 'undefined') {
-      // Import toast dynamically to avoid circular dependencies
-      import('@/utils/toast-system').then(({ showToast }) => {
-        showToast.error(userError.message);
-      });
+      glassToast.error(userError.message);
     }
 
     return userError;

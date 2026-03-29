@@ -17,7 +17,7 @@ import {
 import { getAllCities, City } from '@/services/city.service';
 import { getAllBatches, Batch } from '@/services/batch.service';
 import { bulkUploadStudents } from '@/services/admin.service';
-import { showSuccess, handleError } from '@/utils/handleError';
+import { showSuccess, handleToastError } from '@/utils/toast-system';
 
 export default function BulkUploadModal({
   open,
@@ -30,10 +30,9 @@ export default function BulkUploadModal({
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [selectedBatch, setSelectedBatch] = useState<string>('');
   const [loading, setLoading] = useState(false);
-  const [validationError, setValidationError] = useState('');
-  const [uploadError, setUploadError] = useState('');
   const [csvData, setCsvData] = useState<any[]>([]);
   const [showGuide, setShowGuide] = useState(false);
+  const [validationError, setValidationError] = useState<string>('');
 
   // Data states
   const [cities, setCities] = useState<City[]>([]);
@@ -50,7 +49,7 @@ export default function BulkUploadModal({
         setCities(citiesData);
         setBatches(batchesData);
       } catch (error) {
-        handleError(error);
+        handleToastError(error);
         console.error('Failed to fetch data:', error);
       }
     };
@@ -96,8 +95,6 @@ export default function BulkUploadModal({
       setSelectedCity('');
       setSelectedYear('');
       setSelectedBatch('');
-      setValidationError('');
-      setUploadError('');
       setCsvData([]);
     }
   };
@@ -196,23 +193,24 @@ export default function BulkUploadModal({
         const error = validateCSV(data);
         if (error) {
           console.log('Validation error:', error);
-          setValidationError(error);
+          handleToastError(error);
           setCsvData([]);
         } else {
           console.log('Validation passed!');
-          setValidationError('');
           setCsvData(data);
+          // Show success message for valid CSV
+          showSuccess('CUSTOM', `${data.length} students ready to upload`);
         }
       } catch (error) {
-        handleError(error);
+        handleToastError(error);
         console.error('CSV parsing error:', error);
-        setValidationError('Failed to parse CSV file');
+        handleToastError('Failed to parse CSV file');
         setCsvData([]);
       }
     };
 
     reader.onerror = () => {
-      setValidationError('Failed to read file');
+      handleToastError('Failed to read file');
       setCsvData([]);
     };
 
@@ -225,7 +223,7 @@ export default function BulkUploadModal({
     
     if (selectedFile) {
       if (!selectedFile.name.endsWith('.csv')) {
-        setValidationError('Please select a CSV file');
+        handleToastError('Please select a CSV file');
         setCsvData([]);
         return;
       }
@@ -240,7 +238,6 @@ export default function BulkUploadModal({
     if (!file || !selectedBatch) return;
 
     setLoading(true);
-    setUploadError('');
 
     try {
       const formData = new FormData();
@@ -270,10 +267,8 @@ export default function BulkUploadModal({
                           error.message || 
                           'Upload failed. Please try again.';
       
-      setUploadError(errorMessage);
-      
       // Show error toast
-      handleError(errorMessage);
+      handleToastError(errorMessage);
       
     } finally {
       setLoading(false);
@@ -281,7 +276,7 @@ export default function BulkUploadModal({
   }, [file, selectedBatch, onSuccess, handleClose]);
 
   // Check if upload should be disabled
-  const isUploadDisabled = !file || !selectedCity || !selectedYear || !selectedBatch || !!validationError || loading;
+  const isUploadDisabled = !file || !selectedCity || !selectedYear || !selectedBatch || loading;
 
 return (
   <>
@@ -420,28 +415,7 @@ return (
             </Button>
           </div>
 
-          {/* STATUS */}
-          {validationError && (
-            <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400">
-              <AlertCircle className="w-4 h-4" />
-              {validationError}
-            </div>
-          )}
-
-          {uploadError && (
-            <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400">
-              <AlertCircle className="w-4 h-4" />
-              {uploadError}
-            </div>
-          )}
-
-          {csvData.length > 0 && !validationError && (
-            <div className="flex items-center gap-2 text-sm p-3 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400">
-              <CheckCircle2 className="w-4 h-4" />
-              {csvData.length} students ready 🚀
-            </div>
-          )}
-
+          
         </div>
 
         {/* FOOTER */}

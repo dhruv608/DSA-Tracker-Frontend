@@ -10,7 +10,7 @@ import { CityFilters } from '@/components/superadmin/cities/CityFilters';
 import { CityTable } from '@/components/superadmin/cities/CityTable';
 import { CityCard } from '@/components/superadmin/cities/CityCard';
 import { CityModal } from '@/components/superadmin/cities/CityModal';
-import { handleError } from "@/utils/handleError";
+import { handleToastError, showSuccess, showDeleteSuccess } from "@/utils/toast-system";
 
 export default function CitiesPage() {
   const [cities, setCities] = useState<City[]>([]);
@@ -41,7 +41,7 @@ export default function CitiesPage() {
       setCities(Array.isArray(respCities) ? respCities : []);
       setAllBatches(Array.isArray(respBatches) ? respBatches : []);
     } catch (err) {
-      handleError(err);
+      handleToastError(err);
       console.error(err);
     } finally {
       setLoading(false);
@@ -79,9 +79,7 @@ export default function CitiesPage() {
       }
       setModalOpen(false);
       fetchData();
-    } catch (err) {
-      console.error('City operation failed:', err);
-    } finally {
+    }finally {
       setSubmitting(false);
     }
   };
@@ -91,11 +89,10 @@ export default function CitiesPage() {
     setSubmitting(true);
     try {
       await deleteCity(targetCity.id);
+      showDeleteSuccess('City');
       setDelOpen(false);
       fetchData();
-    } catch (err) {
-      console.error('City deletion failed:', err);
-    } finally {
+    }finally {
       setSubmitting(false);
     }
   };

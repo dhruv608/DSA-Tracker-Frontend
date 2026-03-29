@@ -1,6 +1,6 @@
 import api from '../lib/api';
 import { City } from './city.service';
-import { showSuccess, showDeleteSuccess, handleError } from '@/utils/handleError';
+import { showSuccess, showDeleteSuccess } from '@/utils/toast-system';
 
 export interface Batch {
   id: number;
@@ -28,34 +28,19 @@ export const getAllBatches = async (city?: string, year?: number): Promise<Batch
 };
 
 export const createBatch = async (data: { batch_name: string; year: number; city_id: number }) => {
-  try {
-    const response = await api.post('/api/superadmin/batches', data);
-    showSuccess('BATCH_CREATED');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.post('/api/superadmin/batches', data);
+  showSuccess('Batch Created');
+  return response.data;
 };
 
 export const updateBatch = async (id: number, data: { batch_name?: string; year?: number; city_id?: number }) => {
-  try {
-    const response = await api.patch(`/api/superadmin/batches/${id}`, data);
-    showSuccess('BATCH_UPDATED');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.patch(`/api/superadmin/batches/${id}`, data);
+  showSuccess('Batch Updated');
+  return response.data;
 };
 
 export const deleteBatch = async (id: number) => {
-  try {
-    const response = await api.delete(`/api/superadmin/batches/${id}`);
-    showDeleteSuccess('Batch');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.delete(`/api/superadmin/batches/${id}`);
+  showDeleteSuccess('Batch');
+  return response.data;
 };

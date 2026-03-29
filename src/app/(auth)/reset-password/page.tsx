@@ -1,7 +1,6 @@
 import React from 'react';
 import { ResetPasswordForm } from './components/ResetPasswordForm';
 import { Modal } from '../shared/components/Modal';
-import { Toast } from '../shared/components/Toast';
 
 export default function ResetPasswordPage() {
   return (
@@ -12,7 +11,6 @@ export default function ResetPasswordPage() {
         </button>
         <ResetPasswordForm />
       </Modal>
-      <Toast />
     </div>
   );
 }

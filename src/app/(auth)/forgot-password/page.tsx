@@ -2,7 +2,6 @@ import React from 'react';
 import { ForgotPasswordForm } from './components/ForgotPasswordForm';
 import { BackButton } from './components/BackButton';
 import { Modal } from '../shared/components/Modal';
-import { Toast } from '../shared/components/Toast';
 
 export default function ForgotPasswordPage() {
     return (
@@ -11,7 +10,6 @@ export default function ForgotPasswordPage() {
                 <BackButton />
                 <ForgotPasswordForm />
             </Modal>
-            <Toast />
         </div>
     );
 }

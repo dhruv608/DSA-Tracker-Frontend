@@ -1,7 +1,6 @@
 import React from 'react';
 import { OtpForm } from './components/OtpForm';
 import { Modal } from '../shared/components/Modal';
-import { Toast } from '../shared/components/Toast';
 
 export default function VerifyOtpPage() {
   return (
@@ -12,7 +11,6 @@ export default function VerifyOtpPage() {
         </button>
         <OtpForm />
       </Modal>
-      <Toast />
     </div>
   );
 }

@@ -84,6 +84,11 @@
 
   /* ===== NEW ADDITIONS (SAFE) ===== */
 
+  /* Glass Toast Variables */
+  --glass-toast-bg: rgba(22, 24, 33, 0.522);
+  --glass-toast-border: rgba(255, 255, 255, 0.06);
+  --glass-toast-shadow: 0 8px 32px rgba(204, 255, 0, 0.2);
+
   --glass-bg: rgba(22, 24, 33, 0.522);
   --glass-border: rgba(255, 255, 255, 0.06);
   --hover-glow: rgba(204, 255, 0, 0.15);

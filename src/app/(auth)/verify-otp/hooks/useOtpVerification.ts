@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useToast } from '../../shared/hooks/useToast';
+import { glassToast } from "@/utils/toast-system";
 
 export function useOtpVerification() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get('email');
-  const { showToast } = useToast();
   
   const [fpOtpArray, setFpOtpArray] = useState<string[]>(Array(6).fill(''));
   const [error, setError] = useState('');
@@ -42,12 +41,12 @@ export function useOtpVerification() {
     e.preventDefault();
     const otpJoined = fpOtpArray.join('');
     if (otpJoined.length < 6) { 
-        showToast("Invalid OTP ❌", 'error'); 
+        glassToast.error("Invalid OTP ❌"); 
         setError("Please enter the 6-digit OTP."); 
         return; 
     }
     setError('');
-    showToast("OTP format valid ✅");
+    glassToast.success("OTP format valid ✅");
     router.push(`/reset-password?email=${encodeURIComponent(emailParam || '')}&otp=${otpJoined}`);
   };
 

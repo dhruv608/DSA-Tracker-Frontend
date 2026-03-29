@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useToast } from '../../../../app/(auth)/shared/hooks/useToast';
+import { glassToast, handleToastError } from "@/utils/toast-system";
 import { useLocalStorage } from '../../../../app/(auth)/shared/hooks/useLocalStorage';
-import { handleError } from "@/utils/handleError";
 
 export function useOnboarding() {
   const router = useRouter();
-  const { showToast } = useToast();
   const [onboardingUser] = useLocalStorage<any>('onboardingUser', null);
   
   const [step, setStep] = useState(1);
@@ -28,7 +26,7 @@ export function useOnboarding() {
   }, [onboardingUser, router]);
 
   const submitOnboarding = async () => {
-    if (!confirmChecked) { showToast("Please confirm that your usernames are correct.", 'error'); return; }
+    if (!confirmChecked) { glassToast.error("Please confirm that your usernames are correct."); return; }
     setLoading(true);
     try {
       // Only send profile data, no city_id/batch_id needed for /me endpoint
@@ -45,13 +43,13 @@ export function useOnboarding() {
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error("Failed to save profile.");
-      showToast("Profile completed successfully. Welcome!", "success");
+      glassToast.success("Profile completed successfully. Welcome!");
       // Clear localStorage 
       localStorage.removeItem('onboardingUser');
       router.push('/');
     } catch (err) {
-      handleError(err);
-      showToast("Profile verification failed.", 'error');
+      handleToastError(err);
+      glassToast.error("Profile verification failed.");
     } finally {
       setLoading(false);
     }

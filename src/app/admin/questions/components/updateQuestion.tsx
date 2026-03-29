@@ -16,7 +16,7 @@ import { Select } from "@/components/Select";
 import { AlertTriangle, Edit, Save } from 'lucide-react';
 import { updateAdminQuestion, getAllTopics } from '@/services/admin.service';
 import { Question, UpdateQuestionData } from '@/types/admin/question';
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 interface UpdateQuestionProps {
   open: boolean;
@@ -70,7 +70,7 @@ export default function UpdateQuestion({
       }));
       setTopics(formattedTopics);
     } catch (err) {
-      handleError(err);
+      handleToastError(err);
       console.error(err);
     }
   };
@@ -99,7 +99,7 @@ export default function UpdateQuestion({
       onSuccess();
       onOpenChange(false);
     } catch (err: any) {
-      handleError(err);
+      handleToastError(err);
       setError(err.response?.data?.error || err.message || 'Failed to update question');
     } finally {
       setLoading(false);

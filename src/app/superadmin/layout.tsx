@@ -8,7 +8,7 @@ import { getCurrentSuperAdmin } from '@/services/superadmin.service';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { isAdminToken, clearAuthTokens } from '@/lib/auth-utils';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
 
@@ -34,7 +34,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         const userData = await getCurrentSuperAdmin();
         setUser(userData.data); // Service returns unwrapped data directly
       } catch (err) {
-        handleError(err);
+        handleToastError(err);
         console.error('Failed to load superadmin user:', err);
         window.location.href = '/superadmin/login';
       } finally {

@@ -6,7 +6,7 @@ import { studentAuthService } from '@/services/student/auth.service';
 import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
-import { handleError } from "@/utils/handleError";
+import { showLoginPromise } from "@/utils/toast-system";
 
 export function LoginForm() {
   const router = useRouter();
@@ -15,7 +15,6 @@ export function LoginForm() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false); 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const [, setOnboardingUser] = useLocalStorage('onboardingUser', null);
 
@@ -30,12 +29,10 @@ export function LoginForm() {
     e.preventDefault();
 
     if (!emailOrUsername || !password) {
-      setError("Please fill all fields.");
       return;
     }
 
     setLoading(true);
-    setError('');
 
     try {
       const isEmail = emailOrUsername.includes('@');
@@ -44,36 +41,31 @@ export function LoginForm() {
         ? { email: emailOrUsername, password }
         : { username: emailOrUsername, password };
 
-      const data = await studentAuthService.login(payload);
+      const loginPromise = studentAuthService.login(payload);
+      
+      // Show promise toast and wait for it to complete
+      await showLoginPromise(loginPromise);
+      
+      // After successful toast, get the actual data
+      const data = await loginPromise;
 
-      if (data.accessToken) {
+      if (data && data.accessToken) {
         localStorage.setItem('accessToken', data.accessToken);
         document.cookie = `accessToken=${data.accessToken}; path=/`;
         processPostLogin(data.user);
-      } else {
-        setError('Login failed: No token received.');
       }
-    } catch (err: any) {
-      handleError(err);
-    } finally {
+    } 
+    catch(error){
+      
+    }
+    finally {
       setLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleLogin} className="space-y-5">
-  {/* ERROR */}
-  {error && (
-    <div className="
-      flex items-center justify-center text-center
-      px-4 py-3 text-sm rounded-xl
-      bg-red-500/10 border border-red-500/20 text-red-400
-      backdrop-blur-md
-    ">
-      {error}
-    </div>
-  )}
-
+  
   {/* EMAIL */}
   <div className="space-y-1.5">
     <label className="text-[11px] font-semibold text-muted-foreground tracking-wide">

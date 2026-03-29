@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { handleError } from "@/utils/handleError";
+import { handleError } from "@/utils/toast-system";
 
 interface Topic {
   id: number;

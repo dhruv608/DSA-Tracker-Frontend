@@ -1,6 +1,6 @@
 import api from '@/lib/api';
 import { isStudentToken, clearAuthTokens } from '@/lib/auth-utils';
-import { handleError } from "@/utils/handleError";
+import { handleToastError, showSuccess } from '@/utils/toast-system';
 
 export const studentTopicService = {
   getTopics: async () => {
@@ -12,13 +12,8 @@ export const studentTopicService = {
       throw error;
     }
 
-    try {
-      const res = await api.get('/api/students/topics');
-      return res.data || [];
-    } catch (e: any) {
-        handleError(e);
-        throw e;
-    }
+    const res = await api.get('/api/students/topics');
+    return res.data || [];
   },
   
   getTopicOverview: async (topicSlug: string) => {

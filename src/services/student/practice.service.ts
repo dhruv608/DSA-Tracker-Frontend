@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import { handleError } from "@/utils/handleError";
+import { handleToastError, showSuccess } from '@/utils/toast-system';
 
 export interface PracticeFilters {
   search?: string;
@@ -24,12 +24,7 @@ export const studentPracticeService = {
     if (filters.page) params.append('page', String(filters.page));
     if (filters.limit) params.append('limit', String(filters.limit));
 
-    try {
-      const res = await api.get(`/api/students/addedQuestions?${params.toString()}`);
-      return res.data; // expects { questions: [...], totalPages: N }
-    } catch (e: any) {
-        handleError(e);
-        throw e;
-    }
+    const res = await api.get(`/api/students/addedQuestions?${params.toString()}`);
+    return res.data; // expects { questions: [...], totalPages: N }
   }
 };

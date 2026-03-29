@@ -1,8 +1,7 @@
 import api from '../lib/api';
 import { isAdminToken, clearAuthTokens } from '../lib/auth-utils';
 import { Batch } from './batch.service';
-import { handleError, showSuccess, showDeleteSuccess } from "@/utils/handleError";
-import { useEnhancedToast } from '@/hooks/useEnhancedToast';
+import { handleToastError, showSuccess, showDeleteSuccess } from '@/utils/toast-system';
 
 export interface Admin {
   id: number;
@@ -44,36 +43,21 @@ export const getAdminRoles = async (): Promise<string[]> => {
 };
 
 export const createAdmin = async (data: any) => {
-  try {
-    const response = await api.post('/api/superadmin/admins', data);
-    showSuccess('ADMIN_CREATED');
-    return response.data.data;
-  } catch (error) {
-    handleError(error);
-    // Don't re-throw error to prevent console errors
-  }
+  const response = await api.post('/api/superadmin/admins', data);
+  showSuccess('Admin Created');
+  return response.data.data;
 };
 
 export const updateAdmin = async (id: number, data: any) => {
-  try {
-    const response = await api.patch(`/api/superadmin/admins/${id}`, data);
-    showSuccess('ADMIN_UPDATED');
-    return response.data.data;
-  } catch (error) {
-    handleError(error);
-    // Don't re-throw error to prevent console errors
-  }
+  const response = await api.patch(`/api/superadmin/admins/${id}`, data);
+  showSuccess('Admin Updated');
+  return response.data.data;
 };
 
 export const deleteAdmin = async (id: number) => {
-  try {
-    const response = await api.delete(`/api/superadmin/admins/${id}`);
-    showDeleteSuccess('Admin');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    // Don't re-throw error to prevent console errors
-  }
+  const response = await api.delete(`/api/superadmin/admins/${id}`);
+  showDeleteSuccess('Admin');
+  return response.data;
 };
 
 // ==========================================
@@ -115,40 +99,25 @@ export const getAdminBatchTopics = async (batchSlug: string, params?: any) => {
 };
 
 export const createAdminTopic = async (formData: FormData) => {
-  try {
-    const response = await api.post('/api/admin/topics', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    showSuccess('TOPIC_CREATED');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.post('/api/admin/topics', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  showSuccess('Topic Created');
+  return response.data;
 };
 
 export const updateAdminTopic = async (topicSlug: string, formData: FormData) => {
-  try {
-    const response = await api.put(`/api/admin/topics/${topicSlug}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    showSuccess('TOPIC_UPDATED');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.put(`/api/admin/topics/${topicSlug}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  showSuccess('Topic Updated');
+  return response.data;
 };
 
 export const deleteAdminTopic = async (topicSlug: string) => {
-  try {
-    const response = await api.delete(`/api/admin/topics/${topicSlug}`);
-    showDeleteSuccess('Topic');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.delete(`/api/admin/topics/${topicSlug}`);
+  showDeleteSuccess('Topic');
+  return response.data;
 };
 
 export const getAllTopics = async () => {
@@ -166,36 +135,21 @@ export const getAdminTopicClasses = async (batchSlug: string, topicSlug: string)
 };
 
 export const createAdminClass = async (batchSlug: string, topicSlug: string, data: any) => {
-  try {
-    const response = await api.post(`/api/admin/${batchSlug}/topics/${topicSlug}/classes`, data);
-    showSuccess('CLASS_CREATED');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.post(`/api/admin/${batchSlug}/topics/${topicSlug}/classes`, data);
+  showSuccess('Class Created');
+  return response.data;
 };
 
 export const updateAdminClass = async (batchSlug: string, topicSlug: string, classSlug: string, data: any) => {
-  try {
-    const response = await api.patch(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`, data);
-    showSuccess('CLASS_UPDATED');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.patch(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`, data);
+  showSuccess('Class Updated');
+  return response.data;
 };
 
 export const deleteAdminClass = async (batchSlug: string, topicSlug: string, classSlug: string) => {
-  try {
-    const response = await api.delete(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`);
-    showDeleteSuccess('Class');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.delete(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`);
+  showDeleteSuccess('Class');
+  return response.data;
 };
 
 // ==========================================
@@ -223,36 +177,21 @@ export const getAdminQuestions = async (params: any) => {
 };
 
 export const createAdminQuestion = async (data: any) => {
-  try {
-    const response = await api.post('/api/admin/questions', data);
-    showSuccess('QUESTION_CREATED');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.post('/api/admin/questions', data);
+  showSuccess('Question Created');
+  return response.data;
 };
 
 export const updateAdminQuestion = async (id: number, data: any) => {
-  try {
-    const response = await api.patch(`/api/admin/questions/${id}`, data);
-    showSuccess('QUESTION_UPDATED');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.patch(`/api/admin/questions/${id}`, data);
+  showSuccess('Question Updated');
+  return response.data;
 };
 
 export const deleteAdminQuestion = async (id: number) => {
-  try {
-    const response = await api.delete(`/api/admin/questions/${id}`);
-    showDeleteSuccess('Question');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.delete(`/api/admin/questions/${id}`);
+  showDeleteSuccess('Question');
+  return response.data;
 };
 
 // ==========================================
@@ -265,49 +204,29 @@ export const getAdminStudents = async (params: any) => {
 };
 
 export const createAdminStudent = async (data: any) => {
-  try {
-    const response = await api.post('/api/admin/students', data);
-    showSuccess('STUDENT_CREATED');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.post('/api/admin/students', data);
+  showSuccess('Student Created');
+  return response.data;
 };
 
 export const updateAdminStudent = async (id: number, data: any) => {
-  try {
-    const response = await api.patch(`/api/admin/students/${id}`, data);
-    showSuccess('STUDENT_UPDATED');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.patch(`/api/admin/students/${id}`, data);
+  showSuccess('Student Updated');
+  return response.data;
 };
 
 export const deleteAdminStudent = async (id: number) => {
-  try {
-    const response = await api.delete(`/api/admin/students/${id}`);
-    showDeleteSuccess('Student');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.delete(`/api/admin/students/${id}`);
+  showDeleteSuccess('Student');
+  return response.data;
 };
 
 export const bulkUploadStudents = async (formData: FormData) => {
-  try {
-    const response = await api.post('/api/admin/bulk-operations', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    showSuccess('FILE_UPLOADED', 'Students uploaded successfully!');
-    return response.data;
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
+  const response = await api.post('/api/admin/bulk-operations', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  showSuccess('File Uploaded', 'Students uploaded successfully!');
+  return response.data;
 };
 
 export const getAdminStudentProfile = async (username: string) => {
@@ -321,22 +240,11 @@ export const getAdminStudentProfile = async (username: string) => {
 // ==========================================
 
 export const getAdminLeaderboard = async (query: { page?: number; limit?: number; search?: string }, body: any) => {
-  try {
-    const response = await api.post('/api/admin/leaderboard', body, { params: query });
-    return response.data;
-  } catch (err: any) {
-    handleError(err);
-    throw err;
-  }
+  const response = await api.post('/api/admin/leaderboard', body, { params: query });
+  return response.data;
 };
 
 export const getAvailableYears = async () => {
-  try {
-    const response = await api.get('/api/admin/leaderboard/years');
-    return response.data.years;
-  } catch (err: any) {
-    handleError(err);
-    // Return fallback years if API fails
-    return [2026, 2025, 2024, 2023];
-  }
+  const response = await api.get('/api/admin/leaderboard/years');
+  return response.data.years;
 };

@@ -6,7 +6,7 @@ import { loginAdmin } from '@/services/auth.service';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { handleError } from "@/utils/handleError";
+import { showLoginPromise } from "@/utils/toast-system";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -15,21 +15,24 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     if (!email || !password) {
-      setError('Please fill in all fields');
       return;
     }
 
     setLoading(true);
     try {
-      const data = await loginAdmin({ email, password });
+      const loginPromise = loginAdmin({ email, password });
+      
+      // Show promise toast and wait for it to complete
+      await showLoginPromise(loginPromise);
+      
+      // After successful toast, get actual data
+      const data = await loginPromise;
       const { accessToken } = data;
 
       if (typeof window !== 'undefined') {
@@ -39,8 +42,8 @@ export default function AdminLoginPage() {
 
       router.push('/admin');
     } catch (err: any) {
-      handleError(err);
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      // Error is already handled by showLoginPromise
+      // console.error('Admin login error:', err);
     } finally {
       setLoading(false);
     }
@@ -69,13 +72,6 @@ export default function AdminLoginPage() {
             Admin Portal
           </p>
         </div>
-
-        {/* ERROR */}
-        {error && (
-          <div className="mb-6 p-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400 text-sm text-center">
-            {error}
-          </div>
-        )}
 
         {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-5">

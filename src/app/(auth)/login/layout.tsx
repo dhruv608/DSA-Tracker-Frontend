@@ -1,6 +1,5 @@
 import React from 'react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { Toast } from '../shared/components/Toast';
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -17,8 +16,6 @@ export default function LoginLayout({ children }: { children: React.ReactNode })
       <div className="bg-card w-full max-w-[440px] p-10 rounded-3xl shadow-xl shadow-black/5 dark:shadow-black/40 border border-border/80 z-10 animate-in fade-in zoom-in-95 duration-500 relative">
         {children}
       </div>
-
-      <Toast />
     </div>
   );
 }

@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useToast } from '../../../../app/(auth)/shared/hooks/useToast';
-import { handleError } from "@/utils/handleError";
+import { glassToast, handleToastError } from "@/utils/toast-system";
 
 export function useOnboardingModal(onComplete?: () => void) {
-  const { showToast } = useToast();
   
   const [step, setStep] = useState(1);
   const [data, setData] = useState<any>({ username: '', leetcode_id: '', gfg_id: '', linkedin: '', github: '', city_id: null, batch_id: null });
@@ -18,7 +16,7 @@ export function useOnboardingModal(onComplete?: () => void) {
 
   const submitOnboarding = async () => {
     if (!confirmChecked) { 
-      showToast("Please confirm that your usernames are correct.", 'error'); 
+      glassToast.error("Please confirm that your usernames are correct."); 
       return; 
     }
     
@@ -28,7 +26,7 @@ export function useOnboardingModal(onComplete?: () => void) {
       console.log("Token for onboarding submission:", token ? "exists" : "missing");
       
       if (!token) {
-        showToast("Authentication token missing. Please log in again.", 'error');
+        glassToast.error("Authentication token missing. Please log in again.");
         return;
       }
       
@@ -57,7 +55,7 @@ export function useOnboardingModal(onComplete?: () => void) {
         console.error("API Error Response:", errorData);
         
         if (res.status === 401) {
-          showToast("Session expired. Please log in again.", 'error');
+          glassToast.error("Session expired. Please log in again.");
           // Optionally redirect to login
           setTimeout(() => {
             window.location.href = '/login';
@@ -68,7 +66,7 @@ export function useOnboardingModal(onComplete?: () => void) {
         return;
       }
       
-      showToast("Profile completed successfully. Welcome!", "success");
+      glassToast.success("Profile completed successfully. Welcome!");
       
       // Dispatch custom event to notify StudentHeader and page to refresh
       window.dispatchEvent(new Event('profileUpdated'));
@@ -79,8 +77,8 @@ export function useOnboardingModal(onComplete?: () => void) {
       }
       
     } catch (err) {
-      handleError(err);
-      showToast("Profile verification failed.", 'error');
+      handleToastError(err);
+      glassToast.error("Profile verification failed.");
     } finally {
       setLoading(false);
     }

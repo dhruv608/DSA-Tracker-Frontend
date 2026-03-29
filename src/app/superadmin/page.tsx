@@ -5,11 +5,62 @@ import { useRouter } from 'next/navigation';
 import { getStats } from '@/services/superadmin.service';
 import { getAllCities, City } from '@/services/city.service';
 import { getAllBatches, Batch } from '@/services/batch.service';
-import { Building2, Layers, Users, TrendingUp, Activity, MapPin, Users2, BarChart3, ArrowUpRight, Sparkles, Globe, Target } from 'lucide-react';
+import { Layers, Activity, MapPin, Users2,  ArrowUpRight, Sparkles, Globe, Target } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { handleError } from "@/utils/handleError";
+import { AreaChart,Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { handleToastError } from "@/utils/toast-system";
 
+import { motion } from "framer-motion";
+
+// Custom Tooltip
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div
+      style={{
+        background: "var(--card)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "12px",
+        padding: "12px 16px",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+        minWidth: "130px",
+      }}
+    >
+      <p
+        style={{
+          color: "var(--muted-foreground)",
+          fontSize: "12px",
+          marginBottom: "4px",
+          letterSpacing: "0.02em",
+        }}
+      >
+        {label}
+      </p>
+      <p
+        style={{
+          color: "var(--foreground)",
+          fontSize: "22px",
+          fontWeight: 600,
+          lineHeight: 1.2,
+          display: "flex",
+          alignItems: "baseline",
+          gap: "5px",
+        }}
+      >
+        {payload[0].value}
+        <span
+          style={{
+            fontSize: "12px",
+            fontWeight: 400,
+            color: "var(--muted-foreground)",
+          }}
+        >
+          batches
+        </span>
+      </p>
+    </div>
+  );
+};
 interface Stats {
   totalCities: number;
   totalBatches: number;
@@ -48,7 +99,7 @@ export default function SuperAdminDashboard() {
 
         setCityBreakdown(breakdown);
       } catch (err) {
-        handleError(err);
+        handleToastError(err);
         console.error("Dashboard error:", err);
       } finally {
         setLoading(false);
@@ -185,85 +236,138 @@ export default function SuperAdminDashboard() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
         {/* City Breakdown Panel */}
-        <div className=" md:col-span-2 glass rounded-2xl p-6 border border-border/30
-">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <BarChart3 className="text-primary" />
-            City Breakdown
-          </h3>
-
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={cityBreakdown}
-                margin={{ top: 20, right: 10, left: -10, bottom: 5 }}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          className="md:col-span-2 glass card-premium rounded-2xl p-6 border border-border/20"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between mb-7">
+            <h3 className="text-[15px] font-medium text-foreground flex items-center gap-2.5">
+              {/* Wave / area icon */}
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                className="text-chart-3"
               >
-
-                {/* 🔹 GRID */}
-                <CartesianGrid
-                  stroke="var(--border)"
-                  strokeDasharray="4 6"
-                  vertical={false}
-                  opacity={1}
+                <path
+                  d="M1 13 C3 13, 4 7, 6.5 7 C9 7, 9.5 11, 12 11 C14.5 11, 15 5, 17 5"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  fill="none"
                 />
-
-                {/* 🔹 X AXIS */}
-                <XAxis
-                  dataKey="name"
-                  tick={{
-                    fill: "var(--foreground)",
-                    fontSize: 18,
-                  }}
-                  axisLine={false}
-                  tickLine={false}
+                <path
+                  d="M1 13 C3 13, 4 7, 6.5 7 C9 7, 9.5 11, 12 11 C14.5 11, 15 5, 17 5 L17 17 L1 17Z"
+                  fill="currentColor"
+                  opacity="0.12"
                 />
+              </svg>
+              City breakdown
+            </h3>
+            <span className="text-xs text-muted-foreground/50 tracking-wide">
+              Top {cityBreakdown.length} by batches
+            </span>
+          </div>
 
-                {/* 🔹 Y AXIS */}
-                <YAxis
-                  tick={{
-                    fill: "var(--foreground)",
-                    fontSize: 16,
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-
-                {/* 🔥 TOOLTIP */}
-                <Tooltip
-                  cursor={{ fill: "rgba(255,255,255,0.03)" }}
-                  contentStyle={{
-                    background: "var(--card)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "12px",
-                    backdropFilter: "blur(10px)",
-                  }}
-                />
-
-                {/* 🔥 GRADIENT DEFINITIONS */}
+          {/* Chart */}
+          <div className="h-[240px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={cityBreakdown}
+                margin={{ top: 20, right: 4, left: -4, bottom: 0 }}
+              >
                 <defs>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#00E5FF" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#6366F1" stopOpacity={0.5} />
+                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#60A5FA" stopOpacity={0.25} />
+                    <stop offset="60%" stopColor="#60A5FA" stopOpacity={0.06} />
+                    <stop offset="100%" stopColor="#60A5FA" stopOpacity={0} />
                   </linearGradient>
                 </defs>
 
-                {/* 🔥 BAR */}
-                <Bar
-                  dataKey="count"
-                  radius={[12, 12, 6, 6]}
-                  fill="url(#barGradient)"
-                  style={{
-                    filter: "drop-shadow(0 0 8px rgba(0,229,255,0.3))"
+                <CartesianGrid
+                  stroke="rgba(255,255,255,0.05)"
+                  strokeDasharray="4 4"
+                  vertical={false}
+                />
+
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{
+                    fill: "var(--muted-foreground)",
+                    fontSize: 12,
+                  }}
+                  dy={10}
+                />
+
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{
+                    fill: "rgba(100,116,139,0.5)",
+                    fontSize: 11,
+                  }}
+                  tickCount={5}
+                  width={28}
+                />
+
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{
+                    stroke: "rgba(96,165,250,0.2)",
+                    strokeWidth: 1.5,
+                    strokeDasharray: "4 4",
                   }}
                 />
 
-              </BarChart>
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#60A5FA"
+                  strokeWidth={2.5}
+                  fill="url(#areaGradient)"
+                  dot={{
+                    r: 4,
+                    fill: "#60A5FA",
+                    strokeWidth: 2,
+                    stroke: "var(--card)",
+                  }}
+                  activeDot={{
+                    r: 6,
+                    fill: "#60A5FA",
+                    strokeWidth: 2,
+                    stroke: "var(--card)",
+                  }}
+                  animationDuration={900}
+                  animationEasing="ease-out"
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
+
+          {/* Footer legend */}
+          <div className="flex items-center gap-5 mt-4 pt-4 border-t border-border/10">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground/50">
+              <span className="inline-block w-5 h-0.5 rounded bg-chart-3/70"></span>
+              Batches per city
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground/50">
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-full border-2 bg-chart-3"
+                style={{ borderColor: "var(--card)" }}
+              ></span>
+              Data point
+            </div>
+          </div>
+        </motion.div>
 
         {/* Quick Actions Panel */}
-        <div className="glass h-[423px] card-premium rounded-2xl p-6 border border-border/20 ">
+        <div className="glass h-96 card-premium rounded-2xl p-6 border border-border/20 ">
 
           <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-chart-1 animate-pulse"></div>
@@ -271,10 +375,10 @@ export default function SuperAdminDashboard() {
             Quick Actions
           </h3>
 
-          <div className="space-y-3">
+          <div className="space-y-3  pt-3">
             <button
               onClick={() => router.push('/superadmin/admins')}
-              className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-chart-5/10 to-transparent border border-chart-5/20 hover:border-chart-5/40 px-4 py-3 text-left transition-all duration-300 hover:shadow-lg hover:shadow-chart-5/10"
+              className="w-full mb-4  group relative overflow-hidden rounded-xl bg-gradient-to-r from-chart-5/10 to-transparent border border-chart-5/20 hover:border-chart-5/40 px-4 py-5 text-left transition-all duration-300 hover:shadow-lg hover:shadow-chart-5/10"
             >
               <div className="relative z-10 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -292,7 +396,7 @@ export default function SuperAdminDashboard() {
 
             <button
               onClick={() => router.push('/superadmin/cities')}
-              className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-chart-2/10 to-transparent border border-chart-2/20 hover:border-chart-2/40 px-4 py-3 text-left transition-all duration-300 hover:shadow-lg hover:shadow-chart-2/10"
+              className="w-full mb-4 group relative overflow-hidden rounded-xl bg-gradient-to-r from-chart-2/10 to-transparent border border-chart-2/20 hover:border-chart-2/40 px-4 py-5 text-left transition-all duration-300 hover:shadow-lg hover:shadow-chart-2/10"
             >
               <div className="relative z-10 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -310,7 +414,7 @@ export default function SuperAdminDashboard() {
 
             <button
               onClick={() => router.push('/superadmin/batches')}
-              className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-chart-3/10 to-transparent border border-chart-3/20 hover:border-chart-3/40 px-4 py-3 text-left transition-all duration-300 hover:shadow-lg hover:shadow-chart-3/10"
+              className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-chart-3/10 to-transparent border border-chart-3/20 hover:border-chart-3/40 px-4 py-5 text-left transition-all duration-300 hover:shadow-lg hover:shadow-chart-3/10"
             >
               <div className="relative z-10 flex items-center justify-between">
                 <div className="flex items-center gap-3">

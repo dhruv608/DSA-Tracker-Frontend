@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { studentLeaderboardService } from '@/services/student/leaderboard.service';
-import { handleError } from "@/utils/handleError";
+import { handleError } from "@/utils/toast-system";
 
 export interface LeaderboardEntry {
   student_id: number;

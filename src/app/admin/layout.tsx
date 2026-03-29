@@ -11,7 +11,7 @@ import { getCurrentAdmin } from '@/services/admin.service';
 import { useAdminStore } from '@/store/adminStore';
 import { getAdminCities, getAdminBatches } from '@/services/admin.service';
 import { isAdminToken, clearAuthTokens } from '@/lib/auth-utils';
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 function decodeJwt(token: string) {
   try {
@@ -25,7 +25,7 @@ function decodeJwt(token: string) {
     );
     return JSON.parse(jsonPayload);
   } catch (err) {
-    handleError(err);
+    handleToastError(err);
     return null;
   }
 }
@@ -178,7 +178,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }
         }
       } catch (err: any) {
-        handleError(err);
+        handleToastError(err);
         console.error("Failed to load admin data", err);
         
         // Handle specific error cases

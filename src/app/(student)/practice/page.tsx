@@ -16,7 +16,7 @@ import { Pagination } from '@/components/Pagination';
 import { PracticeResults } from '@/components/student/practice/PracticeResults';
 import { PracticeFilters as PracticeFiltersComponent } from '@/components/student/practice/PracticeFilters';
 import { PracticeHeader } from '@/components/student/practice/PracticeHeader';
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 export default function PracticePage() {
   const router = useRouter();
@@ -88,7 +88,7 @@ export default function PracticePage() {
       router.replace(`?${params.toString()}`, { scroll: false });
 
     } catch (e) {
-      handleError(e);
+      handleToastError(e);
       console.error("Failed to fetch practice questions", e);
     } finally {
       setLoading(false);

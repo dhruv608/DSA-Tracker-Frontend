@@ -51,7 +51,7 @@ import {
    DialogFooter,
    DialogDescription,
 } from "@/components/ui/dialog";
-import { handleError } from "@/utils/handleError";
+import { handleToastError } from "@/utils/toast-system";
 
 function BadgeByLevel({ level }: { level: string }) {
    const cn = level === 'EASY' ? 'bg-green-500/10 text-green-500' :
@@ -108,7 +108,7 @@ export default function AdminClassDetailsPage() {
          setAssignedTotalPages(data.pagination?.totalPages || 1);
          setAssignedTotalCount(data.pagination?.total || 0);
       } catch (err: any) {
-       handleError(err);
+       handleToastError(err);
          console.error("Failed to fetch assigned questions", err);
          // If current deeply tracked class does not exist in active batch context, redirect out safely.
          if (err.response?.status === 400 || err.response?.status === 404) {
@@ -143,7 +143,7 @@ export default function AdminClassDetailsPage() {
          setBankQuestions(res.data);
          setBankTotalPages(res.pagination.totalPages);
       } catch (err) {
-       handleError(err);
+       handleToastError(err);
          console.error("Failed to fetch bank questions", err);
       } finally {
          setBankLoading(false);
@@ -174,7 +174,7 @@ export default function AdminClassDetailsPage() {
          setSelectedQuestionIds([]);
          fetchAssigned();
       } catch (err: any) {
-       handleError(err);
+       handleToastError(err);
          setErrorMsg(err.response?.data?.error || 'Failed to assign questions');
       } finally {
          setSubmitting(false);
@@ -204,7 +204,7 @@ export default function AdminClassDetailsPage() {
          setIsDeleteOpen(false);
          setDeletingQuestion(null);
       } catch (err: any) {
-       handleError(err);
+       handleToastError(err);
          alert(err.response?.data?.error || "Failed to remove question");
       } finally {
          setSubmitting(false);
@@ -264,7 +264,7 @@ export default function AdminClassDetailsPage() {
                         placeholder="Search classes..."
                         value={search}
                         onChange={(e) => { setSearch(e.target.value); setAssignedPage(1); }}
-                        className="h-10 !pl-9 !pr-9 rounded-full bg-accent/40   border-0 focus:ring-2 focus:ring-primary/20 focus:bg-accent/60   transition-all    "
+                        className="h-10 w-full !pl-9 pr-9 rounded-full bg-accent/40   border-0 focus:ring-2 focus:ring-primary/20 focus:bg-accent/60   transition-all    "
                      />
                   </div>
                   
@@ -448,7 +448,7 @@ export default function AdminClassDetailsPage() {
                         placeholder="Search questions by name..."
                         value={bankSearch}
                         onChange={(e) => setBankSearch(e.target.value)}
-                        className="pl-12 h-12 rounded-xl text-base focus-visible:ring-2 focus-visible:ring-primary/40 transition"
+                        className="!pl-12 w-full h-12 rounded-xl text-base focus-visible:ring-2 focus-visible:ring-primary/40 transition"
                      />
                   </div>
 

@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { studentAuthService } from '@/services/student/auth.service';
-import { useToast } from '../../shared/hooks/useToast';
-import { handleError } from "@/utils/handleError";
+import { glassToast, handleToastError, showSuccess } from '@/utils/toast-system';
 
 export function useResetPassword() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get('email');
   const otpParam = searchParams.get('otp');
-  const { showToast } = useToast();
 
   const [fpNewPassword, setFpNewPassword] = useState('');
   const [fpConfirmPassword, setFpConfirmPassword] = useState('');
@@ -31,13 +29,13 @@ export function useResetPassword() {
     
     if (!fpNewPassword) {
       console.log('❌ Validation failed: No password provided');
-      showToast("Please enter a new password.", 'error');
+      glassToast.error("Please enter a new password.");
       setError("Please enter a new password.");
       return;
     }
     if (fpNewPassword !== fpConfirmPassword) {
       console.log('❌ Validation failed: Passwords do not match');
-      showToast("Passwords do not match.", 'error');
+      glassToast.error("Passwords do not match.");
       setError("Passwords do not match.");
       return;
     }
@@ -57,10 +55,10 @@ export function useResetPassword() {
       console.log('✅ API Response received:', response);
       console.log('📊 Response status:', response);
       
-      showToast("Password reset successful ✅", "success");
+      glassToast.success("Password reset successful ✅");
       setTimeout(() => router.push('/login'), 1500);
     } catch (err: any) {
-      handleError(err);
+      handleToastError(err);
       console.log('❌ API Error occurred:', err);
       console.log('📊 Error response:', err.response);
       console.log('📊 Error status:', err.response?.status);
@@ -68,7 +66,7 @@ export function useResetPassword() {
       
       const msg = err.response?.data?.error || err.response?.data?.message || 'Failed to reset password.';
       setError(msg);
-      showToast(msg, 'error');
+      glassToast.error(msg);
     } finally {
       setLoading(false);
       console.log('🏁 Reset password process completed');

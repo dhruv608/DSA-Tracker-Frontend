@@ -7,11 +7,6 @@ import { QueryProvider } from "@/components/providers/QueryProvider";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-// Import test utilities in development
-if (process.env.NODE_ENV === 'development') {
-  import('@/utils/test-toast-system');
-}
-
 
 const geistSans = Geist({
 
@@ -76,7 +71,23 @@ export default function RootLayout({
             </ErrorBoundary>
           </QueryProvider>
         </ThemeProvider>
-        <Toaster position="top-center" theme="dark" richColors closeButton />
+        <Toaster 
+          position="top-right" 
+          theme="system" 
+          richColors 
+          closeButton
+          duration={4000}
+          className="glass-premium-toast"
+          toastOptions={{
+            style: {
+              background: 'rgba(var(--glass-toast-bg), 0.9)',
+              border: '1px solid rgba(var(--glass-toast-border), 0.2)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '12px',
+              boxShadow: '0 8px 32px rgba(var(--glass-toast-shadow), 0.12)',
+            }
+          }}
+        />
       </body>
     </html>
   );

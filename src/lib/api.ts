@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { handleApiError } from '@/utils/toast-system';
+import { handleToastError, glassToast } from '@/utils/toast-system';
 
 // Helper function to read cookies
 const getCookie = (name: string): string | null => {
@@ -123,12 +123,12 @@ api.interceptors.response.use(
       }
     }
 
-    // Handle error with our toast system for non-silent errors
+    // Handle ALL errors with toast system (except silent errors)
     if (!error.silent && !error.isSilent) {
-      handleApiError(error, 'API Request');
+      handleToastError(error);
     }
 
-    return Promise.reject(error);
+return Promise.reject(error);
   }
 );
 
