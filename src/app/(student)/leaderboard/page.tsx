@@ -177,6 +177,7 @@ export default function StudentLeaderboardPage() {
           top3={data?.top10?.slice(0, 3) || []}
           loading={isLoading}
           error={error?.message}
+          selectedCity={lCity === 'All Cities' ? 'all' : lCity}
         />
         <div className="flex flex-col space-y-6">
 

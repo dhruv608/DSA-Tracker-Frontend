@@ -25,12 +25,11 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export default function AdminLeaderboardPage() {
-  const router = useRouter();
+  
   const searchParams = useSearchParams();
   const { selectedCity, selectedBatch, isLoadingContext } = useAdminStore();
   const [isInit, setIsInit] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
+  
   const [allCities, setAllCities] = useState<Array<{ city_name: string, available_years: number[] }>>([]);
   const [allYears, setAllYears] = useState<number[]>([]);
   const [cityYearMap, setCityYearMap] = useState<Record<string, Set<number>>>({});
@@ -49,6 +48,8 @@ export default function AdminLeaderboardPage() {
   const [leaderboardData, setLeaderboardData] = useState<any>(null);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
+
+
   // 1. Initialize Default Filters
   useEffect(() => {
     if (!isLoadingContext && !isInit && selectedCity && selectedBatch) {
@@ -78,10 +79,8 @@ export default function AdminLeaderboardPage() {
   // Manual refresh function
   const handleRefresh = async () => {
     if (!isInit) return;
-
     setLeaderboardLoading(true);
     setLeaderboardError(null);
-
     try {
       const body = {
         city: lCity === "All Cities" ? "all" : lCity,
@@ -165,22 +164,8 @@ export default function AdminLeaderboardPage() {
     fetchLeaderboardData();
   }, [page, limit, lCity, lType, lYear, debouncedSearch, isInit]);
 
-  // Step 4: Reset year on city change (handled deterministically now to avoid useEffect loops)
-  const handleCityChange = useCallback((newCity: string) => {
-    setLCity(newCity);
 
-    // Preview the next yearOptions instantly
-    const cityKey = newCity.toLowerCase();
-    const cityYears = cityYearMap[cityKey] ? Array.from(cityYearMap[cityKey]).sort((a, b) => b - a) : [];
-    const nextYearOptions = (newCity === "All Cities" || !newCity) ? allYears : cityYears;
-
-    // Reset year immediately if current year isn't valid for the new city
-    if (nextYearOptions.length > 0 && !nextYearOptions.includes(lYear)) {
-      setLYear(nextYearOptions[0]);
-    } else if (nextYearOptions.length === 0) {
-      setLYear(0); // Explicit fallback if the city truly has no batches
-    }
-  }, [allYears, cityYearMap, lYear]);
+ 
 
   const updateUrl = useCallback(() => {
     if (!isInit) return;
@@ -259,6 +244,7 @@ export default function AdminLeaderboardPage() {
         top3={leaderboardData?.data?.leaderboard?.slice(0, 3) || []}
         loading={leaderboardLoading}
         error={leaderboardError}
+        selectedCity={lCity === 'All Cities' ? 'all' : lCity}
       />
 
 

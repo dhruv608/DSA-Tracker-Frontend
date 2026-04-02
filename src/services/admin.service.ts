@@ -263,8 +263,3 @@ export const getAdminLeaderboard = async (query: { page?: number; limit?: number
   const response = await api.post('/api/admin/leaderboard', body, { params: query });
   return response.data;
 };
-
-export const getAvailableYears = async () => {
-  const response = await api.get('/api/admin/leaderboard/years');
-  return response.data.years;
-};

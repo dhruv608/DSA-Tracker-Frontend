@@ -15,10 +15,13 @@ export function FilterBar({
   return (
     <div className="flex items-center justify-between w-full mb-6">
       {/* LEFT SECTION - SEARCH */}
-      <div className="relative w-80 max-w-[320px]">
+
+
+      
+      <div className="relative !w-90 max-w-[420px]">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <Input 
-            placeholder="Search by username..." 
+            placeholder="Search by name and username..." 
             value={lSearch}
             onChange={(e) => { setLSearch(e.target.value); }}
             className="!pl-9 h-9 bg-background focus-visible:ring-1 transition-all hover:bg-muted/50"

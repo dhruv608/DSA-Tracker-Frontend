@@ -17,32 +17,42 @@ export const PodiumCard = ({ student, rank, isCenter }: any) => {
             ? "shadow-[0_0_25px_var(--chart-1)]"
             : rank === 2
                 ? "shadow-[0_0_25px_var(--chart-2)]"
-                : "shadow-[0_0_25px_var(--chart-5)]";
+                : rank === 3
+                    ? "shadow-[0_0_25px_var(--chart-5)]"
+                    : "shadow-[0_0_25px_var(--chart-3)]";
 
     const borderColor =
         rank === 1
             ? "border-[color:var(--chart-1)]"
             : rank === 2
                 ? "border-[color:var(--chart-2)]"
-                : "border-[color:var(--chart-5)]";
+                : rank === 3
+                    ? "border-[color:var(--chart-5)]"
+                    : "border-[color:var(--chart-3)]";
     const textColor =
         rank === 1
             ? "text-[color:var(--chart-1)]"
             : rank === 2
                 ? "text-[color:var(--chart-2)]"
-                : "text-[color:var(--chart-5)]";
+                : rank === 3
+                    ? "text-[color:var(--chart-5)]"
+                    : "text-[color:var(--chart-3)]";
     const badgeColor =
         rank === 1
             ? "bg-[color:var(--chart-1)] text-black"
             : rank === 2
                 ? "bg-[color:var(--chart-2)] text-black"
-                : "bg-[color:var(--chart-5)] text-black";
+                : rank === 3
+                    ? "bg-[color:var(--chart-5)] text-black"
+                    : "bg-[color:var(--chart-3)] text-black";
     const bgColor =
         rank === 1
             ? "bg-[color:var(--chart-1)/10]"
             : rank === 2
                 ? "bg-[color:var(--chart-2)/10]"
-                : "bg-[color:var(--chart-5)/10]";
+                : rank === 3
+                    ? "bg-[color:var(--chart-5)/10]"
+                    : "bg-[color:var(--chart-3)/10]";
 
     return (
         <motion.div
@@ -75,9 +85,12 @@ export const PodiumCard = ({ student, rank, isCenter }: any) => {
                     <Award className="absolute -top-1 left-1/2 -translate-x-1/2 text-[color:var(--chart-2)] w-10 h-10 crown-float" />
                 )}
 
-
                 {rank == 3 && (
                     <Award className="absolute -top-1 left-1/2 -translate-x-1/2 text-[color:var(--chart-5)] w-10 h-10 crown-float" />
+                )}
+
+                {rank > 3 && (
+                    <Award className="absolute -top-1 left-1/2 -translate-x-1/2 text-[color:var(--chart-3)] w-10 h-10 crown-float" />
                 )}
 
                 {/* Avatar */}
@@ -108,7 +121,8 @@ export const PodiumCard = ({ student, rank, isCenter }: any) => {
                                 <ProfileAvatar username={student?.username || ""} bgcolor={
                                     rank === 1 ? "var(--chart-1)" :
                                         rank === 2 ? "var(--chart-2)" :
-                                            "var(--chart-5)"
+                                            rank === 3 ? "var(--chart-5)" :
+                                                "var(--chart-3)"
                                 }
                                     size={173} />
                             )}
