@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from 'react';
-import { getAllAdmins, createAdmin, updateAdmin, deleteAdmin, Admin, getAdminRoles } from '@/services/admin.service';
+import {  Admin, getAdminRoles } from '@/services/admin.service';
 import { getAllCities, City } from '@/services/city.service';
 import { getAllBatches, Batch } from '@/services/batch.service';
 import { Pagination } from '@/components/Pagination';
@@ -12,6 +12,7 @@ import { AdminModal } from '@/components/superadmin/admins/AdminModal';
 import { AdminCard } from '@/components/superadmin/admins/AdminCard';
 import { AdminFilters } from '@/components/superadmin/admins/AdminFilters';
 import { handleToastError, showSuccess, showDeleteSuccess } from "@/utils/toast-system";
+import { createAdmin, deleteAdmin, getAllAdmins, updateAdmin } from '@/services/superadmin.service';
 
 export default function AdminsPage() {
   const [admins, setAdmins] = useState<Admin[]>([]);

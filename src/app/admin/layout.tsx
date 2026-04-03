@@ -9,11 +9,15 @@ import { Sidebar, SidebarNavItems } from '@/components/sidebar/Sidebar';
 import { logoutUser } from '@/services/auth.service';
 import { getCurrentAdmin } from '@/services/admin.service';
 import { useAdminStore } from '@/store/adminStore';
-import { getAdminCities, getAdminBatches } from '@/services/admin.service';
 import { isAdminToken, clearAuthTokens } from '@/lib/auth-utils';
 import { BruteForceLoader } from '@/components/ui/BruteForceLoader';
 import { handleToastError } from "@/utils/toast-system";
+<<<<<<< Updated upstream
 import { cn } from '@/lib/utils';
+=======
+import { getAllCities } from '@/services/city.service';
+import { getAllBatches } from '@/services/batch.service';
+>>>>>>> Stashed changes
 
 function decodeJwt(token: string) {
   try {
@@ -118,7 +122,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         setUser(userData.data); // Service returns unwrapped data directly
 
         // Get cities and batches
-        const cityList = await getAdminCities();
+        const cityList = await getAllCities();
         setCities(cityList);
 
         // Check if we have stored selections
@@ -128,7 +132,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           // Restore from localStorage (persisted selections)
           setSelectedCity(storedSelections.city);
           
-          const batchList = await getAdminBatches(storedSelections.city.name);
+          const batchList = await getAllBatches(storedSelections.city.name);
           setBatches(batchList);
           
           if (storedSelections.batch) {
@@ -153,7 +157,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              const cityData = { id: matchingCity.id, name: matchingCity.city_name };
              setSelectedCity(cityData);
              
-             const batchList = await getAdminBatches(matchingCity.city_name);
+             const batchList = await getAllBatches(matchingCity.city_name);
              setBatches(batchList);
 
              const initialBatchId = payload?.batchId;
@@ -218,7 +222,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setSelectedCity(cityData);
       setStoredSelections(cityData, null); // Clear batch when city changes
       setIsLoadingContext(true);
-      getAdminBatches(cityObj.city_name).then((batchList) => {
+      getAllBatches(cityObj.city_name).then((batchList) => {
         setBatches(batchList);
         if (batchList.length > 0) {
           const first = batchList[0];

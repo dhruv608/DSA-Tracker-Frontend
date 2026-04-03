@@ -31,3 +31,4 @@ export const deleteCity = async (id: number) => {
   showDeleteSuccess('City');
   return response.data;
 };
+

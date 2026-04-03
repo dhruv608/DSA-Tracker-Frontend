@@ -8,6 +8,7 @@ export interface Batch {
   year: number;
   city_id: number;
   city?: City;
+   slug: string;
   _count?: {
     students: number;
     classes: number;

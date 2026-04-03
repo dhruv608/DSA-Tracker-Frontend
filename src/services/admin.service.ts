@@ -1,7 +1,6 @@
 import api from '../lib/api';
 import { isAdminToken, clearAuthTokens } from '../lib/auth-utils';
-import { Batch } from './batch.service';
-import { handleToastError, showSuccess, showDeleteSuccess } from '@/utils/toast-system';
+import { showSuccess, showDeleteSuccess } from '@/utils/toast-system';
 
 export interface Admin {
   id: number;
@@ -23,47 +22,12 @@ export interface Admin {
   updated_at?: string;
 }
 
-export const getAllAdmins = async (role?: string): Promise<Admin[]> => {
-  // Check if we have an admin token before making the request
-  if (!isAdminToken()) {
-    clearAuthTokens(); // Clear invalid tokens
-    const error = new Error('Access denied. Admins only.');
-    (error as any).response = { status: 403, data: { error: 'Access denied. Admins only.' } };
-    throw error;
-  }
 
-  const params = role ? { role } : {};
-  const response = await api.get('/api/superadmin/admins', { params });
-  return response.data.data; // Backend wraps in { success, data }
-};
 
 export const getAdminRoles = async (): Promise<string[]> => {
   const response = await api.get('/api/admin/roles');
   return response.data.data;
 };
-
-export const createAdmin = async (data: any) => {
-  const response = await api.post('/api/superadmin/admins', data);
-  showSuccess('Admin Created');
-  return response.data.data;
-};
-
-export const updateAdmin = async (id: number, data: any) => {
-  const response = await api.patch(`/api/superadmin/admins/${id}`, data);
-  showSuccess('Admin Updated');
-  return response.data.data;
-};
-
-export const deleteAdmin = async (id: number) => {
-  const response = await api.delete(`/api/superadmin/admins/${id}`);
-  showDeleteSuccess('Admin');
-  return response.data;
-};
-
-// ==========================================
-// ADMIN PANEL ENDPOINTS
-// ==========================================
-
 export const getCurrentAdmin = async () => {
   // Check if we have an admin token before making the request
   if (!isAdminToken()) {
@@ -76,30 +40,6 @@ export const getCurrentAdmin = async () => {
   const response = await api.get('/api/admin/me');
   return response.data;
 };
-
-export const getAdminCities = async () => {
-  const response = await api.get('/api/cities');
-  return response.data;
-};
-
-export const createAdminCity = async (data: any) => {
-  const response = await api.post('/api/admin/cities', data);
-  showSuccess('City Created');
-  return response.data;
-};
-
-export const getAdminBatches = async (cityName?: string) => {
-  const params = cityName ? { city: cityName } : {};
-  const response = await api.get('/api/batches', { params });
-  return response.data;
-};
-
-export const createAdminBatch = async (data: any) => {
-  const response = await api.post('/api/admin/batches', data);
-  showSuccess('Batch Created');
-  return response.data;
-};
-
 export const getAdminStats = async (batch_id: number) => {
   const response = await api.post('/api/admin/stats', { batch_id });
   return response.data.data;
