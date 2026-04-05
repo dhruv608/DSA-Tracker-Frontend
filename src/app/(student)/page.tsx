@@ -66,17 +66,17 @@ export default function StudentHomePage() {
 
       console.log("Student data from /me:", studentData);
 
-      const topicsData = await studentTopicService.getTopics().catch((e: any) => {
+      const topicsData = await studentTopicService.getTopics({ limit: 8 }).catch((e: any) => {
         console.warn("Failed to fetch topics (potentially missing batch)", e);
-        return [];
+        return { topics: [] };
       });
 
       setStudentResponse(studentData);
       setUser(studentData?.data);
-      setTopics(topicsData);
+      setTopics(topicsData.topics || []);
 
       // For now, set basic stats - can be enhanced later if needed
-      const activeTopics = topicsData.filter((t: any) => (t.batchSpecificData?.solvedQuestions || 0) > 0).length;
+      const activeTopics = (topicsData.topics || []).filter((t: any) => (t.batchSpecificData?.solvedQuestions || 0) > 0).length;
 
       setStats({
         solved: 0, // Will be updated if we add stats to /me endpoint

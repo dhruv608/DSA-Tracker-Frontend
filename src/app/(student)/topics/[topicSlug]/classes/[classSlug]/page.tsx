@@ -10,7 +10,7 @@ import { Calendar, Clock, FileText } from 'lucide-react';
 import { ClassBackNav } from '@/components/student/classes/ClassBackNav';
 import { ClassHeader } from '@/components/student/classes/ClassHeader';
 import { ClassQuestions } from '@/components/student/classes/ClassQuestions';
-import { ClassLoading } from '@/components/student/classes/ClassLoading';
+import { ClassDetailsShimmer } from '@/components/student/classes/ClassDetailsShimmer';
 import { Pagination } from '@/components/Pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { handleToastError } from "@/utils/toast-system";
@@ -27,30 +27,31 @@ export default function ClassDetailsPage() {
   const [limit, setLimit] = useState(10);
   const [filter, setFilter] = useState('all');
 
+  const fetchClassDetails = async () => {
+    try {
+      const queryParams = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: limit.toString(),
+        filter: filter
+      });
+      
+      const data = await studentClassService.getClassDetailsWithPagination(topicSlug, classSlug, queryParams.toString());
+      setClassData(data);
+    } catch (e) {
+      handleToastError(e);
+      console.error("Class detail fetch error", e);
+      router.push(`/topics/${topicSlug}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchClassDetails = async () => {
-      try {
-        const queryParams = new URLSearchParams({
-          page: currentPage.toString(),
-          limit: limit.toString(),
-          filter: filter
-        });
-        
-        const data = await studentClassService.getClassDetailsWithPagination(topicSlug, classSlug, queryParams.toString());
-        setClassData(data);
-      } catch (e) {
-        handleToastError(e);
-        console.error("Class detail fetch error", e);
-        router.push(`/topics/${topicSlug}`);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchClassDetails();
   }, [topicSlug, classSlug, currentPage, limit, filter, router]);
 
   if (loading) {
-    return <ClassLoading />;
+    return <ClassDetailsShimmer />;
   }
 
   if (!classData) return null;
@@ -115,7 +116,7 @@ export default function ClassDetailsPage() {
         </div>
       </div>
 
-      <ClassQuestions questions={questions} />
+      <ClassQuestions questions={questions} onRefresh={fetchClassDetails} />
 
       {/* Pagination */}
       {pagination && pagination.total > limit && (

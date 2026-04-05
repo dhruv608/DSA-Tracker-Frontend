@@ -139,6 +139,7 @@ export default function PracticePage() {
         <PracticeResults
           loading={loading}
           questions={questions}
+          onRefresh={fetchQuestions}
         />
 
         {/* Pagination */}

@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Home, BookOpen, PenTool, Trophy, Lock, Activity, ChevronRight, Menu, X } from 'lucide-react';
+import { LogOut, User, Home, BookOpen, PenTool, Trophy, Lock, Activity, ChevronRight, Menu, X, Bookmark } from 'lucide-react';
 import { useRecentQuestions } from '@/contexts/RecentQuestionsContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { studentAuthService } from '@/services/student/auth.service';
@@ -294,6 +294,14 @@ export default function StudentHeader() {
                         >
                           <User className="w-4 h-4" />
                           My Profile
+                        </Link>
+                      </DropdownMenuItem>
+
+                      {/* BOOKMARKS BUTTON */}
+                      <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-sm py-2">
+                        <Link href="/bookmarks" className="flex items-center gap-2">
+                          <Bookmark className="w-4 h-4" />
+                          My Bookmarks
                         </Link>
                       </DropdownMenuItem>
 

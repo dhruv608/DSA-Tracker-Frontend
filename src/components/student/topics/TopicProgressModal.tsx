@@ -30,17 +30,20 @@ import { BruteForceLoader } from "@/components/ui/BruteForceLoader";
 interface Topic {
   id: number;
   topic_name: string;
-  totalAssigned: number;
-  totalSolved: number;
+  totalQuestions: number;
+  solvedQuestions: number;
+  progressPercentage: number;
 }
 
 interface TopicProgressData {
-  studentName: string;
-  batchName: string;
+  success: boolean;
+  student: {
+    id: number;
+    name: string;
+    username: string;
+    batch: any;
+  };
   topics: Topic[];
-  totalTopics: number;
-  totalAssigned: number;
-  totalSolved: number;
 }
 
 interface Props {
@@ -62,9 +65,10 @@ export default function TopicProgressModal({
     try {
       setLoading(true);
       const res = await api.get(`/api/topicprogress/${username}`);
+      console.log('Topic Progress API Response:', res.data);
       setData(res.data);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching topic progress:', err);
     } finally {
       setLoading(false);
     }
@@ -82,16 +86,14 @@ export default function TopicProgressModal({
     if (sortBy === "weak") {
       topics.sort(
         (a, b) =>
-          a.totalSolved / (a.totalAssigned || 1) -
-          b.totalSolved / (b.totalAssigned || 1)
+          a.progressPercentage - b.progressPercentage
       );
     }
 
     if (sortBy === "strong") {
       topics.sort(
         (a, b) =>
-          b.totalSolved / (b.totalAssigned || 1) -
-          a.totalSolved / (a.totalAssigned || 1)
+          b.progressPercentage - a.progressPercentage
       );
     }
 
@@ -138,7 +140,7 @@ export default function TopicProgressModal({
               Topic Progress
             </div>
             <p className="text-sm text-muted-foreground">
-              {data?.studentName} • {data?.batchName}
+              {data?.student?.name} • {data?.student?.batch?.batch_name || 'No batch'}
             </p>
           </div>
 
@@ -153,16 +155,25 @@ export default function TopicProgressModal({
           {/* STATS */}
           {data && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Stat icon={<BookOpen />} label="Topics" value={data.totalTopics} />
-              <Stat icon={<Target />} label="Assigned" value={data.totalAssigned} />
-              <Stat icon={<TrendingUp />} label="Solved" value={data.totalSolved} />
+              <Stat icon={<BookOpen />} label="Topics" value={data.topics.length} />
+              <Stat 
+                icon={<Target />} 
+                label="Assigned" 
+                value={data.topics.reduce((sum, topic) => sum + topic.totalQuestions, 0)} 
+              />
+              <Stat 
+                icon={<TrendingUp />} 
+                label="Solved" 
+                value={data.topics.reduce((sum, topic) => sum + topic.solvedQuestions, 0)} 
+              />
               <Stat
                 icon={<Award />}
                 label="Completion"
                 value={
-                  data.totalAssigned > 0
+                  data.topics.reduce((sum, topic) => sum + topic.totalQuestions, 0) > 0
                     ? `${Math.round(
-                      (data.totalSolved / data.totalAssigned) * 100
+                      (data.topics.reduce((sum, topic) => sum + topic.solvedQuestions, 0) / 
+                       data.topics.reduce((sum, topic) => sum + topic.totalQuestions, 0)) * 100
                     )}%`
                     : "0%"
                 }
@@ -195,12 +206,7 @@ export default function TopicProgressModal({
               </div>
             ) : (
               getSortedTopics().map((topic) => {
-                const progress =
-                  topic.totalAssigned > 0
-                    ? Math.round(
-                      (topic.totalSolved / topic.totalAssigned) * 100
-                    )
-                    : 0;
+                const progress = topic.progressPercentage || 0;
 
                 return (
                   <div
@@ -219,7 +225,7 @@ export default function TopicProgressModal({
                             {topic.topic_name}
                           </h3>
                           <p className="text-xs text-muted-foreground">
-                            {topic.totalSolved} / {topic.totalAssigned}
+                            {topic.solvedQuestions} / {topic.totalQuestions}
                           </p>
                         </div>
                       </div>

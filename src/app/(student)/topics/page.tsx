@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { studentTopicService } from '@/services/student/topic.service';
 import { Pagination } from '@/components/Pagination';
 import { TopicsLoading } from '@/components/student/topics/TopicLoading';
@@ -9,22 +9,24 @@ import { TopicsGrid } from '@/components/student/topics/TopicsGrid';
 import { handleToastError } from "@/utils/toast-system";
 
 export default function TopicsPage() {
-  const [topics, setTopics] = useState<any[]>([]);
+  const [topicsData, setTopicsData] = useState<any[]>([]);
+  const [pagination, setPagination] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
 
-  // Reset page when search changes
-  useEffect(() => {
-    setPage(1);
-  }, [searchQuery]);
-
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const topicsData = await studentTopicService.getTopics();
-        setTopics(topicsData);
+        setLoading(true);
+        const response = await studentTopicService.getTopics({
+          page,
+          limit: itemsPerPage,
+          search: searchQuery.trim() || undefined
+        });
+        setTopicsData(response.topics || []);
+        setPagination(response.pagination);
       } catch (e) {
         handleToastError(e);
         console.error("Topics fetch error", e);
@@ -33,34 +35,18 @@ export default function TopicsPage() {
       }
     };
     fetchTopics();
-  }, []);
+  }, [page, itemsPerPage, searchQuery]);
 
-  const filteredAndSortedTopics = useMemo(() => {
-    let result = [...topics];
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(t => t.topic_name.toLowerCase().includes(q));
-    }
-
-    // Separate unlocked and locked topics (unlocked topics first)
-    const unlocked = result.filter(t => (t.batchSpecificData?.totalClasses || 0) > 0);
-    const locked = result.filter(t => (t.batchSpecificData?.totalClasses || 0) === 0);
-
-    return [...unlocked, ...locked];
-  }, [topics, searchQuery]);
-
-  const start = (page - 1) * itemsPerPage;
-  const paginatedTopics = filteredAndSortedTopics.slice(start, start + itemsPerPage);
-  const totalItems = filteredAndSortedTopics.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   return (
    
       <div className="flex flex-col mx-auto max-w-[1100px] w-full pb-12 px-7 sm:px-10 lg:px-12 pt-8">
         <TopicsHeader
           searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
+          setSearchQuery={(query) => {
+            setSearchQuery(query);
+            setPage(1); // Reset to first page when searching
+          }}
         />
         
         {loading ? (
@@ -68,16 +54,19 @@ export default function TopicsPage() {
         ) : (
           <>
             <TopicsGrid
-              topics={paginatedTopics}
+              topics={topicsData}
               searchQuery={searchQuery}
               pagination={
-                (totalItems > 0 || loading) && (
+                pagination && (
                   <Pagination 
-                    currentPage={page}
-                    totalItems={totalItems}
-                    limit={itemsPerPage || 10}
+                    currentPage={pagination.page}
+                    totalItems={pagination.total}
+                    limit={pagination.limit}
                     onPageChange={setPage}
-                    onLimitChange={setItemsPerPage}
+                    onLimitChange={(newLimit) => {
+                      setItemsPerPage(newLimit);
+                      setPage(1); // Reset to first page when changing limit
+                    }}
                     showLimitSelector={true}
                     loading={loading}
                   />

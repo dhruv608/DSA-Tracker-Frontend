@@ -8,7 +8,7 @@ import { ProgressBar } from '@/components/student/shared/ProgressBar';
 import Link from 'next/link';
 import { SubtopicBackNav } from '@/components/student/subtopics/SubtopicBackNav';
 import { SubtopicHeader } from '@/components/student/subtopics/SubtopicHeader';
-import { SubtopicLoading } from '@/components/student/subtopics/SubtopicLoading';
+import { TopicDetailsShimmer } from '@/components/student/subtopics/TopicDetailsShimmer';
 import { Pagination } from '@/components/Pagination';
 import { handleToastError } from "@/utils/toast-system";
 
@@ -23,24 +23,33 @@ export default function TopicDetailsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
+  // Function to fetch topic with pagination
+  const fetchTopicWithPagination = async (page: number, pageSize: number) => {
+    setLoading(true);
+    try {
+      // Create query params string
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: pageSize.toString()
+      });
+      
+      const data = await studentTopicService.getTopicOverviewWithPagination(topicSlug, queryParams.toString());
+      setTopic(data);
+    } catch (e) {
+      handleToastError(e);
+      console.error("Topic fetch error", e);
+      router.push('/topics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTopic = async () => {
-      try {
-        const data = await studentTopicService.getTopicOverview(topicSlug);
-        setTopic(data);
-      } catch (e) {
-        handleToastError(e);
-        console.error("Topic fetch error", e);
-        router.push('/topics');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTopic();
-  }, [topicSlug, router]);
+    fetchTopicWithPagination(currentPage, limit);
+  }, [topicSlug]);
 
   if (loading) {
-    return <SubtopicLoading />;
+    return <TopicDetailsShimmer />;
   }
 
   if (!topic) return null;
@@ -65,27 +74,6 @@ export default function TopicDetailsPage() {
     setCurrentPage(1);
     // Refetch data with new limit
     fetchTopicWithPagination(1, newLimit);
-  };
-
-  // Function to fetch topic with pagination
-  const fetchTopicWithPagination = async (page: number, pageSize: number) => {
-    setLoading(true);
-    try {
-      // Create query params string
-      const queryParams = new URLSearchParams({
-        page: page.toString(),
-        limit: pageSize.toString()
-      });
-      
-      const data = await studentTopicService.getTopicOverviewWithPagination(topicSlug, queryParams.toString());
-      setTopic(data);
-    } catch (e) {
-      handleToastError(e);
-      console.error("Topic fetch error", e);
-      router.push('/topics');
-    } finally {
-      setLoading(false);
-    }
   };
 
 return (

@@ -44,34 +44,10 @@ export function Footer() {
               <Link href="/profile" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
                 Profile
               </Link>
-            </nav>
-          </div>
-
-          {/* Origin Story - HIGHLIGHTED */}
-          <div className="relative">
-            {/* Glow effect background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg blur-xl"></div>
-            
-            <div className="relative space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                <h4 className="font-semibold text-foreground">Our Story</h4>
-              </div>
-              
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Discover the journey behind Brute Force - how two students transformed their DSA struggles into a platform for thousands.
-              </p>
-              
-              <Link 
-                href="/origin" 
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-black font-semibold rounded-lg hover:bg-primary/90 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/25"
-              >
-                <span className="relative">
-                  Read Our Origin
-                  <span className="absolute inset-0 bg-primary/20 rounded-lg animate-ping"></span>
-                </span>
+              <Link href="/about" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                About
               </Link>
-            </div>
+            </nav>
           </div>
 
           {/* Resources */}
@@ -87,7 +63,22 @@ export function Footer() {
               <p className="text-sm text-muted-foreground">
                 <span className="font-medium">Progress Tracking:</span> Real-time analytics
               </p>
-              
+            </div>
+          </div>
+
+          {/* Bookmarks */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-4">Bookmarks</h4>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium">Saved Topics:</span> Quick access to important topics
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium">Recent Progress:</span> Track your learning journey
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium">Favorite Problems:</span> Mark problems for later
+              </p>
             </div>
           </div>
 
