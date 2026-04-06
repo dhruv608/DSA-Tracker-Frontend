@@ -124,7 +124,7 @@ export default function PublicProfilePage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-
+  const isFetching = useRef(false);
 
   // Image management states
 
@@ -236,13 +236,14 @@ export default function PublicProfilePage() {
 
     if (!username) return;
 
-
+    // Skip if already fetching
+    if (isFetching.current) return;
 
     setLoading(true);
 
     setProfileError(null);
 
-
+    isFetching.current = true;
 
     try {
 
@@ -314,13 +315,13 @@ export default function PublicProfilePage() {
 
       // }
 
-
-
-      // setProfileError(userError.message);
+      setProfileError(userError.message);
 
     } finally {
 
       setLoading(false);
+
+      isFetching.current = false;
 
     }
 

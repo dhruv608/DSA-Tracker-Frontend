@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { handleToastError as handleError } from "@/utils/toast-system";
-import { BruteForceLoader } from "@/components/ui/BruteForceLoader";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Topic {
   id: number;
@@ -139,9 +139,13 @@ export default function TopicProgressModal({
               <BarChart3 className="w-5 h-5 text-primary" />
               Topic Progress
             </div>
-            <p className="text-sm text-muted-foreground">
-              {data?.student?.name} • {data?.student?.batch?.batch_name || 'No batch'}
-            </p>
+            {loading ? (
+              <Skeleton className="h-4 w-48 rounded-md mt-1" />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {data?.student?.name} • {data?.student?.batch?.batch_name || 'No batch'}
+              </p>
+            )}
           </div>
 
           <button onClick={onClose}>
@@ -153,7 +157,7 @@ export default function TopicProgressModal({
         <div className="flex flex-col flex-1 overflow-hidden p-6 gap-6">
 
           {/* STATS */}
-          {data && (
+          {data ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Stat icon={<BookOpen />} label="Topics" value={data.topics.length} />
               <Stat 
@@ -179,7 +183,19 @@ export default function TopicProgressModal({
                 }
               />
             </div>
-          )}
+          ) : loading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={`stat-skeleton-${index}`} className="rounded-2xl p-4 flex items-center gap-3 bg-card border border-border/60">
+                  <Skeleton className="w-10 h-10 rounded-lg" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-3 w-12 rounded-md" />
+                    <Skeleton className="h-4 w-8 rounded-md" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           {/* CONTROLS */}
           <div className="flex items-center gap-3">
@@ -201,9 +217,35 @@ export default function TopicProgressModal({
           <div className="flex-1 overflow-y-auto scrollbar-none pr-2 grid grid-cols-1 md:grid-cols-2 gap-4">
 
             {loading ? (
-              <div className="flex justify-center items-center col-span-2">
-                <BruteForceLoader size="md" />
-              </div>
+              // Skeleton loading that matches the topic card layout
+              Array.from({ length: 8 }).map((_, index) => (
+                <div
+                  key={`skeleton-${index}`}
+                  className="p-4 rounded-2xl bg-card border border-border/60"
+                >
+                  {/* TOP SECTION - Icon, title, and percentage */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      {/* Icon skeleton */}
+                      <Skeleton className="w-8 h-8 rounded-lg" />
+                      
+                      {/* Title and subtitle skeleton */}
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-24 rounded-md" />
+                        <Skeleton className="h-3 w-16 rounded-md" />
+                      </div>
+                    </div>
+                    
+                    {/* Percentage skeleton */}
+                    <Skeleton className="h-4 w-8 rounded-md" />
+                  </div>
+
+                  {/* PROGRESS BAR SKELETON */}
+                  <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                    <Skeleton className="h-full w-full rounded-full" />
+                  </div>
+                </div>
+              ))
             ) : (
               getSortedTopics().map((topic) => {
                 const progress = topic.progressPercentage || 0;

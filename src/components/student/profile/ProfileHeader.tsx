@@ -109,17 +109,15 @@ export function ProfileHeader({
                         </Button>
                     )}
 
-                    {canEdit && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={onShowTopicProgress}
-                            className="w-full sm:w-auto hover-glow justify-center"
-                        >
-                            <BarChart3 className="w-4 h-4 mr-2" />
-                            Topic Progress
-                        </Button>
-                    )}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onShowTopicProgress}
+                        className="w-full sm:w-auto hover-glow justify-center"
+                    >
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        Topic Progress
+                    </Button>
                 </div>
             </div>
         </div>
