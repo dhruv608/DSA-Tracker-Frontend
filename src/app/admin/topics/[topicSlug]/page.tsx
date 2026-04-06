@@ -25,6 +25,8 @@ import {
 import { BruteForceLoader } from '@/components/ui/BruteForceLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PdfPreview } from '@/components/ui/PdfPreview';
+import { ClassesTableShimmer, ClassesTableRowsShimmer } from '@/components/ClassesTableShimmer';
 import {
   Table,
   TableBody,
@@ -60,17 +62,50 @@ export default function AdminClassesPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isDeletePdfOpen, setIsDeletePdfOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<any>(null);
 
   // Forms
   const [className, setClassName] = useState('');
   const [description, setDescription] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [showReplaceInputs, setShowReplaceInputs] = useState(false);
   const [duration, setDuration] = useState('');
   const [classDate, setClassDate] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
+
+  // Helper function to check if PDF is from S3
+  const isS3Pdf = (url: string) => {
+    return url?.includes('amazonaws.com/class-pdfs/');
+  };
+
+  // Handle PDF file selection
+  const handlePdfFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        setFormError('Only PDF files are allowed');
+        return;
+      }
+      if (file.size > 20 * 1024 * 1024) { // 20MB limit
+        setFormError('PDF file size must be less than 20MB');
+        return;
+      }
+      setPdfFile(file);
+      setPdfUrl(''); // Clear URL when file is selected
+      setFormError('');
+    }
+  };
+
+  // Handle PDF removal
+  const handlePdfRemove = () => {
+    setPdfFile(null);
+    setPdfUrl('');
+    setFormError('');
+  };
   const router = useRouter();
   const fetchClasses = async () => {
     if (!selectedBatch) return;
@@ -105,13 +140,25 @@ export default function AdminClassesPage() {
     setFormError('');
     setSubmitting(true);
     try {
-      await createAdminClass(selectedBatch!.slug, topicSlug, {
-        class_name: className,
-        description,
-        pdf_url: pdfUrl,
-        duration_minutes: Number(duration),
-        class_date: new Date(classDate).toISOString()
+      const formData = new FormData();
+      formData.append('class_name', className);
+      formData.append('description', description);
+      formData.append('duration_minutes', duration ? duration.toString() : ''); // Convert to string
+      formData.append('class_date', classDate);
+      
+      // Handle PDF input
+      if (pdfFile) {
+        formData.append('pdf_file', pdfFile);
+      } else if (pdfUrl) {
+        formData.append('pdf_url', pdfUrl);
+      }
+
+      await api.post(`/api/admin/${selectedBatch!.slug}/topics/${topicSlug}/classes`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
+      
       setIsCreateOpen(false);
       resetForms();
       fetchClasses();
@@ -123,18 +170,55 @@ export default function AdminClassesPage() {
     }
   };
 
+  const handleDeletePdfSubmit = async () => {
+    setFormError('');
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('remove_pdf', 'true');
+
+      await api.patch(`/api/admin/${selectedBatch!.slug}/topics/${topicSlug}/classes/${selectedClass.slug}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      setIsDeletePdfOpen(false);
+      setIsEditOpen(false);
+      resetForms();
+      fetchClasses();
+    } catch (err: any) {
+      handleToastError(err);
+      setFormError(err.response?.data?.error || 'Failed to remove PDF');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
     setSubmitting(true);
     try {
-      await updateAdminClass(selectedBatch!.slug, topicSlug, selectedClass.slug, {
-        class_name: className,
-        description,
-        pdf_url: pdfUrl,
-        duration_minutes: Number(duration),
-        class_date: new Date(classDate).toISOString()
+      const formData = new FormData();
+      formData.append('class_name', className);
+      formData.append('description', description);
+      formData.append('duration_minutes', duration); // Keep as string
+      formData.append('class_date', classDate);
+      
+      // Handle PDF input
+      if (pdfFile) {
+        formData.append('pdf_file', pdfFile);
+      } else if (pdfUrl) {
+        formData.append('pdf_url', pdfUrl);
+      }
+
+      await api.patch(`/api/admin/${selectedBatch!.slug}/topics/${topicSlug}/classes/${selectedClass.slug}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
+      
       setIsEditOpen(false);
       resetForms();
       fetchClasses();
@@ -166,6 +250,8 @@ export default function AdminClassesPage() {
     setClassName('');
     setDescription('');
     setPdfUrl('');
+    setPdfFile(null);
+    setShowReplaceInputs(false);
     setDuration('');
     setClassDate(new Date().toISOString().substring(0, 10));
     setFormError('');
@@ -176,7 +262,8 @@ export default function AdminClassesPage() {
     setSelectedClass(cls);
     setClassName(cls.class_name);
     setDescription(cls.description || '');
-    setPdfUrl(cls.pdf_url || '');
+    setPdfUrl('');
+    setPdfFile(null);
     setDuration(cls.duration_minutes?.toString() || '');
     setClassDate(cls.class_date ? cls.class_date.substring(0, 10) : new Date().toISOString().substring(0, 10));
     setFormError('');
@@ -186,7 +273,7 @@ export default function AdminClassesPage() {
   const filteredClasses = classesList.filter(c => c.class_name.toLowerCase().includes(search.toLowerCase()));
 
   if (isLoadingContext) {
-    return <Skeletons />;
+    return <ClassesTableShimmer />;
   }
 
   if (!selectedBatch) {
@@ -285,21 +372,17 @@ export default function AdminClassesPage() {
               <TableRow className="bg-muted/50 hover:bg-muted/50">
                 <TableHead>Overview</TableHead>
                 <TableHead>Class Date</TableHead>
+                <TableHead className="text-center">Questions</TableHead>
                 <TableHead className="text-center">Resources</TableHead>
                 <TableHead className="text-right"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="h-48 text-center text-muted-foreground">
-                    <BruteForceLoader size="md" />
-                    Loading classes...
-                  </TableCell>
-                </TableRow>
+                <ClassesTableRowsShimmer />
               ) : filteredClasses.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-48 text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="h-48 text-center text-muted-foreground">
                     No classes mapped to this batch and topic yet.
                   </TableCell>
                 </TableRow>
@@ -330,6 +413,13 @@ export default function AdminClassesPage() {
                       <div className="flex items-center gap-2 text-foreground font-medium text-sm">
                         <CalendarDays className="w-4 h-4 text-primary" />
                         {new Date(cls.class_date).toLocaleDateString()}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="inline-flex items-center justify-center bg-primary/10 text-primary font-medium px-2.5 py-1 rounded-md text-sm">
+                          {cls.questionCount || 0}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
@@ -404,13 +494,13 @@ export default function AdminClassesPage() {
       {/* CREATE MODAL */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent
-          className="sm:max-w-[520px] rounded-3xl border border-white/10 
+          className="sm:max-w-[520px] max-h-[85vh] rounded-3xl border border-white/10 
     bg-gradient-to-br from-background via-background/95 to-background/90 
-    backdrop-blur-2xl p-0 shadow-2xl overflow-hidden"
+    backdrop-blur-2xl p-0 shadow-2xl overflow-hidden flex flex-col"
         >
 
           {/* 🔥 Header */}
-          <div className="p-6 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+          <div className="flex-shrink-0 p-6 border-b border-border/50 bg-background/80 backdrop-blur-xl">
             <DialogHeader className="space-y-1">
               <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
                 Create Class Module
@@ -423,7 +513,7 @@ export default function AdminClassesPage() {
           </div>
 
           {/* 📄 Form */}
-          <form onSubmit={handleCreateSubmit} className="p-6 space-y-5">
+          <form onSubmit={handleCreateSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
 
             {/* ❌ Error */}
             {formError && (
@@ -502,21 +592,57 @@ export default function AdminClassesPage() {
 
             </div>
 
-            {/* 📄 PDF Link */}
+            {/* 📄 PDF Input */}
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                PDF Content Link{" "}
+                PDF Content{" "}
                 <span className="text-xs text-muted-foreground">(Optional)</span>
               </label>
-              <Input
-                type="url"
-                value={pdfUrl}
-                onChange={(e) => setPdfUrl(e.target.value)}
-                placeholder="https://..."
-                disabled={submitting}
-                className="mt-1 w-full h-11 rounded-2xl bg-muted/30 border border-border/40 
-          focus:ring-2 focus:ring-primary/40"
-              />
+              
+              {/* URL Input */}
+              <div>
+                <Input
+                  type="url"
+                  value={pdfUrl}
+                  onChange={(e) => {
+                    setPdfUrl(e.target.value);
+                    setPdfFile(null); // Clear file when URL is entered
+                  }}
+                  placeholder="Enter PDF URL (Google Drive, etc.)"
+                  disabled={submitting}
+                  className="w-full h-11 rounded-2xl bg-muted/30 border border-border/40 
+                    focus:ring-2 focus:ring-primary/40"
+                />
+              </div>
+              
+              {/* OR text */}
+              <div className="text-center">
+                <span className="text-xs text-muted-foreground font-medium">OR</span>
+              </div>
+              
+              {/* File Upload Button */}
+              <div>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={handlePdfFileChange}
+                  disabled={submitting}
+                  id="pdf-file-input-create"
+                  className="hidden"
+                />
+                <label
+                  htmlFor="pdf-file-input-create"
+                  className="flex items-center justify-center w-full h-11 rounded-2xl bg-muted/30 border border-border/40 
+                    hover:bg-muted/40 cursor-pointer transition-colors"
+                >
+                  <span className="text-sm font-medium">
+                    Choose PDF File
+                  </span>
+                </label>
+              </div>
+              
+              {/* PDF Preview */}
+              {pdfFile && <PdfPreview file={pdfFile} onRemove={handlePdfRemove} />}
             </div>
 
             {/* 🔻 Footer */}
@@ -554,13 +680,13 @@ export default function AdminClassesPage() {
       {/* EDIT MODAL */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent
-          className="sm:max-w-[520px] rounded-3xl border border-white/10 
+          className="sm:max-w-[520px] max-h-[85vh] rounded-3xl border border-white/10 
     bg-gradient-to-br from-background via-background/95 to-background/90 
-    backdrop-blur-2xl p-0 shadow-2xl overflow-hidden"
+    backdrop-blur-2xl p-0 shadow-2xl overflow-hidden flex flex-col"
         >
 
           {/* 🔥 Header */}
-          <div className="p-6 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+          <div className="flex-shrink-0 p-6 border-b border-border/50 bg-background/80 backdrop-blur-xl">
             <DialogHeader className="space-y-1">
               <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
                 Update Class Details
@@ -573,7 +699,7 @@ export default function AdminClassesPage() {
           </div>
 
           {/* 📄 Form */}
-          <form onSubmit={handleEditSubmit} className="p-6 space-y-5">
+          <form onSubmit={handleEditSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
 
             {/* ❌ Error */}
             {formError && (
@@ -657,19 +783,133 @@ export default function AdminClassesPage() {
             {/* 📄 PDF */}
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                PDF Content Link{" "}
+                PDF Content{" "}
                 <span className="text-xs text-muted-foreground">(Optional)</span>
               </label>
 
-              <Input
-                type="url"
-                value={pdfUrl}
-                onChange={(e) => setPdfUrl(e.target.value)}
-                placeholder="https://..."
-                disabled={submitting}
-                className="pt-1 w-full h-11 rounded-2xl bg-muted/30 border border-border/40 
-          focus:ring-2 focus:ring-primary/40"
-              />
+              {/* Show existing PDF info without preview */}
+              {selectedClass?.pdf_url && !pdfFile && !pdfUrl && (
+                <div className="p-3 bg-muted/20 rounded-xl border border-border/40">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {isS3Pdf(selectedClass.pdf_url) ? (
+                        <div className="w-8 h-8 bg-red-500/10 rounded-lg flex items-center justify-center">
+                          <span className="text-red-500 text-xs font-bold">PDF</span>
+                        </div>
+                      ) : (
+                        <LinkIcon className="w-4 h-4 text-blue-500" />
+                      )}
+                      <div>
+                        <p className="text-sm font-medium">
+                          {isS3Pdf(selectedClass.pdf_url) ? 'Current PDF' : 'External Link'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {isS3Pdf(selectedClass.pdf_url) ? 'Stored in S3' : 'External URL'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => window.open(selectedClass.pdf_url, '_blank')}
+                        className="text-xs bg-blue-500/10 text-blue-500 px-2 py-1 rounded hover:bg-blue-500/20"
+                      >
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowReplaceInputs(true);
+                        }}
+                        className="text-xs bg-primary/10 text-primary px-2 py-1 rounded hover:bg-primary/20"
+                      >
+                        Replace
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsDeletePdfOpen(true);
+                        }}
+                        className="text-xs bg-destructive/10 text-destructive p-2 rounded hover:bg-destructive/20"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Show inputs only when Replace is clicked or no existing PDF */}
+              {(!selectedClass?.pdf_url || showReplaceInputs || pdfFile || pdfUrl) && (
+                <div className="space-y-3">
+                  {/* URL Input */}
+                  <div>
+                    <Input
+                      type="url"
+                      value={pdfUrl}
+                      onChange={(e) => {
+                        setPdfUrl(e.target.value);
+                        setPdfFile(null); // Clear file when URL is entered
+                      }}
+                      placeholder="Enter PDF URL (Google Drive, etc.)"
+                      disabled={submitting}
+                      className="w-full h-11 rounded-2xl bg-muted/30 border border-border/40 
+                        focus:ring-2 focus:ring-primary/40"
+                    />
+                  </div>
+                  
+                  {/* OR text */}
+                  <div className="text-center">
+                    <span className="text-xs text-muted-foreground font-medium">OR</span>
+                  </div>
+                  
+                  {/* File Upload Button */}
+                  <div>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handlePdfFileChange}
+                      disabled={submitting}
+                      id="pdf-file-input-edit"
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="pdf-file-input-edit"
+                      className="flex items-center justify-center w-full h-11 rounded-2xl bg-muted/30 border border-border/40 
+                        hover:bg-muted/40 cursor-pointer transition-colors"
+                    >
+                      <span className="text-sm font-medium">
+                        Choose PDF File
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              )}
+              
+              {/* New PDF Preview */}
+              {pdfFile && <PdfPreview file={pdfFile} onRemove={handlePdfRemove} />}
+              
+              {/* New URL Preview */}
+              {pdfUrl && !pdfFile && (
+                <div className="mt-3 p-3 bg-muted/20 rounded-xl border border-border/40">
+                  <div className="flex items-center gap-3">
+                    <LinkIcon className="w-4 h-4 text-blue-500" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">External Link</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {pdfUrl}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => window.open(pdfUrl, '_blank')}
+                      className="text-xs bg-blue-500/10 text-blue-500 px-2 py-1 rounded hover:bg-blue-500/20"
+                    >
+                      Open
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 🔻 Footer */}
@@ -767,6 +1007,62 @@ export default function AdminClassesPage() {
             </Button>
 
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete PDF Confirmation Modal */}
+      <Dialog open={isDeletePdfOpen} onOpenChange={setIsDeletePdfOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-foreground">
+              Remove PDF
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-destructive/10 mx-auto">
+              <Trash2 className="w-6 h-6 text-destructive" />
+            </div>
+
+            <div className="text-center space-y-2">
+              <p className="text-sm font-medium text-foreground">
+                Are you sure you want to remove this PDF?
+              </p>
+              <p className="text-xs text-muted-foreground">
+                This action will remove the PDF from the class and cannot be undone.
+              </p>
+            </div>
+
+            {/* Error */}
+            {formError && (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg">
+                {formError}
+              </div>
+            )}
+
+            {/* Footer */}
+            <DialogFooter className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsDeletePdfOpen(false)}
+                disabled={submitting}
+                className="rounded-xl px-5"
+              >
+                Cancel
+              </Button>
+
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDeletePdfSubmit}
+                disabled={submitting}
+                className="rounded-xl px-6 shadow-sm hover:shadow-md transition"
+              >
+                {submitting ? "Removing..." : "Remove PDF"}
+              </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
