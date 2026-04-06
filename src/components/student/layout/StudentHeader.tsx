@@ -218,6 +218,18 @@ export default function StudentHeader() {
           {/* Right Actions */}
           <div className="flex items-center gap-3">
 
+            {/* Desktop Recent Questions Button - Hidden on Mobile */}
+            {profile?.data && !profileLoading && (
+              <button
+                onClick={() => toggleSidebar()}
+                className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-all duration-200"
+                title="Recent Questions"
+              >
+                <Activity className="w-4 h-4" />
+                <span className="hidden xl:inline">Recent</span>
+              </button>
+            )}
+
             <ThemeToggle />
 
             {/* Check authentication and show appropriate UI */}
