@@ -10,9 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { InfiniteScrollDropdown } from "@/components/ui/InfiniteScrollDropdown";
 
 interface FilterOptions {
-  topics: any[];
+  topics?: any[];
   levels: string[];
   platforms: string[];
   types: string[];
@@ -55,25 +56,14 @@ export function PracticeFilters({
       {/* ⚙️ FILTER ROW */}
       <div className="flex flex-wrap items-center gap-3">
 
-        {/* Topic */}
-        <Select
-          value={filters.topic || "ALL"}
-          onValueChange={(val) =>
-            handleFilterChange("topic", val === "ALL" ? "" : val)
-          }
-        >
-          <SelectTrigger className="h-11 px-4 text-xs rounded-lg bg-muted/40 border-border/50">
-            <SelectValue placeholder="Topics" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Topics</SelectItem>
-            {filterOptions.topics.map((topic: any) => (
-              <SelectItem key={topic.id} value={topic.slug}>
-                {topic.topic_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Topic - New Infinite Scroll Dropdown */}
+        <InfiniteScrollDropdown
+          value={filters.topic || ""}
+          onValueChange={(val) => handleFilterChange("topic", val)}
+          placeholder="Topics"
+          searchPlaceholder="Search topics..."
+          className="min-w-[200px]"
+        />
 
         {/* Level */}
         <Select

@@ -5,6 +5,7 @@ import { Search, Plus, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/Select';
+import { InfiniteScrollDropdown } from '@/components/ui/InfiniteScrollDropdown';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 interface QuestionsFilterProps {
@@ -14,7 +15,6 @@ interface QuestionsFilterProps {
   setQLevel: (value: string) => void;
   qPlatform: string;
   setQPlatform: (value: string) => void;
-  allTopics: { label: string; value: string }[];
   setIsCreateOpen: (open: boolean) => void;
   setIsBulkUploadOpen: (open: boolean) => void;
   setPage: (page: number) => void;
@@ -27,7 +27,6 @@ export default function QuestionsFilter({
   setQLevel,
   qPlatform,
   setQPlatform,
-  allTopics,
   setIsCreateOpen,
   setIsBulkUploadOpen,
   setPage,
@@ -121,20 +120,19 @@ export default function QuestionsFilter({
             className="w-[170px] border"
           />
 
-          <Select
-            value={searchParams.get('topic') || 'all'}
-            onChange={(v) => {
+          {/* Topic - New Infinite Scroll Dropdown */}
+          <InfiniteScrollDropdown
+            value={searchParams.get('topic') || ''}
+            onValueChange={(value) => {
               const params = new URLSearchParams(searchParams.toString());
-              if (v && v !== 'all') params.set('topic', v.toString());
+              if (value && value !== '') params.set('topic', value);
               else params.delete('topic');
               params.set('page', '1');
               router.replace(`/admin/questions?${params.toString()}`);
             }}
-            options={[
-              { label: 'All Topics', value: 'all' },
-              ...allTopics
-            ]}
-            className="w-[200px] border"
+            placeholder="Topics"
+            searchPlaceholder="Search topics..."
+            className="w-[200px]"
           />
         </div>
         <div>

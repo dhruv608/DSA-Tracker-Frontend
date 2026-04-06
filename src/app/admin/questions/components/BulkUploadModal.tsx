@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/Select";
+import { InfiniteScrollDropdown } from "@/components/ui/InfiniteScrollDropdown";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { getAllTopics, bulkUploadQuestions } from '@/services/admin.service';
+import { bulkUploadQuestions } from '@/services/admin.service';
 import { handleToastError } from "@/utils/toast-system";
 
 // CSV validation interface
@@ -41,46 +42,12 @@ export default function BulkUploadModal({
   const [file, setFile] = useState<File | null>(null);
   const [selectedTopic, setSelectedTopic] = useState('');
   const [loading, setLoading] = useState(false);
-  const [topics, setTopics] = useState([]);
   const [csvData, setCsvData] = useState<CSVRow[]>([]);
   const [topicsLoading, setTopicsLoading] = useState(false);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [csvValidated, setCsvValidated] = useState(false);
 
   const [showGuide, setShowGuide] = useState(false);
-
-  // Fetch topics when modal opens
-  useEffect(() => {
-    const fetchTopics = async () => {
-      if (!open) return;
-      
-      console.log('Fetching topics...');
-      setTopicsLoading(true);
-      
-      try {
-        console.log('Calling getAllTopics API...');
-        const topicsData = await getAllTopics();
-        console.log('Topics received:', topicsData);
-        
-        // Format topics for Select component
-        const formattedTopics = topicsData.map((topic: any) => ({
-          label: topic.topic_name,
-          value: topic.id.toString()
-        }));
-        
-        console.log('Formatted topics for dropdown:', formattedTopics);
-        setTopics(formattedTopics);
-        
-      } catch (error: any) {
-        handleToastError(error);
-        
-      } finally {
-        setTopicsLoading(false);
-      }
-    };
-
-    fetchTopics();
-  }, [open]);
 
   // CSV parsing and validation function
   const parseAndValidateCSV = useCallback((file: File): Promise<ValidationResult> => {
@@ -296,14 +263,12 @@ export default function BulkUploadModal({
                 Select Topic <span className="text-red-500">*</span>
               </Label>
 
-              <Select
+              <InfiniteScrollDropdown
                 value={selectedTopic}
-                onChange={(value) => setSelectedTopic(String(value))}
-                options={[
-                  { label: 'Choose a topic...', value: '' },
-                  ...topics
-                ]}
-                className="h-12"
+                onValueChange={(value) => setSelectedTopic(String(value))}
+                placeholder="Select topic"
+                searchPlaceholder="Search topics..."
+                className="h-11"
               />
             </div>
 

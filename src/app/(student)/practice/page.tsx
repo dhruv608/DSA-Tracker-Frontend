@@ -1,20 +1,8 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { studentPracticeService, PracticeFilters } from '@/services/student/practice.service';
-import { QuestionRow } from '@/components/student/questions/QuestionRow';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-
-
 import { Pagination } from '@/components/Pagination';
 import { PracticeResults } from '@/components/student/practice/PracticeResults';
 import { PracticeFilters as PracticeFiltersComponent } from '@/components/student/practice/PracticeFilters';
@@ -43,12 +31,10 @@ export default function PracticePage() {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filterOptions, setFilterOptions] = useState<{
-    topics: any[];
     levels: string[];
     platforms: string[];
     types: string[];
   }>({
-    topics: [],
     levels: [],
     platforms: [],
     types: []
@@ -77,7 +63,6 @@ export default function PracticePage() {
       // Set filter options from API response
       if (data.filters) {
         setFilterOptions({
-          topics: data.filters.topics || [],
           levels: data.filters.levels || [],
           platforms: data.filters.platforms || [],
           types: data.filters.types || []

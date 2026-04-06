@@ -16,7 +16,7 @@ export const studentPracticeService = {
   getQuestions: async (filters: PracticeFilters = {}) => {
     const params = new URLSearchParams();
     if (filters.search) params.append('search', filters.search);
-    if (filters.topic) params.append('topic', filters.topic);
+    // Removed topic filter - now handled separately via InfiniteScrollDropdown
     if (filters.level) params.append('level', filters.level);
     if (filters.platform) params.append('platform', filters.platform);
     if (filters.type) params.append('type', filters.type);

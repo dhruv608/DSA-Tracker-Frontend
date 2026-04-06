@@ -148,7 +148,6 @@ export default function AdminQuestionsBankPage() {
         setQLevel={setQLevel}
         qPlatform={qPlatform}
         setQPlatform={setQPlatform}
-        allTopics={allTopics}
         setIsCreateOpen={setIsCreateOpen}
         setIsBulkUploadOpen={setIsBulkUploadOpen}
         setPage={setPage}

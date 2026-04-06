@@ -13,8 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/Select";
+import { InfiniteScrollDropdown } from "@/components/ui/InfiniteScrollDropdown";
 import { AlertTriangle, Plus, Save } from "lucide-react";
-import { createAdminQuestion, getAllTopics } from "@/services/admin.service";
+import { createAdminQuestion } from "@/services/admin.service";
 import { CreateQuestionData } from "@/types/admin/question";
 import { handleToastError } from "@/utils/toast-system";
 
@@ -31,7 +32,6 @@ export default function CreateQuestion({
 }: CreateQuestionProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [topics, setTopics] = useState<{ label: string; value: string }[]>([]);
 
   const [formData, setFormData] = useState({
     question_name: "",
@@ -40,10 +40,6 @@ export default function CreateQuestion({
     level: "MEDIUM" as "EASY" | "MEDIUM" | "HARD",
     type: "HOMEWORK" as "HOMEWORK" | "CLASSWORK",
   });
-
-  useEffect(() => {
-    if (open) loadTopics();
-  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -57,25 +53,6 @@ export default function CreateQuestion({
       setError("");
     }
   }, [open]);
-
-  const loadTopics = async () => {
-    try {
-      const topicsData = await getAllTopics();
-      const formatted = topicsData.map((t: any) => ({
-        label: t.topic_name,
-        value: t.id.toString(),
-      }));
-
-      setTopics(formatted);
-
-      if (formatted.length > 0 && !formData.topic_id) {
-        setFormData((prev) => ({ ...prev, topic_id: formatted[0].value }));
-      }
-    } catch (err) {
-      handleToastError(err);
-      console.error(err);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -193,14 +170,11 @@ export default function CreateQuestion({
                 <Label className="text-xs text-muted-foreground">
                   Topic
                 </Label>
-                <Select
+                <InfiniteScrollDropdown
                   value={formData.topic_id}
-                  onChange={(val: string | number) =>
-                    handleChange("topic_id", val.toString())
-                  }
-                  options={topics}
+                  onValueChange={(value) => handleChange("topic_id", value)}
                   placeholder="Select topic"
-                  disabled={loading}
+                  searchPlaceholder="Search topics..."
                   className="h-11"
                 />
               </div>
