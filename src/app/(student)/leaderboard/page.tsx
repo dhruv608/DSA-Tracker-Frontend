@@ -158,14 +158,12 @@ export default function StudentLeaderboardPage() {
           setLYear={setLYear}
           lYear={lYear}
           yearOptionsObj={[
-            { value: '2024', label: '2024' },
-            { value: '2023', label: '2023' },
-            ...(isLoading ? [] : yearOptions.filter((y: number) => y !== 2024 && y !== 2023).map((y: number) => ({
+            ...(isLoading ? [] : yearOptions.map((y: number) => ({
               value: y.toString(),
               label: y.toString()
             })))
           ]}
-          allYears={[2024, 2023, ...(isLoading ? [] : yearOptions.filter((y: number) => y !== 2024 && y !== 2023))]}
+          allYears={isLoading ? [] : yearOptions}
           isLoading={combinedLoading}
           mode="student"
         />

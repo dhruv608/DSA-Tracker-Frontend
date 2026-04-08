@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,12 @@ export function RecentQuestionsSidebar() {
   const { isOpen, setIsOpen, selectedDate, setSelectedDate } = useRecentQuestions();
   const [questions, setQuestions] = useState<RecentQuestion[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [pagination, setPagination] = useState<any>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Get date strings for today, yesterday, and ereyesterday
   const getDateStrings = () => {
@@ -59,16 +64,37 @@ export function RecentQuestionsSidebar() {
 
   const dateStrings = getDateStrings();
 
-  // Fetch
-  const fetchRecentQuestions = async (date?: string) => {
-    setLoading(true);
+  // Fetch initial questions (page 1)
+  const fetchRecentQuestions = async (date?: string, reset = true) => {
+    if (reset) {
+      setLoading(true);
+      setPage(1);
+    } else {
+      setLoadingMore(true);
+    }
     setError(null);
+
     try {
       const queryDate = date || selectedDate;
+      const currentPage = reset ? 1 : page;
       const response = await api.get(
-        `/api/students/recent-questions?date=${queryDate}`
+        `/api/students/recent-questions?date=${queryDate}&page=${currentPage}&limit=12`
       );
-      setQuestions(response.data.questions);
+
+      const { questions: newQuestions, pagination: pag } = response.data;
+      setPagination(pag);
+
+      if (reset) {
+        setQuestions(newQuestions);
+      } else {
+        setQuestions(prev => [...prev, ...newQuestions]);
+      }
+
+      setHasMore(pag?.hasNext || false);
+
+      if (!reset) {
+        setPage(prev => prev + 1);
+      }
     } catch (err: any) {
       handleToastError(err);
       setError(
@@ -77,13 +103,31 @@ export function RecentQuestionsSidebar() {
       );
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  // Load more on scroll
+  const loadMore = () => {
+    if (!loadingMore && hasMore && !loading) {
+      fetchRecentQuestions(selectedDate, false);
+    }
+  };
+
+  // Handle scroll event
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    // Load more when user scrolls to bottom (with 100px threshold)
+    if (scrollHeight - scrollTop - clientHeight < 100) {
+      loadMore();
     }
   };
 
   // Fetch only when sidebar opens or date changes
   useEffect(() => {
     if (isOpen) {
-      fetchRecentQuestions();
+      setPage(1);
+      fetchRecentQuestions(selectedDate, true);
     }
   }, [isOpen, selectedDate]);
 
@@ -204,7 +248,11 @@ export function RecentQuestionsSidebar() {
 
               {/* Content */}
               <CardContent className="p-0">
-                <ScrollArea className="h-[calc(100vh-140px)] px-4 py-4">
+                <ScrollArea
+                  ref={scrollRef}
+                  className="h-[calc(100vh-140px)] px-4 py-4"
+                  onScroll={handleScroll}
+                >
 
                   {loading ? (
                     <div className="space-y-4">
@@ -311,6 +359,20 @@ export function RecentQuestionsSidebar() {
                         </Card>
                       ))}
 
+                    </div>
+                  )}
+
+                  {/* Load more indicator */}
+                  {loadingMore && (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  )}
+
+                  {/* End of list message */}
+                  {!hasMore && questions.length > 0 && (
+                    <div className="text-center py-4 text-muted-foreground text-sm">
+                      No more questions
                     </div>
                   )}
 

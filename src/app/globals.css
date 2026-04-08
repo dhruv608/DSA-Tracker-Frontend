@@ -37,6 +37,15 @@
   --chart-4: #EF4444;
   --chart-5: #22C55E;
 
+  /* Platform Colors */
+  --leetcode: #FFA116;
+  --gfg: #2F8D46;
+
+  /* Difficulty Colors */
+  --easy: #a3e635;
+  --medium: #f59e0b;
+  --hard: #ef4444;
+
   --sidebar: #0F1117;
   --sidebar-foreground: #E2E8F0;
   --sidebar-primary: #CCFF00;
@@ -284,6 +293,16 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  /* Platform Colors */
+  --color-leetcode: var(--leetcode);
+  --color-gfg: var(--gfg);
+
+  /* Difficulty Colors */
+  --color-easy: var(--easy);
+  --color-medium: var(--medium);
+  --color-hard: var(--hard);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);

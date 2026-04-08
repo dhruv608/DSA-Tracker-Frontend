@@ -58,7 +58,7 @@ export function LeaderboardTable({
                     </div>
                   </TableCell>
                 </TableRow>
-              ) : (
+              ) : ( 
                 leaderboard.map((entry: any) => (
                   <LeaderboardTableRow key={entry.student_id || entry.username} entry={entry}  selectedCity={selectedCity} />
                 ))

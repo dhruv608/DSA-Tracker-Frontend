@@ -48,8 +48,8 @@ return (
           <SelectContent>
             <SelectItem value="recent">Recent</SelectItem>
             <SelectItem value="oldest">Oldest</SelectItem>
-            <SelectItem value="strongest">Strongest</SelectItem>
-            <SelectItem value="weakest">Weakest</SelectItem>
+            <SelectItem value="strongest">Most Solved</SelectItem>
+            <SelectItem value="weakest">Less Solved</SelectItem>
           </SelectContent>
         </Select>
       </div>
