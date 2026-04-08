@@ -23,7 +23,7 @@ interface CSVRow {
   question_name: string;
   question_link: string;
   level: 'EASY' | 'MEDIUM' | 'HARD';
-  type: 'HOMEWORK' | 'CLASSWORK';
+  // type removed - set during assignment to class
 }
 
 interface ValidationResult {
@@ -70,10 +70,10 @@ export default function BulkUploadModal({
           }
           
           const header = lines[0].toLowerCase().replace(/\s/g, '');
-          const expectedHeader = 'question_name,question_link,level,type';
+          const expectedHeader = 'question_name,question_link,level';
           
           if (header !== expectedHeader) {
-            errors.push(`Invalid header. Expected: "question_name,question_link,level,type"`);
+            errors.push(`Invalid header. Expected: "question_name,question_link,level"`);
           }
           
           // Parse data rows
@@ -85,12 +85,12 @@ export default function BulkUploadModal({
             const result = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g) || [];
             const cleanColumns = result.map(col => col.replace(/^"|"$/g, '').trim());
             
-            if (cleanColumns.length !== 4) {
-              errors.push(`Row ${i + 1}: Invalid format. Expected 4 columns, got ${cleanColumns.length}`);
+            if (cleanColumns.length !== 3) {
+              errors.push(`Row ${i + 1}: Invalid format. Expected 3 columns, got ${cleanColumns.length}`);
               continue;
             }
             
-            const [question_name, question_link, level, type] = cleanColumns;
+            const [question_name, question_link, level] = cleanColumns;
             
             // Validate required fields
             if (!question_name) {
@@ -115,17 +115,10 @@ export default function BulkUploadModal({
               continue;
             }
             
-            // Validate type
-            if (!['HOMEWORK', 'CLASSWORK'].includes(type.toUpperCase())) {
-              errors.push(`Row ${i + 1}: Invalid type "${type}". Must be HOMEWORK or CLASSWORK`);
-              continue;
-            }
-            
             validRows.push({
               question_name,
               question_link,
-              level: level.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD',
-              type: type.toUpperCase() as 'HOMEWORK' | 'CLASSWORK'
+              level: level.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD'
             });
           }
           
@@ -233,13 +226,13 @@ export default function BulkUploadModal({
   // Download sample CSV function
   const downloadSampleCSV = useCallback(() => {
     const sampleData = [
-      'question_name,question_link,level,type',
-      '"Two Sum","https://leetcode.com/problems/two-sum/","EASY","HOMEWORK"',
-      '"Binary Search","https://leetcode.com/problems/binary-search/","EASY","CLASSWORK"',
-      '"Merge Sort","https://leetcode.com/problems/sort-an-array/","MEDIUM","HOMEWORK"',
-      '"Dynamic Programming - Fibonacci","https://leetcode.com/problems/fibonacci-number/","MEDIUM","CLASSWORK"',
-      '"Graph Traversal - BFS","https://leetcode.com/problems/binary-tree-level-order-traversal/","MEDIUM","HOMEWORK"',
-      '"Backtracking - N-Queens","https://leetcode.com/problems/n-queens/","HARD","CLASSWORK"'
+      'question_name,question_link,level',
+      '"Two Sum","https://leetcode.com/problems/two-sum/","EASY"',
+      '"Binary Search","https://leetcode.com/problems/binary-search/","EASY"',
+      '"Merge Sort","https://leetcode.com/problems/sort-an-array/","MEDIUM"',
+      '"Dynamic Programming - Fibonacci","https://leetcode.com/problems/fibonacci-number/","MEDIUM"',
+      '"Graph Traversal - BFS","https://leetcode.com/problems/binary-tree-level-order-traversal/","MEDIUM"',
+      '"Backtracking - N-Queens","https://leetcode.com/problems/n-queens/","HARD"'
     ];
     
     const csvContent = sampleData.join('\n');
@@ -448,23 +441,14 @@ export default function BulkUploadModal({
               </p>
 
               <div className="bg-background rounded-lg p-4 text-sm font-mono overflow-x-auto">
-                question_name, question_link, level, type
+                question_name, question_link, level
               </div>
             </div>
 
             {/* RULES */}
-            <div className="grid grid-cols-2 gap-4">
-
-              <div className="rounded-xl p-4 bg-muted/30 space-y-1">
-                <p className="text-xs text-muted-foreground">Level</p>
-                <p className="text-sm font-semibold">EASY / MEDIUM / HARD</p>
-              </div>
-
-              <div className="rounded-xl p-4 bg-muted/30 space-y-1">
-                <p className="text-xs text-muted-foreground">Type</p>
-                <p className="text-sm font-semibold">HOMEWORK / CLASSWORK</p>
-              </div>
-
+            <div className="rounded-xl p-4 bg-muted/30 space-y-1">
+              <p className="text-xs text-muted-foreground">Level</p>
+              <p className="text-sm font-semibold">EASY / MEDIUM / HARD</p>
             </div>
 
             {/* EXAMPLE */}
@@ -474,7 +458,7 @@ export default function BulkUploadModal({
               </p>
 
               <div className="bg-background rounded-lg p-4 text-sm font-mono overflow-x-auto">
-                "Two Sum", "https://leetcode.com/problems/two-sum/", "EASY", "HOMEWORK"
+                "Two Sum", "https://leetcode.com/problems/two-sum/", "EASY"
               </div>
             </div>
 

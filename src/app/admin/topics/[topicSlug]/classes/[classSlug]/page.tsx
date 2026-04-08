@@ -9,7 +9,8 @@ import {
    getAdminClassQuestions,
    assignQuestionsToClass,
    removeQuestionFromClass,
-   getAdminQuestions
+   getAdminQuestions,
+   updateQuestionVisibilityType
 } from '@/services/admin.service';
 import {
    Plus,
@@ -22,7 +23,10 @@ import {
    FolderEdit,
    CheckCircle2,
    Circle,
-   AlertTriangle
+   AlertTriangle,
+   Pencil,
+   GraduationCap,
+   Home
 } from 'lucide-react';
 import { LeetCodeIcon, GeeksforGeeksIcon } from '@/components/platform/PlatformIcons';
 import { Button } from '@/components/ui/button';
@@ -93,7 +97,13 @@ export default function AdminClassDetailsPage() {
    const [bankPlatform, setBankPlatform] = useState('all');
    const [bankPage, setBankPage] = useState(1);
    const [bankTotalPages, setBankTotalPages] = useState(1);
-   const [selectedQuestionIds, setSelectedQuestionIds] = useState<number[]>([]);
+   // New format: each question has id and type (HOMEWORK/CLASSWORK)
+   const [selectedQuestions, setSelectedQuestions] = useState<Array<{ id: number; type: 'HOMEWORK' | 'CLASSWORK' }>>([]);
+
+   // Edit Type Modal States
+   const [isEditTypeOpen, setIsEditTypeOpen] = useState(false);
+   const [editingQuestion, setEditingQuestion] = useState<any>(null);
+   const [editType, setEditType] = useState<'HOMEWORK' | 'CLASSWORK'>('HOMEWORK');
 
    // Delete Modal States
    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -164,21 +174,32 @@ export default function AdminClassDetailsPage() {
    }, [isAssignOpen, bankPage, bankSearch, bankLevel, bankPlatform]);
 
    const toggleSelection = (id: number) => {
-      setSelectedQuestionIds(prev =>
-         prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+      setSelectedQuestions(prev => {
+         const exists = prev.find(q => q.id === id);
+         if (exists) {
+            return prev.filter(q => q.id !== id);
+         }
+         // Default type is HOMEWORK when selecting
+         return [...prev, { id, type: 'HOMEWORK' as const }];
+      });
+   };
+
+   const updateSelectedType = (id: number, type: 'HOMEWORK' | 'CLASSWORK') => {
+      setSelectedQuestions(prev =>
+         prev.map(q => q.id === id ? { ...q, type } : q)
       );
    };
 
    const handleAssignSubmit = async () => {
-      if (selectedQuestionIds.length === 0) return;
+      if (selectedQuestions.length === 0) return;
       setErrorMsg('');
       setSubmitting(true);
       try {
          await assignQuestionsToClass(selectedBatch!.slug, topicSlug, classSlug, {
-            question_ids: selectedQuestionIds
+            questions: selectedQuestions.map(q => ({ question_id: q.id, type: q.type }))
          });
          setIsAssignOpen(false);
-         setSelectedQuestionIds([]);
+         setSelectedQuestions([]);
          fetchAssigned();
       } catch (err: any) {
          handleToastError(err);
@@ -218,6 +239,36 @@ export default function AdminClassDetailsPage() {
       }
    };
 
+   // Open edit type modal
+   const handleOpenEditType = (question: any) => {
+      setEditingQuestion(question);
+      setEditType(question.type || 'HOMEWORK');
+      setIsEditTypeOpen(true);
+   };
+
+   // Submit edit type
+   const handleEditTypeSubmit = async () => {
+      if (!editingQuestion) return;
+      setSubmitting(true);
+      try {
+         await updateQuestionVisibilityType(
+            selectedBatch!.slug,
+            topicSlug,
+            classSlug,
+            editingQuestion.visibility_id || editingQuestion.id,
+            editType
+         );
+         setIsEditTypeOpen(false);
+         setEditingQuestion(null);
+         fetchAssigned();
+      } catch (err: any) {
+         handleToastError(err);
+         alert(err.response?.data?.error || "Failed to update question type");
+      } finally {
+         setSubmitting(false);
+      }
+   };
+
 
    if (isLoadingContext) {
       return <Skeletons />;
@@ -251,7 +302,7 @@ export default function AdminClassDetailsPage() {
                   {selectedBatch.name} / {topicSlug} / {classSlug}
                </p>
             </div>
-            <Button onClick={() => { setIsAssignOpen(true); setSelectedQuestionIds([]); setErrorMsg(''); }} className="gap-2">
+            <Button onClick={() => { setIsAssignOpen(true); setSelectedQuestions([]); setErrorMsg(''); }} className="gap-2">
                <Plus className="w-4 h-4" /> Assign Questions
             </Button>
          </div>
@@ -356,11 +407,18 @@ export default function AdminClassDetailsPage() {
                                  <BadgeByLevel level={q.level} />
                               </TableCell>
 
-                              {/* TYPE */}
+                              {/* TYPE - from visibility */}
                               <TableCell>
-                                 <span className="text-xs  text-muted-foreground capitalize">
-                                    {q.type?.toLowerCase() || 'Homework'}
-                                 </span>
+                                 <button
+                                    onClick={() => handleOpenEditType(qObj)}
+                                    className={`text-xs px-2 py-1 rounded-full font-medium transition-colors hover:opacity-80 ${
+                                       qObj.type === 'CLASSWORK'
+                                          ? 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
+                                          : 'bg-orange-500/10 text-orange-600 hover:bg-orange-500/20'
+                                    }`}
+                                 >
+                                    {qObj.type === 'CLASSWORK' ? 'Classwork' : 'Homework'}
+                                 </button>
                               </TableCell>
 
                               {/* DATE */}
@@ -378,14 +436,28 @@ export default function AdminClassDetailsPage() {
 
                               {/* ACTION */}
                               <TableCell className="text-right rounded-r-xl">
-                                 <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => handleRemoveQuestion(q.id)}
-                                    className="  h-8 w-8 rounded-full text-muted-foreground  hover:text-destructive hover:bg-destructive/10   transition-all        "
-                                 >
-                                    <Trash2 className="w-4 h-4" />
-                                 </Button>
+                                 <div className="flex items-center justify-end gap-1">
+                                    {/* EDIT TYPE BUTTON */}
+                                    <Button
+                                       variant="ghost"
+                                       size="icon"
+                                       onClick={() => handleOpenEditType(qObj)}
+                                       className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                                       title="Edit Type"
+                                    >
+                                       <Pencil className="w-4 h-4" />
+                                    </Button>
+                                    
+                                    {/* DELETE BUTTON */}
+                                    <Button
+                                       variant="ghost"
+                                       size="icon"
+                                       onClick={() => handleRemoveQuestion(q.id)}
+                                       className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                                    >
+                                       <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                 </div>
                               </TableCell>
 
                            </TableRow>
@@ -412,199 +484,276 @@ export default function AdminClassDetailsPage() {
          />
 
          {/* ASSIGN QUESTIONS MODAL */}
-   <Dialog open={isAssignOpen} onOpenChange={setIsAssignOpen}>
-      <DialogContent className="max-w-150! max-h-[90vh] overflow-auto no-scrollbar flex flex-col p-0 rounded-2xl border border-border bg-background/95 backdrop-blur-xl">
+         <Dialog open={isAssignOpen} onOpenChange={setIsAssignOpen}>
+            <DialogContent className="max-w-150! max-h-[90vh] overflow-auto no-scrollbar flex flex-col p-0 rounded-2xl border border-border bg-background/95 backdrop-blur-xl">
 
-         {/* Header */}
-         <div className="p-6 border-border shrink-0 space-y-4">
-            <DialogHeader className="space-y-1">
-               <DialogTitle className="text-xl font-semibold">
-                  Assign Questions
-               </DialogTitle>
-               <DialogDescription className="text-sm text-muted-foreground">
-                  Search the Global Question Bank to append assignments to this class block.
-               </DialogDescription>
-            </DialogHeader>
+               {/* Header */}
+               <div className="p-6 border-border shrink-0 space-y-4">
+                  <DialogHeader className="space-y-1">
+                     <DialogTitle className="text-xl font-semibold">
+                        Assign Questions
+                     </DialogTitle>
+                     <DialogDescription className="text-sm text-muted-foreground">
+                        Search the Global Question Bank to append assignments to this class block.
+                     </DialogDescription>
+                  </DialogHeader>
 
-            {errorMsg && (
-               <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg">
-                  {errorMsg}
-               </div>
-            )}
+                  {errorMsg && (
+                     <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg">
+                        {errorMsg}
+                     </div>
+                  )}
 
-            {/* Search */}
-            <div className="relative">
-               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
-               <Input
-                  placeholder="Search questions by name..."
-                  value={bankSearch}
-                  onChange={(e) => setBankSearch(e.target.value)}
-                  className="!pl-12 w-full h-12 rounded-xl text-base focus-visible:ring-2 focus-visible:ring-primary/40 transition"
-               />
-            </div>
-
-            {/* Filters */}
-            <div className="flex gap-3">
-               <Select value={bankLevel} onValueChange={(v) => setBankLevel(v)}>
-                  <SelectTrigger className="h-10 rounded-xl w-[160px]">
-                     <SelectValue placeholder="Difficulty" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                     <SelectItem value="all">All Levels</SelectItem>
-                     <SelectItem value="EASY">Easy</SelectItem>
-                     <SelectItem value="MEDIUM">Medium</SelectItem>
-                     <SelectItem value="HARD">Hard</SelectItem>
-                  </SelectContent>
-               </Select>
-
-               <Select value={bankPlatform} onValueChange={(v) => setBankPlatform(v)}>
-                  <SelectTrigger className="h-10 rounded-2xl ">
-                     <SelectValue placeholder="Platform" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl w-full">
-                     <SelectItem value="all">All Platforms</SelectItem>
-                     <SelectItem value="LEETCODE" className="flex items-center gap-2">
-                        LeetCode
-                     </SelectItem>
-                     <SelectItem value="GFG" className="flex items-center gap-2">
-                        GeeksForGeeks
-                     </SelectItem>
-                     <SelectItem value="OTHER">Other</SelectItem>
-                  </SelectContent>
-               </Select>
-            </div>
-
-            {/* Info */}
-            <div className="p-3 bg-primary/5 border border-primary/20 rounded-2xl">
-               <p className="text-sm text-primary font-medium flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  Showing questions only for this topic
-               </p>
-            </div>
-         </div>
-
-         {/* List */}
-         <div className="flex-1 overflow-y-auto no-scrollbar min-h-[320px]">
-            <div className="grid gap-3 p-4">
-
-               {bankLoading ? (
-                  <div className="flex items-center justify-center h-32">
-                     {/* <BruteForceLoader size="sm" /> */}
-                     <span className="ml-2 text-sm text-muted-foreground">
-                        Loading questions...
-                     </span>
+                  {/* Search */}
+                  <div className="relative">
+                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                     <Input
+                        placeholder="Search questions by name..."
+                        value={bankSearch}
+                        onChange={(e) => setBankSearch(e.target.value)}
+                        className="!pl-12 w-full h-12 rounded-xl text-base focus-visible:ring-2 focus-visible:ring-primary/40 transition"
+                     />
                   </div>
-               ) : bankQuestions.length === 0 ? (
-                  <div className="flex items-center justify-center h-32">
-                     <p className="text-muted-foreground">
-                        No questions found matching your criteria.
+
+                  {/* Filters */}
+                  <div className="flex gap-3">
+                     <Select value={bankLevel} onValueChange={(v) => setBankLevel(v)}>
+                        <SelectTrigger className="h-10 rounded-xl w-[160px]">
+                           <SelectValue placeholder="Difficulty" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl">
+                           <SelectItem value="all">All Levels</SelectItem>
+                           <SelectItem value="EASY">Easy</SelectItem>
+                           <SelectItem value="MEDIUM">Medium</SelectItem>
+                           <SelectItem value="HARD">Hard</SelectItem>
+                        </SelectContent>
+                     </Select>
+
+                     <Select value={bankPlatform} onValueChange={(v) => setBankPlatform(v)}>
+                        <SelectTrigger className="h-10 rounded-2xl ">
+                           <SelectValue placeholder="Platform" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl w-full">
+                           <SelectItem value="all">All Platforms</SelectItem>
+                           <SelectItem value="LEETCODE" className="flex items-center gap-2">
+                              LeetCode
+                           </SelectItem>
+                           <SelectItem value="GFG" className="flex items-center gap-2">
+                              GeeksForGeeks
+                           </SelectItem>
+                           <SelectItem value="OTHER">Other</SelectItem>
+                        </SelectContent>
+                     </Select>
+                  </div>
+
+                  {/* Info */}
+                  <div className="p-3 bg-primary/5 border border-primary/20 rounded-2xl">
+                     <p className="text-sm text-primary font-medium flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4" />
+                        Showing questions only for this topic
                      </p>
                   </div>
-               ) : (
-                  bankQuestions.map((q) => {
-                     const isAssigned = assignedQuestions.some(
-                        (aq) => (aq.question?.id || aq.id) === q.id
-                     );
-                     const isSelected = selectedQuestionIds.includes(q.id);
+               </div>
 
-            return (
-               <div
-                  key={q.id}
-                  className={`relative p-5 rounded-2xl border transition-all cursor-pointer ${isSelected
-                        ? "bg-primary/10 border-primary/30"
-                        : isAssigned
-                           ? "bg-muted/50 border-border/50 opacity-60 cursor-not-allowed"
-                           : "bg-card border-border hover:border-primary/40 hover:bg-muted/40"
-                     }`}
-                  onClick={() => !isAssigned && toggleSelection(q.id)}
-               >
-                  {/* ✅ Checkbox TOP RIGHT */}
-                  <div className="absolute top-4 right-4">
-                     {!isAssigned ? (
-                        isSelected ? (
-                           <CheckCircle2 className="w-5 h-5 text-primary" />
-                        ) : (
-                           <Circle className="w-5 h-5 text-muted-foreground/30" />
-                        )
+               {/* List */}
+               <div className="flex-1 overflow-y-auto no-scrollbar min-h-[320px]">
+                  <div className="grid gap-3 p-4">
+
+                     {bankLoading ? (
+                        <div className="flex items-center justify-center h-32">
+                           {/* <BruteForceLoader size="sm" /> */}
+                           <span className="ml-2 text-sm text-muted-foreground">
+                              Loading questions...
+                           </span>
+                        </div>
+                     ) : bankQuestions.length === 0 ? (
+                        <div className="flex items-center justify-center h-32">
+                           <p className="text-muted-foreground">
+                              No questions found matching your criteria.
+                           </p>
+                        </div>
                      ) : (
-                        <span className="text-[10px] bg-muted px-2 py-1 rounded">
-                           Assigned
-                        </span>
+                        bankQuestions.map((q) => {
+                           const isAssigned = assignedQuestions.some(
+                              (aq) => (aq.question?.id || aq.id) === q.id
+                           );
+                           const selectedQ = selectedQuestions.find(sq => sq.id === q.id);
+                           const isSelected = !!selectedQ;
+
+                           return (
+                              <div
+                                 key={q.id}
+                                 className={`relative p-5 rounded-2xl border transition-all cursor-pointer ${isSelected
+                                    ? "bg-primary/10 border-primary/30"
+                                    : isAssigned
+                                       ? "bg-muted/50 border-border/50 opacity-60 cursor-not-allowed"
+                                       : "bg-card border-border hover:border-primary/40 hover:bg-muted/40"
+                                    }`}
+                                 onClick={() => !isAssigned && toggleSelection(q.id)}
+                              >
+                                 {/* ✅ Checkbox TOP RIGHT */}
+                                 <div className="absolute top-4 right-4">
+                                    {!isAssigned ? (
+                                       isSelected ? (
+                                          <CheckCircle2 className="w-5 h-5 text-primary" />
+                                       ) : (
+                                          <Circle className="w-5 h-5 text-muted-foreground/30" />
+                                       )
+                                    ) : (
+                                       <span className="text-[10px] bg-muted px-2 py-1 rounded">
+                                          Assigned
+                                       </span>
+                                    )}
+                                 </div>
+
+                                 {/* CONTENT */}
+                                 <div className="flex flex-col gap-3 pr-8">
+
+                                    {/* TYPE TOGGLE - Show only when selected */}
+                                    {isSelected && !isAssigned && (
+                                       <div className="flex items-center gap-2 mb-2">
+                                          <span className="text-xs text-muted-foreground">Type:</span>
+                                          <div className="flex rounded-lg border border-border overflow-hidden">
+                                             <button
+                                                onClick={(e) => {
+                                                   e.stopPropagation();
+                                                   updateSelectedType(q.id, 'HOMEWORK');
+                                                }}
+                                                className={`px-3 py-1 text-xs font-medium transition-colors flex items-center gap-1 ${selectedQ?.type === 'HOMEWORK'
+                                                   ? 'bg-primary text-primary-foreground'
+                                                   : 'bg-muted hover:bg-muted/80'
+                                                   }`}
+                                             >
+                                                <Home className="w-3 h-3" />
+                                                Homework
+                                             </button>
+                                             <button
+                                                onClick={(e) => {
+                                                   e.stopPropagation();
+                                                   updateSelectedType(q.id, 'CLASSWORK');
+                                                }}
+                                                className={`px-3 py-1 text-xs font-medium transition-colors flex items-center gap-1 ${selectedQ?.type === 'CLASSWORK'
+                                                   ? 'bg-primary text-primary-foreground'
+                                                   : 'bg-muted hover:bg-muted/80'
+                                                   }`}
+                                             >
+                                                <GraduationCap className="w-3 h-3" />
+                                                Classwork
+                                             </button>
+                                          </div>
+                                       </div>
+                                    )}
+
+                                    {/* ALIGNMENT NAME AT TOP */}
+                                    <div
+                                       className="flex items-center gap-2 font-semibold text-base hover:text-primary transition cursor-pointer"
+                                       onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (q.question_link) {
+                                             window.open(q.question_link, "_blank", "noopener,noreferrer");
+                                          }
+                                       }}
+                                    >
+                                       <span className="line-clamp-2">{q.question_name}</span>
+                                       <ExternalLink className="w-4 h-4 opacity-60 group-hover:opacity-100 shrink-0" />
+                                    </div>
+
+                                    {/* LEVEL & PLATFORM BADGES */}
+                                    <div className="flex flex-wrap items-center gap-2">
+                                       <BadgeByLevel level={q.level} />
+                                       <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">
+                                          {q.platform === "LEETCODE" ? "LeetCode" :
+                                             q.platform === "GFG" ? "GeeksForGeeks" :
+                                                q.platform || "Other"}
+                                       </span>
+                                    </div>
+                                 </div>
+                              </div>
+                           );
+                        })
                      )}
                   </div>
+               </div>
 
-                  {/* CONTENT */}
-                  <div className="flex flex-col gap-3 pr-8">
+               {/* Footer */}
+               <div className="p-4 border-t border-border flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                     {selectedQuestions.length} Selected
+                  </span>
 
-                     {/* ALIGNMENT NAME AT TOP */}
-                     <div
-                        className="flex items-center gap-2 font-semibold text-base  hover:text-primary transition"
-                        onClick={(e) => {
-                           e.stopPropagation();
-                           if (q.question_link) {
-                              window.open(q.question_link, "_blank", "noopener,noreferrer");
-                           }
-                        }}
+                  <div className="flex gap-3">
+                     <Button
+                        variant="outline"
+                        className="rounded-xl px-5"
+                        onClick={() => setIsAssignOpen(false)}
+                        disabled={submitting}
                      >
-                        <span className="line-clamp-2">{q.question_name}</span>
-                        <ExternalLink className="w-4 h-4 opacity-60 group-hover:opacity-100" />
-                     </div>
-
-                     {/* ALL BADGES ON NEXT LINE */}
-                     <div className="flex flex-wrap items-center gap-2">
-                        <AssignBadgeByLevel level={q.level} />
-
-                        <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">
-                           {q.type?.toLowerCase() === "classwork"
-                              ? "Classwork"
-                              : "Homework"}
-                        </span>
-
-                        <span className="text-xs px-2 py-1 rounded bg-blue-500/10 text-white flex items-center gap-1.5">
-                           {q.platform === "LEETCODE"
-                              ? <><LeetCodeIcon className="w-3 h-3 text-leetcode" /> LeetCode</>
-                              : q.platform === "GFG"
-                                 ? <><GeeksforGeeksIcon className="w-3 h-3 text-gfg" /> GeeksForGeeks</>
-                                 : q.platform || "Other"}
-                        </span>
-                     </div>
+                        Cancel
+                     </Button>
+                     <Button
+                        onClick={handleAssignSubmit}
+                        disabled={selectedQuestions.length === 0 || submitting}
+                        className="rounded-xl px-5"
+                     >
+                        {submitting ? 'Assigning...' : `Assign ${selectedQuestions.length} Question${selectedQuestions.length !== 1 ? 's' : ''}`}
+                     </Button>
                   </div>
                </div>
-            );
-                  })
-               )}
-            </div>
-         </div>
+            </DialogContent>
+         </Dialog>
 
+         {/* EDIT TYPE MODAL */}
+         <Dialog open={isEditTypeOpen} onOpenChange={setIsEditTypeOpen}>
+            <DialogContent className="max-w-md rounded-2xl">
+               <DialogHeader>
+                  <DialogTitle>Edit Question Type</DialogTitle>
+                  <DialogDescription>
+                     Change the type for <strong>{editingQuestion?.question?.question_name || editingQuestion?.question_name}</strong>
+                  </DialogDescription>
+               </DialogHeader>
 
+               <div className="py-6">
+                  <div className="flex rounded-xl border border-border overflow-hidden">
+                     <button
+                        onClick={() => setEditType('HOMEWORK')}
+                        className={`flex-1 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${editType === 'HOMEWORK'
+                           ? 'bg-primary text-primary-foreground'
+                           : 'bg-muted hover:bg-muted/80'
+                           }`}
+                     >
+                        <Home className="w-4 h-4" />
+                        Homework
+                     </button>
+                     <button
+                        onClick={() => setEditType('CLASSWORK')}
+                        className={`flex-1 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${editType === 'CLASSWORK'
+                           ? 'bg-primary text-primary-foreground'
+                           : 'bg-muted hover:bg-muted/80'
+                           }`}
+                     >
+                        <GraduationCap className="w-4 h-4" />
+                        Classwork
+                     </button>
+                  </div>
+               </div>
 
-         {/* Footer */}
-         <div className="p-4 border-t border-border flex items-center justify-between">
-            <span className="text-sm font-medium">
-               {selectedQuestionIds.length} Selected
-            </span>
-
-            <div className="flex gap-3">
-               <Button
-                  variant="outline"
-                  className="rounded-xl px-5"
-                  onClick={() => setIsAssignOpen(false)}
-                  disabled={submitting}
-               >
-                  Cancel
-               </Button>
-
-               <Button
-                  className="rounded-xl px-6 shadow-sm hover:shadow-md transition"
-                  onClick={handleAssignSubmit}
-                  disabled={submitting || selectedQuestionIds.length === 0}
-               >
-                  {submitting ? "Assigning..." : "Add Selected"}
-               </Button>
-            </div>
-         </div>
-      </DialogContent>
-   </Dialog>
+               <DialogFooter>
+                  <Button
+                     variant="outline"
+                     onClick={() => setIsEditTypeOpen(false)}
+                     disabled={submitting}
+                  >
+                     Cancel
+                  </Button>
+                  <Button
+                     onClick={handleEditTypeSubmit}
+                     disabled={submitting}
+                  >
+                     {submitting ? 'Saving...' : 'Save Changes'}
+                  </Button>
+               </DialogFooter>
+            </DialogContent>
+         </Dialog>
 
          {/* DELETE QUESTION MODAL */}
          <DeleteModal
@@ -623,6 +772,7 @@ export default function AdminClassDetailsPage() {
    );
 }
 
+// Skeleton loading component
 function Skeletons() {
    return (
       <div className="space-y-6 animate-pulse">

@@ -113,13 +113,42 @@ export const getAdminClassQuestions = async (batchSlug: string, topicSlug: strin
   return response.data;
 };
 
-export const assignQuestionsToClass = async (batchSlug: string, topicSlug: string, classSlug: string, data: { question_ids: number[] }) => {
+// New format: questions array with per-question types
+interface AssignQuestionItem {
+  question_id: number;
+  type: 'HOMEWORK' | 'CLASSWORK';
+}
+
+export const assignQuestionsToClass = async (
+  batchSlug: string,
+  topicSlug: string,
+  classSlug: string,
+  data: { questions: AssignQuestionItem[] }
+) => {
   const response = await api.post(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}/questions`, data);
+  showSuccess('Questions Assigned');
   return response.data;
 };
 
 export const removeQuestionFromClass = async (batchSlug: string, topicSlug: string, classSlug: string, questionId: number) => {
   const response = await api.delete(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}/questions/${questionId}`);
+  showDeleteSuccess('Question Removed');
+  return response.data;
+};
+
+// Update question visibility type (edit homework/classwork for assigned question)
+export const updateQuestionVisibilityType = async (
+  batchSlug: string,
+  topicSlug: string,
+  classSlug: string,
+  visibilityId: number,
+  type: 'HOMEWORK' | 'CLASSWORK'
+) => {
+  const response = await api.patch(
+    `/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}/visibility/${visibilityId}`,
+    { type }
+  );
+  showSuccess('Question Type Updated');
   return response.data;
 };
 

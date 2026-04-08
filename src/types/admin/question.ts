@@ -5,7 +5,7 @@ export type Question = {
   topic_id: number;
   platform: 'LEETCODE' | 'GFG' | 'INTERVIEWBIT' | 'OTHER';
   level: 'EASY' | 'MEDIUM' | 'HARD';
-  type: 'HOMEWORK' | 'CLASSWORK';
+  // type removed - now in QuestionVisibility
   topic?: {
     topic_name: string;
     slug: string;
@@ -19,10 +19,17 @@ export type CreateQuestionData = {
   question_link: string;
   topic_id: number;
   level?: 'EASY' | 'MEDIUM' | 'HARD';
-  type?: 'HOMEWORK' | 'CLASSWORK';
+  // type removed - set during assignment to class
 };
 
 export type UpdateQuestionData = Partial<CreateQuestionData>;
+
+// New type for assigned questions with visibility info
+export type AssignedQuestion = Question & {
+  visibility_id: number;
+  type: 'HOMEWORK' | 'CLASSWORK';
+  assigned_at: string;
+};
 
 export type QuestionsResponse = {
   data: Question[];
