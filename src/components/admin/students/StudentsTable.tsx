@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Pagination } from '@/components/Pagination';
 import { Avatar } from '@/components/ui/Avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AdminStudent } from '@/types/student';
 
 interface StudentsTableProps {
@@ -42,7 +43,7 @@ export default function StudentsTable({
   onDelete,
 }: StudentsTableProps) {
   return (
-    <div className="glass rounded-2xl overflow-hidden">
+    <div className="glass backdrop-blur-2xl p-3 mb-7 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <Table>
           {/* HEADER */}
@@ -58,11 +59,34 @@ export default function StudentsTable({
           {/* BODY */}
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={4} className="h-[300px] text-center text-muted-foreground">
-                  Loading students...
-                </TableCell>
-              </TableRow>
+              // Loading Skeleton Rows
+              <>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <TableRow key={`skeleton-${i}`} className="border-b border-border/20">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-10 h-10 rounded-full" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-24" />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Skeleton className="h-6 w-16 mx-auto" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Skeleton className="h-8 w-8" />
+                        <Skeleton className="h-8 w-8" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </>
             ) : students.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="h-[300px] text-center text-muted-foreground">

@@ -65,7 +65,7 @@ export default function AdminLoginPage() {
 
           {/* HEADER */}
           <div className="mb-10 text-center relative z-10">
-            <h1 className="font-serif italic text-5xl font-bold bg-gradient-to-r from-white via-white to-slate-500 bg-clip-text text-foreground tracking-tighter">
+            <h1 className="font-serif  text-5xl font-bold bg-gradient-to-r from-white via-white to-slate-500 bg-clip-text text-foreground tracking-tighter">
               Brute<span className="text-primary">Force</span>
             </h1>
             <p className="text-slate-500 text-[11px] font-black uppercase tracking-[0.3em] mt-3">Admin Operations Portal</p>

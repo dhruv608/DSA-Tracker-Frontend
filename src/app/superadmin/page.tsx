@@ -158,6 +158,17 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="space-y-8 pb-10  min-h-screen p-6">
+      {/* Header  */}
+      <div className="flex items-center justify-between glass  mb-5 p-5 -mt-9 backdrop-blur-2xl rounded-2xl ">
+        <div>
+          <h2 className="text-3xl font-bold">
+           Institutional  <span className="text-primary" >Analytics</span>
+          </h2>
+          <p className="text-muted-foreground mt-1 p-0 m-0">
+            Oversee and manage cities, batches, and administrators across the platform.
+          </p>
+        </div>
+      </div>
       <div className="grid gap-6 md:grid-cols-3">
         {/* Cities */}
         <div
@@ -168,7 +179,7 @@ export default function SuperAdminDashboard() {
             }
           }}
           tabIndex={0}
-          className="cursor-pointer glass  p-6 rounded-2xl   transition-all duration-300 border border-border/20  relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-chart-2/50"
+          className="cursor-pointer  glass  p-6 rounded-2xl   transition-all duration-300 border border-border/20  relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-chart-2/50"
         >
           <div className="absolute top-0 right-0 w-20 h-20 bg-chart-2/5 rounded-full -mr-10 -mt-10  transition-transform duration-500"></div>
 

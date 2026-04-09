@@ -73,7 +73,7 @@ export const PodiumCard = ({ student, rank, isCenter }: any) => {
             {/* 💎 Card */}
 
             <div
-                className={`relative glass rounded-3xl px-8 py-10 w-[230px] md:w-[260px] text-center border ${borderColor} shadow-xl backdrop-blur-xl`}
+                className={`relative glass backdrop-blur-2xl mb-6 rounded-3xl px-8 py-10 w-[230px] md:w-[260px] text-center border ${borderColor} shadow-xl backdrop-blur-xl`}
             >
 
                 {/* 👑 Crown */}

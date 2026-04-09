@@ -138,7 +138,7 @@ export default function AdminQuestionsBankPage() {
 
 
   return (
-    <div className="flex flex-col space-y-6">
+     <div className="flex flex-col mx-auto w-full pb-12  ">
       <QuestionsHeader totalRecords={totalRecords} />
       
       <QuestionsFilter
@@ -165,7 +165,7 @@ export default function AdminQuestionsBankPage() {
         onEdit={openEdit}
         onDelete={openDelete}
       />
-
+      
       <QuestionsModals
         isCreateOpen={isCreateOpen}
         setIsCreateOpen={setIsCreateOpen}

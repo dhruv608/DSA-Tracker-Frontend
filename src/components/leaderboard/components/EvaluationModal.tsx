@@ -13,7 +13,7 @@ export function EvaluationModal() {
           <HelpCircle className="w-5 h-5 text-muted-foreground hover:text-foreground" />
         </Button>
       </DialogTrigger>
-<DialogContent className="w-[90vw] h-[85vh] p-2 overflow-y-auto rounded-2xl">
+      <DialogContent className="w-[900px] max-w-none h-[600px] p-2 rounded-2xl">
         <DialogHeader className="p-4 border-b border-border">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <HelpCircle className="w-5 h-5 text-primary" />

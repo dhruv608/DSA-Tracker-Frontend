@@ -236,21 +236,19 @@ export default function AdminTopicsPage() {
    }
 
    return (
-      <div className="flex flex-col space-y-8">
+       <div className="flex flex-col  w-full pb-12   ">
 
          {/* HEADER */}
-         <div className="glass  rounded-2xl p-6 flex items-center justify-between">
+         <div className="glass backdrop-blur-2xl rounded-2xl p-6 mb-7 flex items-center justify-between">
 
             <div className="flex items-center gap-4">
-               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-primary" />
-               </div>
+               
 
                <div>
-                  <h2 className="text-xl font-semibold text-foreground">
-                     Topic Curriculum
+                  <h2 className="text-3xl font-semibold text-foreground">
+                     Topic <span className="text-primary ">Curriculum</span>
                   </h2>
-
+                  <p className='p-0 m-0 mt-1 text-muted-foreground '>this is paragraph</p>
                </div>
             </div>
 
@@ -262,16 +260,16 @@ export default function AdminTopicsPage() {
          </div>
 
          {/* FILTER BAR */}
-         <div className="glass card-premium rounded-2xl p-4 flex flex-col sm:flex-row gap-4  justify-between items-center">
+         <div className="glass backdrop-blur-2xl mb-7 rounded-2xl p-4 flex flex-col sm:flex-row gap-4  justify-between items-center">
 
             {/* SEARCH */}
             <div className="relative w-full sm:max-w-md ">
-               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white w-4 h-4" />
                <Input
                   placeholder="Search topics..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="!pl-9 w-full h-11 rounded-2xl bg-background/50 border-border focus-visible:ring-primary/40"
+                  className="pl-9! w-full h-11! rounded-2xl bg-transparent! placeholder:text-white border! border-border/60! focus-visible:ring-primary/40"
                />
             </div>
 
@@ -279,7 +277,7 @@ export default function AdminTopicsPage() {
             <div className="flex items-center gap-3">
 
                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="h-11 rounded-xl bg-background/50 px-4">
+                  <SelectTrigger className="h-11 rounded-2xl glass backdrop-blur-2xl border border-border/40 px-6">
                      <SelectValue placeholder="Sort" />
                   </SelectTrigger>
                   <SelectContent>

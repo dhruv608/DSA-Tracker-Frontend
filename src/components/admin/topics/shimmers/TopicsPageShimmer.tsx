@@ -1,19 +1,22 @@
+import { Skeleton } from "@/components/ui/skeleton";
 import TopicsGridShimmer from "./TopicsGridShimmer";
-
-
 
 export default function TopicsPageShimmer() {
     return (
-        <div className="space-y-6 animate-pulse">
+        <div className="space-y-6">
+            {/* Header Skeleton */}
             <div className="flex justify-between items-end">
                 <div className="space-y-2">
-                    <div className="h-8 w-64 bg-muted rounded-md"></div>
-                    <div className="h-4 w-96 bg-muted/60 rounded-md"></div>
+                    <Skeleton className="h-8 w-64" />
+                    <Skeleton className="h-4 w-96" />
                 </div>
-                <div className="h-10 w-32 bg-muted rounded-md"></div>
+                <Skeleton className="h-10 w-32" />
             </div>
 
-            <div className="h-16 w-full bg-card border border-border rounded-xl"></div>
+            {/* Filter Bar Skeleton */}
+            <div className="glass backdrop-blur-2xl rounded-2xl p-4">
+                <Skeleton className="h-16 w-full" />
+            </div>
 
             <TopicsGridShimmer />
         </div>

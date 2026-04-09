@@ -179,15 +179,6 @@ export default function AdminLeaderboardPage() {
     if (!isInit) return;
   }, [lCity, lYear, page, limit, debouncedSearch, isInit]);
 
-  // Global loading overlay if everything is refreshing Context
-  if (isLoadingContext || !isInit) {
-    return (
-      <div className="flex flex-col space-y-6">
-        <PodiumShimmer />
-        <TableShimmer />
-      </div>
-    );
-  }
 
   const cityOptionsObj = allCities.map(c => ({ label: c.city_name, value: c.city_name }));
   const yearOptionsObj = yearOptions.map((y: number) => ({ label: y.toString(), value: y.toString() }));
@@ -195,27 +186,46 @@ export default function AdminLeaderboardPage() {
   // TimerLeaderboard will handle the countdown display
 
   return (
-    <div className="flex flex-col space-y-6">
-      <div className="flex items-end justify-between">
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-              <Trophy className="w-6 h-6 text-primary" />
-              Admin Leaderboard
+     <div className="flex flex-col mx-auto  w-full pb-12  -m-3">
+      {/* header  */}
+      <div className="glass backdrop-blur-2xl mb-5 px-6 py-4 rounded-2xl flex items-center justify-between">
+
+        {/* LEFT */}
+        <div className="flex flex-col gap-2">
+
+          {/* TITLE ROW */}
+          <div className="flex items-center gap-3 flex-wrap">
+
+            <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+              Admin <span className="text-primary">Leaderboard</span>
             </h2>
-            <EvaluationModal />
+
+            {/* Modal aligned properly */}
+            <div className="shrink-0">
+              <EvaluationModal />
+            </div>
+
           </div>
-          <p className="text-muted-foreground text-sm bg-muted inline-block px-2 py-0.5 rounded-md border border-border w-fit">
+
+          {/* SUBTEXT */}
+          <p className="text-muted-foreground text-sm  inline-flex items-center p-0 m-0 rounded-md w-fit">
             Analytics driven precisely by backend mapping constraints.
           </p>
+
         </div>
-        <TimerLeaderboard
-          lastUpdated={leaderboardData?.data?.last_calculated}
-          refreshInterval={4}
-          onRefresh={handleRefresh}
-        />
+
+        {/* RIGHT */}
+        <div className="shrink-0">
+          <TimerLeaderboard
+            lastUpdated={leaderboardData?.data?.last_calculated}
+            refreshInterval={4}
+            onRefresh={handleRefresh}
+          />
+        </div>
+
       </div>
 
+       {/* Filter  */}
       <FilterBar
         lSearch={lSearch}
         setLSearch={setLSearch}

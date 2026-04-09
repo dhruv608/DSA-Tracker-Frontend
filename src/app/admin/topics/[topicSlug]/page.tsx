@@ -145,7 +145,7 @@ export default function AdminClassesPage() {
       formData.append('description', description);
       formData.append('duration_minutes', duration ? duration.toString() : ''); // Convert to string
       formData.append('class_date', classDate);
-      
+
       // Handle PDF input
       if (pdfFile) {
         formData.append('pdf_file', pdfFile);
@@ -158,7 +158,7 @@ export default function AdminClassesPage() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      
+
       setIsCreateOpen(false);
       resetForms();
       fetchClasses();
@@ -182,7 +182,7 @@ export default function AdminClassesPage() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      
+
       setIsDeletePdfOpen(false);
       setIsEditOpen(false);
       resetForms();
@@ -205,7 +205,7 @@ export default function AdminClassesPage() {
       formData.append('description', description);
       formData.append('duration_minutes', duration); // Keep as string
       formData.append('class_date', classDate);
-      
+
       // Handle PDF input
       if (pdfFile) {
         formData.append('pdf_file', pdfFile);
@@ -218,7 +218,7 @@ export default function AdminClassesPage() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      
+
       setIsEditOpen(false);
       resetForms();
       fetchClasses();
@@ -287,84 +287,66 @@ export default function AdminClassesPage() {
   }
 
   return (
-    <div className="flex flex-col space-y-6">
+    <div className="flex flex-col  w-full pb-12  -mt-3 ">
 
-      <div className="flex items-center gap-3 text-muted-foreground">
+      <div className="flex items-center mb-4 gap-3 text-muted-foreground">
         <Link href="/admin/topics" className="hover:text-foreground transition-colors flex items-center gap-1.5 text-sm font-medium">
           <ArrowLeft className="w-4 h-4" /> Back to Topics
         </Link>
       </div>
+      {/* Header  */}
+      <div className="flex items-center justify-between glass backdrop-blur-2xl mb-7 rounded-2xl p-5">
 
-      <div className="flex items-end glass rounded-2xl p-5 justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-            <BookOpen className="w-6 h-6 text-primary" /> Classes
+        {/* LEFT */}
+        <div className="flex flex-col gap-2">
+
+          <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+            Classes
           </h2>
-          <p className="text-muted-foreground mt-1 text-sm font-mono bg-muted inline-block px-3 py-1 rounded border border-border mt-2">
+
+          <p className="m-0 text-muted-foreground text-sm font-mono bg-muted inline-flex items-center px-3 py-1 rounded border border-border/60 w-fit">
             {selectedBatch.name} / {topicSlug}
           </p>
+
         </div>
-        <Button onClick={() => { resetForms(); setIsCreateOpen(true); }} className="gap-2">
-          <Plus className="w-4 h-4" /> Add Class
+
+        {/* RIGHT */}
+        <Button
+          onClick={() => { resetForms(); setIsCreateOpen(true); }}
+          className="gap-2 shrink-0 h-11 px-5 rounded-xl"
+        >
+          <Plus className="w-4 h-4" />
+          Add Class
         </Button>
+
       </div>
+        {/* Filter  */}
+        <div className=" glass backdrop-blur-2xl mb-7 rounded-2xl overflow-hidden shadow-md">
 
-      <div className="bg-card border border-border  shadow-sm rounded-xl overflow-hidden">
-        <div className="
-  glass rounded-2xl overflow-hidden
-  shadow-md
-">
-
-          <div className="
-    flex items-center justify-between
-    px-5 py-4
-  ">
+          <div className="flex items-center justify-between  px-5 py-4  ">
 
             {/* SEARCH */}
             <div className="relative flex-1 max-w-sm ">
 
-              <Search className="
-        absolute left-3 top-1/2 -translate-y-1/2
-        w-4 h-4
-        text-muted-foreground
-        pointer-events-none
-        transition
-        group-focus-within:text-primary
-      " />
+              <Search className=" absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4  text-white  pointer-events-none  transition group-focus-within:text-primary " />
 
               <Input
                 placeholder="Search classes..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="
-          h-10 !pl-9 !pr-9 rounded-full
-
-          bg-accent/40
-          border-0
-
-          focus:ring-2 focus:ring-primary/20
-          focus:bg-accent/60
-
-          transition-all
-        "
+                className=" h-10! pl-9! pr-9! rounded-2xl! focus:ring-2 bg-transparent! placeholder:text-white focus:ring-primary/20  focus:bg-accent/60   transition-all   "
               />
             </div>
             {/* COUNT BADGE */}
-            <div className="
-      text-xs font-semibold tracking-wide
-
-      px-3 py-1.5 rounded-full
-
-      bg-primary/10 text-primary
-      border border-primary/20
-
-      shadow-[0_0_10px_var(--hover-glow)]
-    ">
+            <div className="  text-xs font-semibold tracking-wide  px-3 py-1.5 rounded-full  bg-primary/10 text-primary  border border-primary/20  shadow-[0_0_10px_var(--hover-glow)]   ">
               {totalRecords} Classes
             </div>
 
           </div>
         </div>
+
+        {/* Table  */}
+      <div className="p-4 rounded-2xl glass backdrop-blur-2xl shadow-sm mb-7 overflow-hidden">
 
         <div className="overflow-x-auto ">
           <Table >
@@ -390,7 +372,7 @@ export default function AdminClassesPage() {
                 filteredClasses.map((cls) => (
                   <TableRow
                     key={cls.id}
-                    className="group hover:bg-muted/30 cursor-pointer transition-colors"
+                    className=" hover:bg-muted/30 cursor-pointer transition-colors"
                     onClick={(e) => {
                       // Prevent navigation if clicking on buttons
                       if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('a')) {
@@ -401,7 +383,7 @@ export default function AdminClassesPage() {
                     }}
                   >
                     <TableCell>
-                      <div className="font-semibold text-foreground text-base">{cls.class_name}</div>
+                      <div className="font-semibold  text-foreground text-base">{cls.class_name}</div>
                       {cls.description && (
                         <p className="text-xs text-muted-foreground mt-0.5 max-w-sm">
                           {cls.description.split(' ').slice(0, 7).join(' ')}
@@ -598,7 +580,7 @@ export default function AdminClassesPage() {
                 PDF Content{" "}
                 <span className="text-xs text-muted-foreground">(Optional)</span>
               </label>
-              
+
               {/* URL Input */}
               <div>
                 <Input
@@ -614,12 +596,12 @@ export default function AdminClassesPage() {
                     focus:ring-2 focus:ring-primary/40"
                 />
               </div>
-              
+
               {/* OR text */}
               <div className="text-center">
                 <span className="text-xs text-muted-foreground font-medium">OR</span>
               </div>
-              
+
               {/* File Upload Button */}
               <div>
                 <input
@@ -640,7 +622,7 @@ export default function AdminClassesPage() {
                   </span>
                 </label>
               </div>
-              
+
               {/* PDF Preview */}
               {pdfFile && <PdfPreview file={pdfFile} onRemove={handlePdfRemove} />}
             </div>
@@ -857,12 +839,12 @@ export default function AdminClassesPage() {
                         focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
-                  
+
                   {/* OR text */}
                   <div className="text-center">
                     <span className="text-xs text-muted-foreground font-medium">OR</span>
                   </div>
-                  
+
                   {/* File Upload Button */}
                   <div>
                     <input
@@ -885,10 +867,10 @@ export default function AdminClassesPage() {
                   </div>
                 </div>
               )}
-              
+
               {/* New PDF Preview */}
               {pdfFile && <PdfPreview file={pdfFile} onRemove={handlePdfRemove} />}
-              
+
               {/* New URL Preview */}
               {pdfUrl && !pdfFile && (
                 <div className="mt-3 p-3 bg-muted/20 rounded-xl border border-border/40">

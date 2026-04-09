@@ -10,17 +10,13 @@ interface StudentsHeaderProps {
 
 export default function StudentsHeader({ totalRecords, selectedBatch }: StudentsHeaderProps) {
   return (
-    <div className="glass rounded-2xl p-6 flex items-center justify-between">
+    <div className="glass backdrop-blur-2xl mb-7 rounded-2xl p-6 flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-          <Users className="w-6 h-6 text-primary" />
-        </div>
+       
 
         <div>
-          <h2 className="text-xl font-semibold">Student Management</h2>
-          <p className="text-sm text-muted-foreground">
-            {selectedBatch?.name} • {totalRecords} Enrollments
-          </p>
+          <h1 className="text-3xl font-semibold">Student<span className="text-primary ms-1">Management</span> </h1>
+          <p className="p-0 m-0 mt-1 text-sm text-muted-foreground" >Hello Student...</p>
         </div>
       </div>
 

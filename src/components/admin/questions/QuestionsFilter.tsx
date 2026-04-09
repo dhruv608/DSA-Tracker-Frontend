@@ -55,12 +55,12 @@ export default function QuestionsFilter({
   };
 
   return (
-    <div className="glass rounded-2xl p-4 flex flex-col gap-4">
+    <div className="glass backdrop-blur-2xl rounded-2xl p-4 mb-7 flex flex-col gap-4">
       {/* TOP ROW → SEARCH + BUTTONS */}
       <div className="flex flex-col sm:flex-row justify-between items-center">
         {/* SEARCH */}
         <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white w-4 h-4" />
           <Input
             placeholder="Search questions..."
             value={qSearch}
@@ -68,7 +68,7 @@ export default function QuestionsFilter({
               setQSearch(e.target.value);
               setPage(1);
             }}
-            className="pl-9! w-full h-11 rounded-xl bg-background/50"
+            className="pl-9! w-full h-11! rounded-2xl! bg-transparent! placeholder:text-white"
           />
         </div>
 

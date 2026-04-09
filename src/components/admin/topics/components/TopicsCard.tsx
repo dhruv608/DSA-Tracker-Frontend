@@ -20,7 +20,7 @@ export default function TopicCard({
           router.push(`/admin/topics/${topic.slug}`);
         }
       }}
-      className=" glass  hover-glow rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 group"
+      className=" glass mb-7 backdrop-blur-2xl hover-glow rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 "
     >
 
       {/* IMAGE */}

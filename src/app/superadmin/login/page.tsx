@@ -67,7 +67,7 @@ export default function SuperAdminLoginPage() {
              <motion.h1 
                initial={{ scale: 0.9 }}
                animate={{ scale: 1 }}
-               className="font-serif italic text-5xl font-bold bg-gradient-to-r from-white via-white to-slate-500 bg-clip-text text-foreground tracking-tighter"
+               className="font-serif  text-5xl font-bold bg-gradient-to-r from-white via-white to-slate-500 bg-clip-text text-foreground tracking-tighter"
              >
                Brute<span className="text-primary">Force</span>
              </motion.h1>

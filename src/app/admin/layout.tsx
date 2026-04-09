@@ -14,6 +14,7 @@ import { BruteForceLoader } from '@/components/ui/BruteForceLoader';
 import { handleToastError } from "@/utils/toast-system";
 import { getAllCities } from '@/services/city.service';
 import { getAllBatches } from '@/services/batch.service';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function decodeJwt(token: string) {
   try {
@@ -407,26 +408,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Dropdown Selectors */}
           <div className="flex items-center gap-4">
              {selectedCity ? (
-               <Select 
+               <Select
                  value={selectedCity.id.toString()}
                  onChange={handleCityChange}
                  options={cities.map(c => ({ label: c.city_name, value: c.id.toString() }))}
                  placeholder="Select City"
                />
              ) : (
-                <div className="h-9 w-32 bg-muted rounded-md animate-pulse"></div>
+                <Skeleton className="h-9 w-32 rounded-md" />
              )}
 
              {selectedCity && (
                selectedBatch ? (
-                 <Select 
+                 <Select
                    value={selectedBatch.id.toString()}
                    onChange={handleBatchChange}
                    options={batches.map(b => ({ label: `${b.batch_name} - ${b.year}`, value: b.id.toString() }))}
                    placeholder="Select Batch"
                  />
                ) : (
-                 <div className="h-9 w-40 bg-muted rounded-md animate-pulse ml-2"></div>
+                 <Skeleton className="h-9 w-40 rounded-md ml-2" />
                )
              )}
           </div>

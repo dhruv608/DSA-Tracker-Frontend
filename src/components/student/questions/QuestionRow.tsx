@@ -90,13 +90,13 @@ export const QuestionRow = ({
 
         {/* TOPIC */}
         {topicName && (
-          <p className="text-[11px]  text-muted-foreground/70">
+          <p className="text-[11px] -mb-1 text-muted-foreground/70">
             {topicName}
           </p>
         )}
 
         {/* META ROW */}
-        <div className="flex items-center -mt-5 gap-2 flex-wrap text-[11px]">
+        <div className="flex items-center  gap-2 flex-wrap text-[11px]">
 
           {/* LEVEL */}
           <span className={`px-2 py-0.5 rounded-2xl border font-semibold ${getLevelColor(level)}`}>

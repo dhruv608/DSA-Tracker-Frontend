@@ -285,44 +285,56 @@ export default function AdminClassDetailsPage() {
    }
 
    return (
-      <div className="flex flex-col space-y-6">
+      <div className="flex flex-col mx-auto  w-full pb-12  -mt-3  ">
 
-         <div className="flex items-center gap-3 text-muted-foreground">
+
+         <div className="flex items-center gap-3 mb-5 text-muted-foreground">
             <Link href={`/admin/topics/${topicSlug}`} className="hover:text-foreground transition-colors flex items-center gap-1.5 text-sm font-medium">
                <ArrowLeft className="w-4 h-4" /> Back to Classes
             </Link>
          </div>
+         {/* Header  */}
+         <div className="glass px-7 py-4 mb-7 rounded-2xl backdrop-blur-2xl flex items-center justify-between">
 
-         <div className="flex items-end justify-between">
-            <div>
-               <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-                  <BookOpen className="w-6 h-6 text-primary" /> Class Questions
+            {/* LEFT */}
+            <div className="flex flex-col gap-2">
+
+               <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+                  Class <span className='text-primary '>Questions</span>
                </h2>
-               <p className="text-muted-foreground mt-1 text-sm font-mono bg-muted inline-block px-2 py-0.5 rounded-2xl border border-border mt-2">
+
+               <p className="text-muted-foreground text-sm font-mono bg-muted inline-flex items-center px-3 py-1 rounded border border-border/60 w-fit">
                   {selectedBatch.name} / {topicSlug} / {classSlug}
                </p>
-            </div>
-            <Button onClick={() => { setIsAssignOpen(true); setSelectedQuestions([]); setErrorMsg(''); }} className="gap-2">
-               <Plus className="w-4 h-4" /> Assign Questions
-            </Button>
-         </div>
 
-         <div className="bg-card border border-border shadow-sm rounded-xl overflow-hidden">
-            <div className="
-  glass rounded-xl overflow-hidden
-  border border-[var(--glass-border)]
-  shadow-sm
-">
+            </div>
+
+            {/* RIGHT */}
+            <Button
+               onClick={() => {
+                  setIsAssignOpen(true);
+                  setSelectedQuestions([]);
+                  setErrorMsg('');
+               }}
+               className="gap-2 h-10 px-4 rounded-xl shrink-0"
+            >
+               <Plus className="w-4 h-4" />
+               Assign Questions
+            </Button>
+
+         </div>
+            {/* Filter  */}
+            <div className=" glass backdrop-blur-2xl rounded-2xl mb-7 overflow-hidden   shadow-sm ">
 
                <div className="flex items-center justify-between  px-5 py-4  border-border/60  ">
 
                   <div className="relative flex-1 max-w-sm group">
-                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none transition group-focus-within:text-primary " />
+                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white pointer-events-none transition group-focus-within:text-primary " />
                      <Input
                         placeholder="Search classes..."
                         value={search}
                         onChange={(e) => { setSearch(e.target.value); setAssignedPage(1); }}
-                        className="h-10 w-full !pl-9 pr-9 rounded-full bg-accent/40   border-0 focus:ring-2 focus:ring-primary/20 focus:bg-accent/60   transition-all    "
+                        className="h-10! w-full pl-9! pr-9! rounded-2xl! bg-transparent!   focus:ring-2 focus:ring-primary/20 focus:bg-accent/60   transition-all placeholder:text-white   "
                      />
                   </div>
 
@@ -333,6 +345,9 @@ export default function AdminClassDetailsPage() {
 
                </div>
             </div>
+
+
+         <div className=" px-6 mb-7 glass backdrop-blur-2xl  shadow-sm rounded-2xl overflow-hidden">
 
             <div className="overflow-x-auto ">
                <Table className="border-separate border-spacing-y-2">
@@ -363,18 +378,62 @@ export default function AdminClassDetailsPage() {
 
                   {/* BODY */}
                   <TableBody>
+                     {loading ? (
+                        // Loading Skeleton Rows
+                        <>
+                           {[1, 2, 3, 4, 5].map((i) => (
+                              <TableRow key={`skeleton-${i}`} className="border-0">
+                                 {/* QUESTION SKELETON */}
+                                 <TableCell className="py-3">
+                                    <Skeleton className="h-5 w-48" />
+                                 </TableCell>
+                                 {/* PLATFORM SKELETON */}
+                                 <TableCell>
+                                    <div className="flex items-center gap-2">
+                                       <Skeleton className="w-4 h-4" />
+                                       <Skeleton className="h-4 w-20" />
+                                    </div>
+                                 </TableCell>
+                                 {/* DIFFICULTY SKELETON */}
+                                 <TableCell>
+                                    <Skeleton className="h-6 w-16" />
+                                 </TableCell>
+                                 {/* TYPE SKELETON */}
+                                 <TableCell>
+                                    <Skeleton className="h-6 w-20" />
+                                 </TableCell>
+                                 {/* DATE SKELETON */}
+                                 <TableCell>
+                                    <Skeleton className="h-4 w-24" />
+                                 </TableCell>
+                                 {/* ACTIONS SKELETON */}
+                                 <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-1">
+                                       <Skeleton className="h-8 w-8" />
+                                       <Skeleton className="h-8 w-8" />
+                                    </div>
+                                 </TableCell>
+                              </TableRow>
+                           ))}
+                        </>
+                     ) : assignedQuestions.length === 0 ? (
+                        <TableRow>
+                           <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
+                              No questions assigned to this class yet.
+                           </TableCell>
+                        </TableRow>
+                     ) : (
+                        assignedQuestions.map((qObj: any) => {
+                           const q = qObj.question || qObj;
 
-                     {assignedQuestions.map((qObj: any) => {
-                        const q = qObj.question || qObj;
-
-                        return (
-                           <TableRow
-                              key={q.id}
-                              className="group border-0  bg-accent/30  hover:bg-accent/50   backdrop-blur-md   rounded-xl  transition-all duration-200   "
-                           >
+                           return (
+                              <TableRow
+                                 key={q.id}
+                                 className="hover:bg-accent/80 px-2 transition-all duration-200"
+                              >
 
                               {/* QUESTION */}
-                              <TableCell className="rounded-l-xl py-3">
+                              <TableCell className=" py-3">
                                  <a
                                     href={q.question_link}
                                     target="_blank"
@@ -411,11 +470,7 @@ export default function AdminClassDetailsPage() {
                               <TableCell>
                                  <button
                                     onClick={() => handleOpenEditType(qObj)}
-                                    className={`text-xs px-2 py-1 rounded-full font-medium transition-colors hover:opacity-80 ${
-                                       qObj.type === 'CLASSWORK'
-                                          ? 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
-                                          : 'bg-orange-500/10 text-orange-600 hover:bg-orange-500/20'
-                                    }`}
+                                    className={`text-xs px-2 py-1 rounded-full font-medium transition-colors hover:opacity-80 text-muted-foreground`}
                                  >
                                     {qObj.type === 'CLASSWORK' ? 'Classwork' : 'Homework'}
                                  </button>
@@ -447,7 +502,7 @@ export default function AdminClassDetailsPage() {
                                     >
                                        <Pencil className="w-4 h-4" />
                                     </Button>
-                                    
+
                                     {/* DELETE BUTTON */}
                                     <Button
                                        variant="ghost"
@@ -462,7 +517,8 @@ export default function AdminClassDetailsPage() {
 
                            </TableRow>
                         );
-                     })}
+                     })
+                     )}
 
                   </TableBody>
                </Table>
@@ -772,19 +828,61 @@ export default function AdminClassDetailsPage() {
    );
 }
 
+import { Skeleton } from "@/components/ui/skeleton";
+
 // Skeleton loading component
 function Skeletons() {
    return (
-      <div className="space-y-6 animate-pulse">
-         <div className="flex justify-between items-end">
+      <div className="space-y-6">
+         {/* Breadcrumb Skeleton */}
+         <Skeleton className="h-4 w-32" />
+
+         {/* Header Skeleton */}
+         <div className="glass px-7 py-4 mb-7 rounded-2xl backdrop-blur-2xl flex items-center justify-between">
             <div className="space-y-2">
-               <div className="h-4 w-32 bg-muted rounded-md shrink-0 mb-4"></div>
-               <div className="h-8 w-64 bg-muted rounded-md shrink-0"></div>
-               <div className="h-4 w-96 bg-muted/60 rounded-md shrink-0"></div>
+               <Skeleton className="h-8 w-64" />
+               <Skeleton className="h-4 w-96" />
             </div>
-            <div className="h-10 w-32 bg-muted rounded-md shrink-0"></div>
+            <Skeleton className="h-10 w-40" />
          </div>
-         <div className="h-[400px] w-full bg-card border border-border rounded-xl"></div>
+
+         {/* Filter Bar Skeleton */}
+         <div className="glass backdrop-blur-2xl rounded-2xl mb-7 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4">
+               <Skeleton className="h-10 w-64" />
+               <Skeleton className="h-6 w-24" />
+            </div>
+         </div>
+
+         {/* Table Skeleton */}
+         <div className="px-6 mb-7 glass backdrop-blur-2xl shadow-sm rounded-2xl overflow-hidden">
+            <div className="space-y-4 py-4">
+               {/* Table Header */}
+               <div className="flex items-center gap-4 pb-4 border-b border-border/40">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-20 ml-auto" />
+               </div>
+               {/* Table Rows */}
+               {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex items-center gap-4 py-3">
+                     <div className="flex-1">
+                        <Skeleton className="h-5 w-48 mb-1" />
+                        <Skeleton className="h-3 w-32" />
+                     </div>
+                     <Skeleton className="h-4 w-20" />
+                     <Skeleton className="h-6 w-16" />
+                     <Skeleton className="h-6 w-20" />
+                     <div className="flex items-center justify-end gap-1 ml-auto">
+                        <Skeleton className="h-8 w-8" />
+                        <Skeleton className="h-8 w-8" />
+                     </div>
+                  </div>
+               ))}
+            </div>
+         </div>
       </div>
    );
 }

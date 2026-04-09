@@ -3,23 +3,24 @@
 import React, { useEffect, useState } from "react";
 import { useAdminStore } from "@/store/adminStore";
 import { getAdminStats } from "@/services/admin.service";
-import { 
-  Users, 
-  BookOpen, 
-  HelpCircle, 
-  Layers, 
-  BarChart3, 
-  Target, 
-  Globe, 
-  TrendingUp, 
-  Calendar, 
-  Clock 
+import {
+  Users,
+  BookOpen,
+  HelpCircle,
+  Layers,
+  BarChart3,
+  Target,
+  Globe,
+  TrendingUp,
+  Calendar,
+  Clock
 } from "lucide-react";
 import { LeetCodeIcon, GeeksforGeeksIcon } from '@/components/platform/PlatformIcons';
 import DifficultyChart from "@/components/admin/charts/DifficultyChart";
 import PlatformChart from "@/components/admin/charts/PlatformChart";
 import TypeChart from "@/components/admin/charts/Type";
 import { handleToastError } from "@/utils/toast-system";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminDashboardPage() {
   const { selectedBatch, isLoadingContext } = useAdminStore();
@@ -71,14 +72,14 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-
+    
       {/* HEADER */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between glass  mb-5 p-5 -mt-3 backdrop-blur-2xl rounded-2xl ">
         <div>
           <h2 className="text-3xl font-bold">
-            {selectedBatch.name} Dashboard
+            {selectedBatch.name} <span className="text-primary" >Dashboard</span>
           </h2>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 p-0 m-0">
             Premium analytics overview
           </p>
         </div>
@@ -175,21 +176,21 @@ function BreakdownRow({ label, value, total, color }: any) {
 
 function AdminDashboardSkeleton() {
   return (
-    <div className="space-y-8 animate-pulse">
+    <div className="space-y-8">
       {/* Header Skeleton */}
-      <div className="space-y-2">
-        <div className="h-8 w-64 bg-muted rounded-lg" />
-        <div className="h-4 w-48 bg-muted/60 rounded-md" />
+      <div className="glass backdrop-blur-2xl mb-5 p-5 -mt-3 rounded-2xl space-y-2">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-48" />
       </div>
 
       {/* KPI Cards Skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="glass rounded-2xl p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-muted/40 animate-pulse" />
+            <Skeleton className="w-12 h-12 rounded-xl" />
             <div className="space-y-2">
-              <div className="h-4 w-16 bg-muted/60 rounded" />
-              <div className="h-8 w-12 bg-muted/80 rounded" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-8 w-12" />
             </div>
           </div>
         ))}
@@ -200,15 +201,15 @@ function AdminDashboardSkeleton() {
         {[1, 2, 3].map((i) => (
           <div key={i} className="glass rounded-2xl overflow-hidden">
             <div className="px-6 py-4 flex items-center gap-3 border-b border-border/40">
-              <div className="w-5 h-5 bg-muted/60 rounded animate-pulse" />
-              <div className="h-5 w-20 bg-muted/80 rounded animate-pulse" />
+              <Skeleton className="w-5 h-5" />
+              <Skeleton className="h-5 w-20" />
             </div>
             <div className="p-6 space-y-4">
-              <div className="h-32 bg-muted/30 rounded-xl animate-pulse" />
+              <Skeleton className="h-32 w-full rounded-xl" />
               <div className="space-y-2">
-                <div className="h-3 w-full bg-muted/40 rounded animate-pulse" />
-                <div className="h-3 w-3/4 bg-muted/40 rounded animate-pulse" />
-                <div className="h-3 w-1/2 bg-muted/40 rounded animate-pulse" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
               </div>
             </div>
           </div>

@@ -25,15 +25,15 @@ export default function StudentsFilter({
   setPage,
 }: StudentsFilterProps) {
   return (
-    <div className="glass rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-center">
+    <div className="glass backdrop-blur-2xl mb-7 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-center">
       {/* SEARCH */}
       <div className="relative w-full sm:max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white w-4 h-4" />
         <Input
           placeholder="Search by name or email..."
           value={sSearch}
           onChange={(e) => { setSSearch(e.target.value); setPage(1); }}
-          className="pl-9! w-full h-11 rounded-xl bg-background/50"
+          className="pl-9! w-full h-11! rounded-2xl! bg-transparent! placeholder:text-white"
         />
       </div>
 
@@ -42,7 +42,7 @@ export default function StudentsFilter({
         <Button
           onClick={() => setIsDownloadReportOpen(true)}
           variant="outline"
-          className="h-11 rounded-xl px-4"
+          className="h-11 rounded-2xl px-4 border!"
         >
           <Download className="w-4 h-4 mr-2" />
           Report
@@ -51,7 +51,7 @@ export default function StudentsFilter({
         <Button
           onClick={() => setIsBulkUploadOpen(true)}
           variant="outline"
-          className="h-11 rounded-xl px-4"
+          className="h-11 rounded-xl px-4 border!"
         >
           <Upload className="w-4 h-4 mr-2" />
           Bulk Upload

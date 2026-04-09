@@ -27,10 +27,10 @@ export function LeaderboardTable({
           <TableShimmer />
         </div>
       ) : (
-        <div className=" flex-1 p-0   rounded-2xl">
+        <div className=" flex-1 px-3 glass backdrop-blur-2xl rounded-2xl">
           <Table >
             <TableHeader>
-              <TableRow className="backdrop-blur-sm  rounded-2xl  p-5! ">
+              <TableRow className="backdrop-blur-sm glass rounded-2xl  p-5! ">
                 <TableHead className="font-bold px-4">Student</TableHead>
                 <TableHead className=" text-center font-bold">{rankColumnName}</TableHead>
                 <TableHead className="font-bold">Location</TableHead>

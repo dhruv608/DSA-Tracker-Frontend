@@ -12,7 +12,7 @@ export function FilterBar({
   isLoading = false
 }: any) {
   return (
-    <div className="glass flex backdrop-blur-sm  rounded-2xl p-5 items-center justify-between w-full mb-6">
+    <div className="glass flex backdrop-blur-sm  rounded-2xl p-5 items-center justify-between w-full mb-2">
       {/* LEFT SECTION - SEARCH */}
       <div className="flex-1">
         <div className="relative !w-90 max-w-[420px]">
@@ -21,7 +21,7 @@ export function FilterBar({
               placeholder="Search by name and username..." 
               value={lSearch}
               onChange={(e) => { setLSearch(e.target.value); }}
-              className="!pl-9 w-full h-9! border! border-border/40! bg-transparent! focus-visible:ring-1! transition-all  placeholder:text-white"
+              className="pl-9! w-full h-9! border! border-border/40! bg-transparent! focus-visible:ring-1! transition-all  placeholder:text-white"
           />
         </div>
       </div>

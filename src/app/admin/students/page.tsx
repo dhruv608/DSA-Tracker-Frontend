@@ -199,7 +199,7 @@ export default function AdminStudentsPage() {
   }
 
   return (
-    <div className="flex flex-col space-y-6">
+     <div className="flex flex-col mx-auto  w-full pb-12 ">
       <StudentsHeader totalRecords={totalRecords} selectedBatch={selectedBatch} />
       
       <StudentsFilter
@@ -264,17 +264,61 @@ export default function AdminStudentsPage() {
   );
 }
 
+import { Skeleton } from "@/components/ui/skeleton";
+
 function Skeletons() {
   return (
-    <div className="space-y-6 animate-pulse">
-      <div className="flex justify-between items-end">
+    <div className="space-y-6">
+      {/* Header Skeleton */}
+      <div className="glass backdrop-blur-2xl rounded-2xl p-6 flex justify-between items-end">
         <div className="space-y-2">
-          <div className="h-8 w-64 bg-muted rounded-md shrink-0"></div>
-          <div className="h-5 w-48 bg-muted/60 rounded-md shrink-0 mt-2"></div>
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-5 w-48" />
         </div>
-        <div className="h-10 w-32 bg-muted rounded-md shrink-0"></div>
+        <Skeleton className="h-10 w-32" />
       </div>
-      <div className="h-150 w-full bg-card border border-border rounded-xl"></div>
+
+      {/* Filter Bar Skeleton */}
+      <div className="glass backdrop-blur-2xl rounded-2xl p-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-10 w-64" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </div>
+      </div>
+
+      {/* Table Skeleton */}
+      <div className="glass backdrop-blur-2xl rounded-2xl p-4">
+        <div className="space-y-4">
+          {/* Table Header */}
+          <div className="flex items-center gap-4 pb-4 border-b border-border/40">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-5 w-20 ml-auto" />
+            <Skeleton className="h-5 w-24" />
+          </div>
+          {/* Table Rows */}
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex items-center gap-4 py-3">
+              <div className="flex items-center gap-3 flex-1">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-6 w-16" />
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-8" />
+                <Skeleton className="h-8 w-8" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

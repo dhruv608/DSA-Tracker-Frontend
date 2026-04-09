@@ -34,13 +34,8 @@ function TypeBadge({ type }: { type: string }) {
 
   return (
     <div
-      className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium w-fit text-muted-foreground`}
+      className={`flex items-center gap-2  py-1 rounded-full text-xs font-medium w-fit text-muted-foreground`}
     >
-      {isHomework ? (
-        <BookOpen className="w-3.5 h-3.5" />
-      ) : (
-        <Code className="w-3.5 h-3.5" />
-      )}
       {type}
     </div>
   );
@@ -98,7 +93,7 @@ function PlatformBadge({ platform }: { platform: string }) {
       className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border w-fit ${item.color}`}
     >
       <Icon className="w-3.5 h-3.5" />
-      {platform}
+      <span className="text-muted-foreground">{platform}</span>
     </div>
   );
 }
@@ -116,18 +111,15 @@ export default function QuestionsTable({
   onDelete,
 }: QuestionsTableProps) {
   return (
-    <div className="glass rounded-2xl overflow-hidden">
-      <div className="rounded-2xl overflow-hidden">
+    <div className="glass backdrop-blur-2xl  px-4 mb-7  rounded-2xl overflow-hidden">
+      <div className="rounded-2xl  overflow-hidden">
         <ScrollArea className="max-h-[600px]">
           <Table className='border-0'>
             {/* HEADER */}
             <TableHeader>
-              <TableRow className="bg-muted/30 border-b border-border/40 p-6">
+              <TableRow className="bg-muted/30 border-b  p-6">
                 <TableHead className="text-s font-bold uppercase tracking-wide text-muted-foreground">
                   Question
-                </TableHead>
-                <TableHead className="text-s font-bold uppercase tracking-wide text-muted-foreground">
-                  Type
                 </TableHead>
                 <TableHead className="text-s font-bold uppercase tracking-wide text-muted-foreground">
                   Difficulty
@@ -169,7 +161,7 @@ export default function QuestionsTable({
                 questions.map((q) => (
                   <TableRow
                     key={q.id}
-                    className="group border-b border-border/20 hover:bg-muted/30 transition-all duration-200"
+                    className="  hover:bg-muted/30 transition-all duration-200"
                   >
                     {/* QUESTION */}
                     <TableCell className="font-medium">
@@ -185,9 +177,6 @@ export default function QuestionsTable({
                       </a>
                     </TableCell>
 
-                    <TableCell>
-                      <TypeBadge type={q.type} />
-                    </TableCell>
 
                     <TableCell>
                       <DifficultyBadge level={q.level} />
