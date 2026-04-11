@@ -11,5 +11,6 @@ export interface BatchSelection {
   id: number;
   slug: string;
   name: string;
+  batch_name?: string; // Alias for backward compatibility
   year: number;
 }

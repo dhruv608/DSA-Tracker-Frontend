@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import api from '@/lib/api';
+import { apiClient } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PdfPreview } from '@/components/ui/PdfPreview';
@@ -13,7 +13,6 @@ import {
    DialogFooter,
    DialogDescription,
 } from "@/components/ui/dialog";
-import { handleToastError } from "@/utils/toast-system";
 
 interface CreateClassModalProps {
    isOpen: boolean;
@@ -79,7 +78,7 @@ export default function CreateClassModal({ isOpen, onClose, onSuccess, batchSlug
             formData.append('pdf_url', pdfUrl);
          }
 
-         await api.post(`/api/admin/${batchSlug}/topics/${topicSlug}/classes`, formData, {
+         await apiClient.post(`/api/admin/${batchSlug}/topics/${topicSlug}/classes`, formData, {
             headers: {
                'Content-Type': 'multipart/form-data',
             },
@@ -89,7 +88,7 @@ export default function CreateClassModal({ isOpen, onClose, onSuccess, batchSlug
          resetForm();
          onSuccess();
       } catch (err: any) {
-         handleToastError(err);
+         // Error is handled by API client interceptor
          setFormError(err.response?.data?.error || 'Failed to create class');
       } finally {
          setSubmitting(false);

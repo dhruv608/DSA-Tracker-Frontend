@@ -3,12 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getStats } from '@/services/superadmin.service';
-import { getAllCities, City } from '@/services/city.service';
-import { getAllBatches, Batch } from '@/services/batch.service';
 import { Layers, Activity, MapPin, Users2, ArrowUpRight, Sparkles, Globe, Target, Map, LayoutGrid, UserCog, BarChart3, UserPlus, FolderPlus } from 'lucide-react';
 import { DashboardShimmer } from '@/components/superadmin/DashboardShimmer';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { handleToastError } from "@/utils/toast-system";
 
 import { motion } from "framer-motion";
 import { CustomTooltipProps, Stats } from '@/types/superadmin/index.types';
@@ -80,22 +77,10 @@ export default function SuperAdminDashboard() {
           totalAdmins: statsData?.totalAdmins || 0,
         });
 
-        const [citiesResp, batchesResp] = await Promise.all([
-          getAllCities().catch(() => []),
-          getAllBatches().catch(() => [])
-        ]);
-
-        const batchesArray = Array.isArray(batchesResp) ? batchesResp : [];
-        const citiesArray = Array.isArray(citiesResp) ? citiesResp : [];
-
-        const breakdown = citiesArray.map((city: City) => {
-          const count = batchesArray.filter((b: Batch) => b.city_id === city.id).length;
-          return { name: city.city_name, count };
-        }).sort((a, b) => b.count - a.count).slice(0, 5); // top 5
-
-        setCityBreakdown(breakdown);
+        // Use cityBreakdown from stats API (includes all cities sorted by batch count)
+        setCityBreakdown(statsData?.cityBreakdown || []);
       } catch (err) {
-        handleToastError(err);
+        // Error is handled by API client interceptor
         console.error("Dashboard error:", err);
       } finally {
         setLoading(false);

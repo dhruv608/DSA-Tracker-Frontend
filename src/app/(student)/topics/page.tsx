@@ -6,7 +6,6 @@ import { Pagination } from '@/components/Pagination';
 import { TopicsLoading } from '@/components/student/topics/TopicLoading';
 import { TopicsHeader } from '@/components/student/topics/TopicsHeader';
 import { TopicsGrid } from '@/components/student/topics/TopicsGrid';
-import { handleToastError } from "@/utils/toast-system";
 import { Topic, TopicDataResponse } from '@/types/student/index.types';
 
 export default function TopicsPage() {
@@ -51,7 +50,7 @@ export default function TopicsPage() {
         setTopicsData(response.topics || []);
         setPagination(response.pagination);
       } catch (e) {
-        handleToastError(e);
+        // Error is handled by API client interceptor
         console.error("Topics fetch error", e);
       } finally {
         setLoading(false);

@@ -1,26 +1,17 @@
 "use client";
 
-import { City } from '@/services/city.service';
-import { Batch } from '@/services/batch.service';
+import { City } from '@/types/superadmin/city.types';
 import { ActionButtons } from '@/components/ActionButtons';
 import { Building2, Users, Layers } from 'lucide-react';
 
 interface CityCardProps {
   city: City;
-  batches: Batch[];
   onEdit: (city: City) => void;
   onDelete: (city: City) => void;
 }
 
 
-export function CityCard({ city, batches, onEdit, onDelete }: CityCardProps) {
-  const batchesInCity = batches.filter(b => b.city_id === city.id);
-  const batchesCount = batchesInCity.length;
-  const studentsCount = batchesInCity.reduce(
-    (sum, b) => sum + (b._count?.students || 0),
-    0
-  );
-
+export function CityCard({ city, onEdit, onDelete }: CityCardProps) {
   return (
     <div className="
       glass hover-glow
@@ -66,7 +57,7 @@ export function CityCard({ city, batches, onEdit, onDelete }: CityCardProps) {
                 border border-chart-2/30
               ">
                 <Layers className="w-3 h-3" />
-                {batchesCount}
+                {city.total_batches ?? 0}
               </span>
 
               <span className="
@@ -77,7 +68,7 @@ export function CityCard({ city, batches, onEdit, onDelete }: CityCardProps) {
                 border border-primary/20
               ">
                 <Users className="w-3 h-3" />
-                {studentsCount}
+                {city.total_students ?? 0}
               </span>
             </div>
           </div>
@@ -92,12 +83,12 @@ export function CityCard({ city, batches, onEdit, onDelete }: CityCardProps) {
 
         <div className="flex items-center gap-2 text-muted-foreground">
           <Layers className="w-3.5 h-3.5" />
-          <span>{batchesCount} batches</span>
+          <span>{city.total_batches ?? 0} batches</span>
         </div>
 
         <div className="flex items-center gap-2 text-muted-foreground">
           <Users className="w-3.5 h-3.5" />
-          <span>{studentsCount} students</span>
+          <span>{city.total_students ?? 0} students</span>
         </div>
       </div>
 

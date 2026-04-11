@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Admin } from '@/types/common/api.types';
-import { City } from '@/services/city.service';
-import { Batch } from '@/services/batch.service';
+import { City } from '@/types/superadmin/city.types';
+import { Batch } from '@/types/superadmin/batch.types';
 import { Modal } from '@/components/Modal';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ interface AdminModalProps {
   roles: string[];
   onSubmit: (data: AdminCreateData) => Promise<void>;
   submitting: boolean;
+  isLoading?: boolean;
 }
 
 export function AdminModal({
@@ -33,7 +34,8 @@ export function AdminModal({
   batches,
   roles,
   onSubmit,
-  submitting
+  submitting,
+  isLoading
 }: AdminModalProps) {
   const [formData, setFormData] = useState({
     name: '',
@@ -244,10 +246,10 @@ export function AdminModal({
                 setSelectedYear("");
                 setFormData({ ...formData, batch_id: "" });
               }}
-              disabled={submitting}
+              disabled={submitting || isLoading}
             >
               <SelectTrigger className="w-full bg-accent/40 border border-border/30">
-                <SelectValue placeholder="Any City" />
+                <SelectValue placeholder={isLoading ? "Loading cities..." : "Any City"} />
               </SelectTrigger>
 
               <SelectContent className="glass">
@@ -272,7 +274,7 @@ export function AdminModal({
                 setSelectedYear(v === "any" ? "" : v);
                 setFormData({ ...formData, batch_id: "" });
               }}
-              disabled={submitting || (!selectedCity && !selectedYear)}
+              disabled={submitting || isLoading || (!selectedCity && !selectedYear)}
             >
               <SelectTrigger className="w-full bg-accent/40 border border-border/30">
                 <SelectValue placeholder="Any Year" />
@@ -306,6 +308,7 @@ export function AdminModal({
             }
             disabled={
               submitting ||
+              isLoading ||
               (!selectedCity && !selectedYear && !formData.batch_id)
             }
           >

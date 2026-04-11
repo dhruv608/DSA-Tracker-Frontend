@@ -1,12 +1,20 @@
 "use client";
 
+import { ReactNode } from "react";
 import { BarChart3, Target, Globe } from "lucide-react";
 import DifficultyChart from "@/components/admin/charts/DifficultyChart";
 import PlatformChart from "@/components/admin/charts/PlatformChart";
 import TypeChart from "@/components/admin/charts/Type";
+import { AdminStats } from "@/types/admin/dashboard.types";
 
 interface GraphProps {
-  stats: any;
+  stats: AdminStats | null;
+}
+
+interface CardProps {
+  title: string;
+  icon: ReactNode;
+  children: ReactNode;
 }
 
 export default function Graph({ stats }: GraphProps) {
@@ -30,7 +38,7 @@ export default function Graph({ stats }: GraphProps) {
   );
 }
 
-function Card({ title, icon, children }: any) {
+function Card({ title, icon, children }: CardProps) {
   return (
     <div className="glass  hover-glow rounded-2xl overflow-hidden">
 

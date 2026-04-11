@@ -1,23 +1,20 @@
 "use client";
 
-import { City } from '@/services/city.service';
-import { Batch } from '@/services/batch.service';
+import { City } from '@/types/superadmin/city.types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ActionButtons } from '@/components/ActionButtons';
 import { TableSkeleton } from '@/components/TableSkeleton';
-import { Building2, Layers, Users } from "lucide-react";
 
 interface CityTableProps {
   cities: City[];
-  batches: Batch[];
   loading: boolean;
   onEdit: (city: City) => void;
   onDelete: (city: City) => void;
 }
 
 
-export function CityTable({ cities, batches, loading, onEdit, onDelete }: CityTableProps) {
+export function CityTable({ cities, loading, onEdit, onDelete }: CityTableProps) {
 
   return (
     <div className="
@@ -90,13 +87,6 @@ export function CityTable({ cities, batches, loading, onEdit, onDelete }: CityTa
 
           {/* 🔸 DATA */}
           {!loading && cities.map((city) => {
-            const batchesInCity = batches.filter(b => b.city_id === city.id);
-            const batchesCount = batchesInCity.length;
-            const studentsCount = batchesInCity.reduce(
-              (sum, b) => sum + (b._count?.students || 0),
-              0
-            );
-
             return (
               <TableRow
                 key={city.id}
@@ -121,7 +111,7 @@ export function CityTable({ cities, batches, loading, onEdit, onDelete }: CityTa
                     rounded-full text-xs font-medium
                     text-muted-foreground
                   ">
-                    {batchesCount}
+                    {city.total_batches ?? 0}
                   </span>
                 </TableCell>
 
@@ -133,7 +123,7 @@ export function CityTable({ cities, batches, loading, onEdit, onDelete }: CityTa
                     rounded-full text-xs font-medium
                     text-muted-foreground
                   ">
-                    {studentsCount}
+                    {city.total_students ?? 0}
                   </span>
                 </TableCell>
 

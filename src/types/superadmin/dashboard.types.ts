@@ -6,6 +6,7 @@ export interface Stats {
   totalCities: number;
   totalBatches: number;
   totalAdmins: number;
+  cityBreakdown?: CityBreakdown[];
 }
 
 export interface CityBreakdown {

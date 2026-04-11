@@ -2,9 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  getAdminQuestions} from '@/services/admin.service';
-import { handleToastError } from "@/utils/toast-system";
+import { getAdminQuestions } from '@/services/admin.service';
 import QuestionsHeader from '@/components/admin/questions/QuestionsHeader';
 import QuestionsFilter from '@/components/admin/questions/QuestionsFilter';
 import QuestionsTable from '@/components/admin/questions/QuestionsTable';
@@ -57,13 +55,13 @@ export default function AdminQuestionsBankPage() {
 
   const fetchTopics = useCallback(async () => {
     try {
-      // Import api locally here to hit the topics endpoint
-      const { default: api } = await import('@/lib/api');
-      const res = await api.get('/api/admin/topics');
+      // Import apiClient to hit the topics endpoint
+      const { apiClient } = await import('@/api');
+      const res = await apiClient.get('/api/admin/topics');
       setAllTopics(res.data.map((t: Topic) => ({ label: t.topic_name, value: t.slug })));
       setTopicsForBulkUpload(res.data.map((t: Topic) => ({ label: t.topic_name, value: t.id.toString() })));
     } catch (err) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
       console.error(err);
     }
   }, []);
@@ -97,7 +95,7 @@ export default function AdminQuestionsBankPage() {
       setTotalPages(res.pagination.totalPages);
       setTotalRecords(res.pagination.total);
     } catch (err) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
       console.error("Failed to load questions", err);
     } finally {
       setLoading(false);

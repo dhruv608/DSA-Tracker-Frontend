@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import api from "@/lib/api";
+import { apiClient } from '@/api';
 import {
   BarChart3,
   TrendingUp,
@@ -24,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { handleToastError as handleError } from "@/utils/toast-system";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BatchSelection } from '@/types/student/index.types';
 
@@ -65,7 +64,7 @@ export default function TopicProgressModal({
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/api/topicprogress/${username}`);
+      const res = await apiClient.get(`/api/topicprogress/${username}`);
       console.log('Topic Progress API Response:', res.data);
       setData(res.data);
     } catch (err) {
@@ -144,7 +143,7 @@ export default function TopicProgressModal({
               <Skeleton className="h-4 w-48 rounded-md mt-1" />
             ) : (
               <p className="text-sm text-muted-foreground">
-                {data?.student?.name} • {data?.student?.batch?.batch_name || 'No batch'}
+                {data?.student?.name} • {data?.student?.batch?.name || data?.student?.batch?.batch_name || 'No batch'}
               </p>
             )}
           </div>

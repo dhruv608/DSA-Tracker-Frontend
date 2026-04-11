@@ -2,7 +2,6 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { studentLeaderboardService } from '@/services/student/leaderboard.service';
-import { handleToastError } from "@/utils/toast-system";
 
 export interface LeaderboardEntry {
   student_id: number;
@@ -92,7 +91,7 @@ export function useLeaderboard({
         console.log('📊 Full API response:', JSON.stringify(result, null, 2));
         return result;
       } catch (error) {
-        handleToastError(error);
+        // Error is handled by API client interceptor
         console.error('❌ Query function FAILED:', error);
         throw error;
       }

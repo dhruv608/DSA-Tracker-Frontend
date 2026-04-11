@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { studentAuthService } from '@/services/student/auth.service';
-import { toast } from 'sonner';
+import { showError } from '@/ui/toast';
 import { BruteForceLoader } from '@/components/ui/BruteForceLoader';
 
 export default function AuthCallback() {
@@ -38,8 +38,9 @@ export default function AuthCallback() {
         const errorDescription = searchParams.get('error_description');
         
         if (error) {
-          setError(`Google OAuth Error: ${errorDescription || error}`);
-          toast.error(`Google OAuth Error: ${errorDescription || error}`);
+          const errorMsg = `Google OAuth Error: ${errorDescription || error}`;
+          setError(errorMsg);
+          showError(errorMsg);
           return;
         }
 
@@ -47,7 +48,7 @@ export default function AuthCallback() {
         
         if (!token) {
           setError('No credential received from Google');
-          toast.error('Authentication failed: No credential received');
+          showError('Authentication failed: No credential received');
           return;
         }
 
@@ -56,7 +57,7 @@ export default function AuthCallback() {
         
         if (!payload.email?.endsWith('@pwioi.com')) {
           setError('Please use your PW student email to log in.');
-          toast.error('Only PW student emails are allowed');
+          showError('Only PW student emails are allowed');
           return;
         }
 
@@ -77,14 +78,14 @@ export default function AuthCallback() {
           }
         } else {
           setError('Login failed: No token received');
-          toast.error('Authentication failed: No token received');
+          showError('Authentication failed: No token received');
         }
       } catch (err: any) {
-        const errorMessage = err.response?.data?.error || 
-                            err.response?.data?.message || 
+        const errorMessage = err.response?.data?.error ||
+                            err.response?.data?.message ||
                             'Google login failed';
         setError(errorMessage);
-        toast.error(errorMessage);
+        showError(errorMessage);
       } finally {
         setLoading(false);
       }

@@ -10,7 +10,6 @@ import { SubtopicBackNav } from '@/components/student/subtopics/SubtopicBackNav'
 import { SubtopicHeader } from '@/components/student/subtopics/SubtopicHeader';
 import { TopicDetailsShimmer } from '@/components/student/subtopics/TopicDetailsShimmer';
 import { Pagination } from '@/components/Pagination';
-import { handleToastError } from "@/utils/toast-system";
 import { Class } from '@/types/student/index.types';
 
 interface TopicWithPagination {
@@ -75,7 +74,7 @@ export default function TopicDetailsPage() {
       const data = await studentTopicService.getTopicOverviewWithPagination(topicSlug, queryParams.toString());
       setTopic(data);
     } catch (e) {
-      handleToastError(e);
+      // Error is handled by API client interceptor
       console.error("Topic fetch error", e);
       router.push('/topics');
     } finally {

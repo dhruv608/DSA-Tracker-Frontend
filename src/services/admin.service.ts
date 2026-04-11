@@ -1,7 +1,7 @@
-import api from '../lib/api';
+import { apiClient } from '@/api';
 import { isAdminToken, clearAuthTokens } from '../lib/auth-utils';
-import { showSuccess, showDeleteSuccess } from '@/utils/toast-system';
-import { Admin } from '@/types/common/api.types';
+import { showSuccess } from '@/ui/toast';
+import { Admin, ApiError } from '@/types/common/api.types';
 import { TopicQueryParams } from '@/types/admin/topic.types';
 import { ClassFormData, ClassUpdateData } from '@/types/admin/class.types';
 import { QuestionFilters, CreateQuestionData, UpdateQuestionData } from '@/types/admin/question.types';
@@ -11,7 +11,7 @@ import { LeaderboardQueryFilters } from '@/types/admin/leaderboard.types';
 
 
 export const getAdminRoles = async (): Promise<string[]> => {
-  const response = await api.get('/api/admin/roles');
+  const response = await apiClient.get('/api/admin/roles');
   return response.data.data;
 };
 export const getCurrentAdmin = async () => {
@@ -19,47 +19,48 @@ export const getCurrentAdmin = async () => {
   if (!isAdminToken()) {
     clearAuthTokens(); // Clear invalid tokens
     const error = new Error('Access denied. Admins only.');
-    (error as any).response = { status: 403, data: { error: 'Access denied. Admins only.' } };
+    const apiError = error as ApiError;
+    apiError.response = { status: 403, data: { error: 'Access denied. Admins only.' } };
     throw error;
   }
 
-  const response = await api.get('/api/admin/me');
+  const response = await apiClient.get('/api/admin/me');
   return response.data;
 };
 export const getAdminStats = async (batch_id: number) => {
-  const response = await api.post('/api/admin/stats', { batch_id });
+  const response = await apiClient.post('/api/admin/stats', { batch_id });
   return response.data.data;
 };
 
 export const getAdminBatchTopics = async (batchSlug: string, params?: TopicQueryParams) => {
-  const response = await api.get(`/api/admin/${batchSlug}/topics`, { params });
+  const response = await apiClient.get(`/api/admin/${batchSlug}/topics`, { params });
   return response.data; // paginated structure { topics, pagination }
 };
 
 export const createAdminTopic = async (formData: FormData) => {
-  const response = await api.post('/api/admin/topics', formData, {
+  const response = await apiClient.post('/api/admin/topics', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
-  showSuccess('Topic Created');
+  showSuccess('Topic created successfully!');
   return response.data;
 };
 
 export const updateAdminTopic = async (topicSlug: string, formData: FormData) => {
-  const response = await api.put(`/api/admin/topics/${topicSlug}`, formData, {
+  const response = await apiClient.put(`/api/admin/topics/${topicSlug}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
-  showSuccess('Topic Updated');
+  showSuccess('Topic updated successfully!');
   return response.data;
 };
 
 export const deleteAdminTopic = async (topicSlug: string) => {
-  const response = await api.delete(`/api/admin/topics/${topicSlug}`);
-  showDeleteSuccess('Topic');
+  const response = await apiClient.delete(`/api/admin/topics/${topicSlug}`);
+  showSuccess('Topic deleted successfully!');
   return response.data;
 };
 
 export const getAllTopics = async () => {
-  const response = await api.get('/api/admin/topics');
+  const response = await apiClient.get('/api/admin/topics');
   return response.data;
 };
 
@@ -68,25 +69,25 @@ export const getAllTopics = async () => {
 // ==========================================
 
 export const getAdminTopicClasses = async (batchSlug: string, topicSlug: string) => {
-  const response = await api.get(`/api/admin/${batchSlug}/topics/${topicSlug}/classes`);
+  const response = await apiClient.get(`/api/admin/${batchSlug}/topics/${topicSlug}/classes`);
   return response.data;
 };
 
 export const createAdminClass = async (batchSlug: string, topicSlug: string, data: ClassFormData) => {
-  const response = await api.post(`/api/admin/${batchSlug}/topics/${topicSlug}/classes`, data);
-  showSuccess('Class Created');
+  const response = await apiClient.post(`/api/admin/${batchSlug}/topics/${topicSlug}/classes`, data);
+  showSuccess('Class created successfully!');
   return response.data;
 };
 
 export const updateAdminClass = async (batchSlug: string, topicSlug: string, classSlug: string, data: ClassUpdateData) => {
-  const response = await api.patch(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`, data);
-  showSuccess('Class Updated');
+  const response = await apiClient.patch(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`, data);
+  showSuccess('Class updated successfully!');
   return response.data;
 };
 
 export const deleteAdminClass = async (batchSlug: string, topicSlug: string, classSlug: string) => {
-  const response = await api.delete(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`);
-  showDeleteSuccess('Class');
+  const response = await apiClient.delete(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`);
+  showSuccess('Class deleted successfully!');
   return response.data;
 };
 
@@ -95,7 +96,7 @@ export const deleteAdminClass = async (batchSlug: string, topicSlug: string, cla
 // ==========================================
 
 export const getAdminClassQuestions = async (batchSlug: string, topicSlug: string, classSlug: string) => {
-  const response = await api.get(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}/questions`);
+  const response = await apiClient.get(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}/questions`);
   return response.data;
 };
 
@@ -111,14 +112,14 @@ export const assignQuestionsToClass = async (
   classSlug: string,
   data: { questions: AssignQuestionItem[] }
 ) => {
-  const response = await api.post(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}/questions`, data);
-  showSuccess('Questions Assigned');
+  const response = await apiClient.post(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}/questions`, data);
+  showSuccess('Questions assigned successfully!');
   return response.data;
 };
 
 export const removeQuestionFromClass = async (batchSlug: string, topicSlug: string, classSlug: string, questionId: number) => {
-  const response = await api.delete(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}/questions/${questionId}`);
-  showDeleteSuccess('Question Removed');
+  const response = await apiClient.delete(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}/questions/${questionId}`);
+  showSuccess('Question removed successfully!');
   return response.data;
 };
 
@@ -130,34 +131,34 @@ export const updateQuestionVisibilityType = async (
   visibilityId: number,
   type: 'HOMEWORK' | 'CLASSWORK'
 ) => {
-  const response = await api.patch(
+  const response = await apiClient.patch(
     `/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}/visibility/${visibilityId}`,
     { type }
   );
-  showSuccess('Question Type Updated');
+  showSuccess('Question type updated');
   return response.data;
 };
 
 export const getAdminQuestions = async (params: QuestionFilters) => {
-  const response = await api.get('/api/admin/questions', { params });
+  const response = await apiClient.get('/api/admin/questions', { params });
   return response.data; // paginated structure
 };
 
 export const createAdminQuestion = async (data: CreateQuestionData) => {
-  const response = await api.post('/api/admin/questions', data);
-  showSuccess('Question Created');
+  const response = await apiClient.post('/api/admin/questions', data);
+  showSuccess('Question created successfully!');
   return response.data;
 };
 
 export const updateAdminQuestion = async (id: number, data: UpdateQuestionData) => {
-  const response = await api.patch(`/api/admin/questions/${id}`, data);
-  showSuccess('Question Updated');
+  const response = await apiClient.patch(`/api/admin/questions/${id}`, data);
+  showSuccess('Question updated successfully!');
   return response.data;
 };
 
 export const deleteAdminQuestion = async (id: number) => {
-  const response = await api.delete(`/api/admin/questions/${id}`);
-  showDeleteSuccess('Question');
+  const response = await apiClient.delete(`/api/admin/questions/${id}`);
+  showSuccess('Question deleted successfully!');
   return response.data;
 };
 
@@ -166,25 +167,25 @@ export const deleteAdminQuestion = async (id: number) => {
 // ==========================================
 
 export const getAdminStudents = async (params: StudentFilters) => {
-  const response = await api.get('/api/admin/students', { params });
+  const response = await apiClient.get('/api/admin/students', { params });
   return response.data;
 };
 
 export const createAdminStudent = async (data: StudentSubmitPayload) => {
-  const response = await api.post('/api/admin/students', data);
-  showSuccess('Student Created');
+  const response = await apiClient.post('/api/admin/students', data);
+  showSuccess('Student created successfully!');
   return response.data;
 };
 
 export const updateAdminStudent = async (id: number, data: StudentSubmitPayload) => {
-  const response = await api.patch(`/api/admin/students/${id}`, data);
-  showSuccess('Student Updated');
+  const response = await apiClient.patch(`/api/admin/students/${id}`, data);
+  showSuccess('Student updated successfully!');
   return response.data;
 };
 
 export const deleteAdminStudent = async (id: number) => {
-  const response = await api.delete(`/api/admin/students/${id}`);
-  showDeleteSuccess('Student');
+  const response = await apiClient.delete(`/api/admin/students/${id}`);
+  showSuccess('Student deleted successfully!');
   return response.data;
 };
 
@@ -192,24 +193,24 @@ export const bulkUploadStudents = async (formData: FormData, defaultPassword?: s
   if (defaultPassword) {
     formData.append('default_password', defaultPassword);
   }
-  const response = await api.post('/api/admin/bulk-operations', formData, {
+  const response = await apiClient.post('/api/admin/bulk-operations', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
-  showSuccess('File Uploaded', 'Students uploaded successfully!');
+  showSuccess('Students uploaded successfully!');
   return response.data;
 };
 
 export const bulkUploadQuestions = async (formData: FormData) => {
-  const response = await api.post('/api/admin/questions/bulk-upload', formData, {
+  const response = await apiClient.post('/api/admin/questions/bulk-upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
-  showSuccess('File Uploaded', 'Questions uploaded successfully!');
+  showSuccess('Questions uploaded successfully!');
   return response.data;
 };
 
 export const getAdminStudentProfile = async (username: string) => {
   // Using the public profiling route due to internal restructuring
-  const response = await api.get(`/api/students/profile/${username}`);
+  const response = await apiClient.get(`/api/students/profile/${username}`);
   return response.data;
 };
 
@@ -218,7 +219,7 @@ export const getAdminStudentProfile = async (username: string) => {
 // ==========================================
 
 export const getAdminLeaderboard = async (query: { page?: number; limit?: number; search?: string }, body: LeaderboardQueryFilters) => {
-  const response = await api.post('/api/admin/leaderboard', body, { params: query });
+  const response = await apiClient.post('/api/admin/leaderboard', body, { params: query });
   return response.data;
 };
 

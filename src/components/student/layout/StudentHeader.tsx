@@ -18,7 +18,7 @@ import { LogOut, User, Home, BookOpen, PenTool, Trophy, Lock, Activity, ChevronR
 import { useRecentQuestions } from '@/contexts/RecentQuestionsContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { studentAuthService } from '@/services/student/auth.service';
-import { handleToastError } from "@/utils/toast-system";
+import { showSuccess } from '@/ui/toast';
 
 // Drawer Component
 const Drawer = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
@@ -116,16 +116,26 @@ export default function StudentHeader() {
   ];
 
   const handleLogout = async () => {
+    // Always show success and logout, regardless of API result
+    // The user is logging out anyway - token may already be expired
+    showSuccess('Logged out successfully.');
+    
+    // Clear tokens immediately
+    localStorage.removeItem('accessToken');
+    document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    
+    // Try to call logout API (best effort - don't wait for it)
     try {
       await studentAuthService.logout();
-    } catch (e) {
-      handleToastError(e);
-      // Handle logout error silently
-    } finally {
-      localStorage.removeItem('accessToken');
-      document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      router.push('/login');
+    } catch (error) {
+      // Ignore any errors - user is logging out anyway
+      console.log('Logout API error (ignored):', error);
     }
+    
+    // Redirect after brief delay to allow toast to be seen
+    setTimeout(() => {
+      router.push('/login');
+    });
   };
 
   const isProfileLoaded = !!profile;

@@ -5,15 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAdminStore } from '@/store/adminStore';
 import { Admin } from '@/types/common/api.types';
 import { getAdminLeaderboard } from '@/services/admin.service';
-import { Trophy, Clock } from 'lucide-react';
-import PodiumShimmer from '@/components/leaderboard/shimmers/PodiumShimmer';
-import TableShimmer from '@/components/leaderboard/shimmers/TableShimmer';
 import { LeaderboardTable } from '@/components/leaderboard/components/LeaderboardTable';
 import { FilterBar } from '@/components/leaderboard/components/FilterBar';
 import { EvaluationModal } from '@/components/leaderboard/components/EvaluationModal';
 import { TimerLeaderboard } from '@/components/leaderboard/components/TimerLeaderboard';
 import PodiumSection from '@/components/leaderboard/components/PodiumSection';
-import { handleToastError } from "@/utils/toast-system";
 import { LeaderboardData, ApiError, BatchSelection } from '@/types/admin/index.types';
 
 // Hook for Debounce
@@ -87,7 +83,7 @@ export default function AdminLeaderboardPage() {
   }, [lCity, allCities, lYear]);
 
   // Manual refresh function
-  const handleRefresh = async () => {
+  const handleRefresh = async (force = false) => {
     if (!isInit) return;
 
     // Skip if already fetching
@@ -100,16 +96,16 @@ export default function AdminLeaderboardPage() {
     const year = lYear === 0 ? undefined : Number(lYear);
     const search = debouncedSearch || '';
 
-    // Check if same params were already used
+    // Check if same params were already used (skip if not forced)
     const currentParams: { city: string; year: number | undefined; page: number; limit: number; search: string } = { city, year, page, limit, search };
-    const sameParams = 
+    const sameParams =
       lastFetchLeaderboardParams.current.city === city &&
       lastFetchLeaderboardParams.current.year === year &&
       lastFetchLeaderboardParams.current.page === page &&
       lastFetchLeaderboardParams.current.limit === limit &&
       lastFetchLeaderboardParams.current.search === search;
 
-    if (sameParams) {
+    if (!force && sameParams) {
       console.log("Same leaderboard params already fetched, skipping refresh");
       return;
     }
@@ -135,7 +131,7 @@ export default function AdminLeaderboardPage() {
       console.log("AdminLeaderboardPage - API Response (Refresh):", response);
       setLeaderboardData(response.data);
     } catch (err: unknown) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
       console.error('Failed to refresh leaderboard data:', err);
       const error = err as ApiError;
       setLeaderboardError(error.message || 'Failed to refresh leaderboard data');
@@ -215,8 +211,8 @@ export default function AdminLeaderboardPage() {
 
         setLeaderboardData(response.data);
       } catch (err: unknown) {
-        handleToastError(err);
-        console.error('Failed to fetch leaderboard data:', err);
+        // Error is handled by API client interceptor
+        console.log('Failed to fetch leaderboard data:', err);
         const error = err as ApiError;
         setLeaderboardError(error.message || 'Failed to fetch leaderboard data');
         setLeaderboardData(null);
@@ -288,7 +284,7 @@ export default function AdminLeaderboardPage() {
           <TimerLeaderboard
             lastUpdated={leaderboardData?.last_calculated}
             refreshInterval={4}
-            onRefresh={handleRefresh}
+            onRefresh={() => handleRefresh(true)}
           />
         </div>
 

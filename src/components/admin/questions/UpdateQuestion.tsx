@@ -16,7 +16,7 @@ import { Select } from "@/components/Select";
 import { AlertTriangle, Edit, Save } from 'lucide-react';
 import { updateAdminQuestion, getAllTopics } from '@/services/admin.service';
 import { Question, UpdateQuestionData } from '@/types/admin/question.types';
-import { handleToastError } from "@/utils/toast-system";
+import { ApiError } from '@/types/common/api.types';
 
 interface UpdateQuestionProps {
   open: boolean;
@@ -61,10 +61,15 @@ export default function UpdateQuestion({
     }
   }, [question]);
 
+interface Topic {
+  id: number;
+  topic_name: string;
+}
+
   const loadTopics = async () => {
     try {
       const topicsData = await getAllTopics();
-      const formattedTopics = topicsData.map((topic: any) => ({
+      const formattedTopics = topicsData.map((topic: Topic) => ({
         label: topic.topic_name,
         value: topic.id.toString()
       }));
@@ -98,9 +103,10 @@ export default function UpdateQuestion({
       await updateAdminQuestion(question.id, updateData);
       onSuccess();
       onOpenChange(false);
-    } catch (err: any) {
-      handleToastError(err);
-      setError(err.response?.data?.error || err.message || 'Failed to update question');
+    } catch (err) {
+      // Error is handled by API client interceptor
+      const error = err as ApiError;
+      setError(error.response?.data?.error || error.message || 'Failed to update question');
     } finally {
       setLoading(false);
     }

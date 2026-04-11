@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import api from '@/lib/api';
+import { apiClient } from '@/api';
 import { Button } from '@/components/ui/button';
 import {
    Dialog,
@@ -11,7 +11,6 @@ import {
    DialogFooter,
 } from "@/components/ui/dialog";
 import { Trash2 } from 'lucide-react';
-import { handleToastError } from "@/utils/toast-system";
 
 interface DeletePdfModalProps {
    isOpen: boolean;
@@ -33,7 +32,7 @@ export default function DeletePdfModal({ isOpen, onClose, onSuccess, batchSlug, 
          const formData = new FormData();
          formData.append('remove_pdf', 'true');
 
-         await api.patch(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`, formData, {
+         await apiClient.patch(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classSlug}`, formData, {
             headers: {
                'Content-Type': 'multipart/form-data',
             },
@@ -42,7 +41,7 @@ export default function DeletePdfModal({ isOpen, onClose, onSuccess, batchSlug, 
          onClose();
          onSuccess();
       } catch (err: any) {
-         handleToastError(err);
+         // Error is handled by API client interceptor
          setFormError(err.response?.data?.error || 'Failed to remove PDF');
       } finally {
          setSubmitting(false);

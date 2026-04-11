@@ -1,14 +1,19 @@
 "use client";
 
-import { Award, Crown, ExternalLink, Trophy } from "lucide-react";
+import { Award, ExternalLink, Trophy } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation"
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import Link from "next/link"
+import { LeaderboardEntry } from "@/types/admin/leaderboard.types";
 
-export const PodiumCard = ({ student, rank, isCenter }: any) => {
-    const router = useRouter();
+interface PodiumCardProps {
+  student: LeaderboardEntry;
+  rank: number;
+  isCenter?: boolean;
+}
+
+export const PodiumCard = ({ student, rank, isCenter }: PodiumCardProps) => {
     if (!student) return null;
 
     // 🎨 Color logic (ONLY using your theme vars)
@@ -108,7 +113,7 @@ export const PodiumCard = ({ student, rank, isCenter }: any) => {
                         >
                             {student?.profile_image_url ? (
                                 <Image
-                                    src={student.profile_image_url}
+                                    src={student.profile_image_url || ''}
                                     alt={student.name || "profile"}
                                     fill
                                     quality={100}

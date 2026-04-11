@@ -5,15 +5,28 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pagination } from '@/components/Pagination';
 import TableShimmer from '@/components/leaderboard/shimmers/TableShimmer';
 import { LeaderboardTableRow } from './LeaderboardTableRow';
+import { LeaderboardData } from '@/types/admin/leaderboard.types';
+
+interface LeaderboardTableProps {
+  data: LeaderboardData | null;
+  loading: boolean;
+  error: string | null;
+  page: number;
+  limit: number;
+  setPage: (value: number) => void;
+  setLimit: (value: number) => void;
+  selectedCity: string;
+  mode?: 'admin' | 'student';
+}
 
 export function LeaderboardTable({
   data, loading, error,
   page, limit, setPage, setLimit,
   selectedCity,
   mode = 'admin'
-}: any) {
+}: LeaderboardTableProps) {
   const leaderboard = data?.leaderboard || [];
-  const totalRecords = data?.total || 0;
+  const totalRecords = data?.total_students || 0;
   const errorMsg = error;
   
   // Determine rank column name based on city selection
@@ -59,7 +72,7 @@ export function LeaderboardTable({
                   </TableCell>
                 </TableRow>
               ) : ( 
-                leaderboard.map((entry: any) => (
+                leaderboard.map((entry) => (
                   <LeaderboardTableRow key={entry.student_id || entry.username} entry={entry}  selectedCity={selectedCity} />
                 ))
               )}

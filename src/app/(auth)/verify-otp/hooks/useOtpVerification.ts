@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { studentAuthService } from '@/services/student/auth.service';
-import { glassToast, handleToastError, showSuccess } from '@/utils/toast-system';
+import { showError, showSuccess } from '@/ui/toast';
 
 export function useOtpVerification() {
   const router = useRouter();
@@ -81,10 +81,10 @@ export function useOtpVerification() {
     e.preventDefault();
     const otpJoined = fpOtpArray.join('');
     
-    if (otpJoined.length < 6) { 
-        glassToast.error("Invalid OTP ❌"); 
-        setError("Please enter the 6-digit OTP."); 
-        return; 
+    if (otpJoined.length < 6) {
+        showError("Invalid OTP");
+        setError("Please enter the 6-digit OTP.");
+        return;
     }
     
     setError('');
@@ -98,14 +98,14 @@ console.log('Response valid:', response?.valid);
 console.log('Response data:', response?.data);
       // Only redirect if OTP is actually valid
       if (response && (response.valid || response.data?.valid)) {
-        glassToast.success("OTP verified successfully ✅");
+        showSuccess("OTP verified successfully");
         // Redirect to reset password page only after successful OTP validation
         router.push(`/reset-password?email=${encodeURIComponent(emailParam || '')}&otp=${otpJoined}`);
       } else {
         // Handle case where backend returns success: false
         const errorMessage = response?.message || 'Invalid OTP. Please try again.';
         setError(errorMessage);
-        glassToast.error(errorMessage);
+        showError(errorMessage);
         setFpOtpArray(Array(6).fill(''));
         setTimeout(() => {
           firstOtpInputRef.current?.focus();
@@ -113,9 +113,9 @@ console.log('Response data:', response?.data);
       }
     } catch (err: any) {
       console.error('OTP validation error:', err);
+      // Error is handled by API client interceptor
       const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Invalid OTP. Please try again.';
       setError(errorMessage);
-      glassToast.error(errorMessage);
       // Clear OTP inputs on validation failure
       setFpOtpArray(Array(6).fill(''));
       // Focus back to first input

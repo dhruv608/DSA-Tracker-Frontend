@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { studentAuthService } from '@/services/student/auth.service';
 import { isStudentToken } from '@/lib/auth-utils';
-import { handleToastError } from "@/utils/toast-system";
+import { ApiError } from '@/types/common/api.types';
 
 interface ProfileData {
   data: {
@@ -16,9 +16,9 @@ interface ProfileData {
     leetcode_id?: string;
     gfg?: string;
     gfg_id?: string;
-    [key: string]: any;
   };
-  [key: string]: any;
+  success?: boolean;
+  message?: string;
 }
 
 interface ProfileContextType {
@@ -58,19 +58,20 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     try {
       const data = await studentAuthService.getCurrentStudent();
       setProfile(data);
-    } catch (e: any) {
-      handleToastError(e);
-      setProfileError(e?.message || 'Failed to fetch profile');
-      
+    } catch (e) {
+      // Error is handled by API client interceptor
+      const error = e as ApiError;
+      setProfileError(error?.message || 'Failed to fetch profile');
+
       // Handle different error types gracefully
-      if (e?.response?.status === 401) {
+      if (error?.response?.status === 401) {
         // Token expired - will be handled by interceptors
         setProfile(null);
         return;
-      } else if (e?.response?.status === 403) {
+      } else if (error?.response?.status === 403) {
         // Admin token on student route
         setProfile(null);
-      } else if (e?.code === 'NETWORK_ERROR') {
+      } else if (error?.code === 'NETWORK_ERROR') {
         // Network connectivity issues
         setProfile(null);
       } else {

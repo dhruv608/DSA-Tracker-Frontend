@@ -130,6 +130,7 @@ export interface CsvRowData {
   enrollment_id: string;
   leetcode_id?: string;
   gfg_id?: string;
+  [key: string]: string | undefined;
 }
 
 export interface StudentFilters {

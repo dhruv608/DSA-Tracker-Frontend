@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import api from '@/lib/api';
+import { apiClient } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PdfPreview } from '@/components/ui/PdfPreview';
@@ -14,7 +14,6 @@ import {
    DialogDescription,
 } from "@/components/ui/dialog";
 import { Link as LinkIcon } from 'lucide-react';
-import { handleToastError } from "@/utils/toast-system";
 
 interface EditClassModalProps {
    isOpen: boolean;
@@ -93,7 +92,7 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, batchSlug, 
             formData.append('pdf_url', pdfUrl);
          }
 
-         await api.patch(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classData.slug}`, formData, {
+         await apiClient.patch(`/api/admin/${batchSlug}/topics/${topicSlug}/classes/${classData.slug}`, formData, {
             headers: {
                'Content-Type': 'multipart/form-data',
             },
@@ -103,7 +102,7 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, batchSlug, 
          resetForm();
          onSuccess();
       } catch (err: any) {
-         handleToastError(err);
+         // Error is handled by API client interceptor
          setFormError(err.response?.data?.error || 'Failed to update class');
       } finally {
          setSubmitting(false);

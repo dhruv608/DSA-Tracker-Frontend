@@ -9,7 +9,6 @@ import {
   deleteAdminStudent
 } from '@/services/admin.service';
 import { AdminStudent } from '@/types/student/index.types';
-import { handleToastError, showSuccess, showDeleteSuccess } from "@/utils/toast-system";
 import { ApiError } from '@/types/admin/index.types';
 import { Users } from 'lucide-react';
 import StudentsHeader from '@/components/admin/students/StudentsHeader';
@@ -103,7 +102,7 @@ export default function AdminStudentsPage() {
       setTotalPages(res.pagination.totalPages);
       setTotalRecords(res.pagination.total);
     } catch (err) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
       console.error("Failed to load students", err);
     } finally {
       setLoading(false);
@@ -140,9 +139,11 @@ export default function AdminStudentsPage() {
       });
       setIsCreateOpen(false);
       resetForms();
+      lastFetchStudentsParams.current = { page: 0, limit: 0, search: '' }; // Reset to force refetch
       fetchStudents();
     } catch (err: unknown) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
+      console.log(err)
     } finally {
       setSubmitting(false);
     }
@@ -163,9 +164,11 @@ export default function AdminStudentsPage() {
       });
       setIsEditOpen(false);
       resetForms();
+      lastFetchStudentsParams.current = { page: 0, limit: 0, search: '' }; // Reset to force refetch
       fetchStudents();
     } catch (err: unknown) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
+      console.log(err)
     } finally {
       setSubmitting(false);
     }
@@ -178,9 +181,11 @@ export default function AdminStudentsPage() {
       await deleteAdminStudent(selectedStudent.id);
       setIsDeleteOpen(false);
       resetForms();
+      lastFetchStudentsParams.current = { page: 0, limit: 0, search: '' }; // Reset to force refetch
       fetchStudents();
     } catch (err: unknown) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
+      console.log(err)
     } finally {
       setSubmitting(false);
     }
@@ -199,6 +204,7 @@ export default function AdminStudentsPage() {
 
   const handleBulkUploadSuccess = (result: { success: number; failed: number }) => {
     // Show success message or refresh data
+    lastFetchStudentsParams.current = { page: 0, limit: 0, search: '' }; // Reset to force refetch
     fetchStudents();
   };
 

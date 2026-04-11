@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { getAllCities, createCity, deleteCity, updateCity, City } from '@/services/city.service';
-import { getAllBatches, Batch } from '@/services/batch.service';
 import { Pagination } from '@/components/Pagination';
 import { DeleteModal } from '@/components/DeleteModal';
 import { CityHeader } from '@/components/superadmin/cities/CityHeader';
@@ -11,12 +10,10 @@ import { CityTable } from '@/components/superadmin/cities/CityTable';
 import { CityCard } from '@/components/superadmin/cities/CityCard';
 import { CityModal } from '@/components/superadmin/cities/CityModal';
 import { CityShimmer } from '@/components/superadmin/cities/CityShimmer';
-import { handleToastError, showSuccess, showDeleteSuccess } from "@/utils/toast-system";
 import { CitySubmitPayload } from '@/types/superadmin/index.types';
 
 export default function CitiesPage() {
   const [cities, setCities] = useState<City[]>([]);
-  const [allBatches, setAllBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   
@@ -35,33 +32,23 @@ export default function CitiesPage() {
 
   const [submitting, setSubmitting] = useState(false);
   
-  // Refs for preventing double API calls
+  // Ref to prevent concurrent API calls
   const isFetching = useRef(false);
-  const lastFetchParams = useRef<{ fetched: boolean }>({ fetched: false });
 
   const fetchData = async () => {
-    // Skip if already fetching
+    // Skip if already fetching (prevents concurrent calls only)
     if (isFetching.current) {
       console.log("Already fetching cities data, skipping duplicate call");
       return;
     }
 
-    // Check if data was already fetched
-    if (lastFetchParams.current.fetched) {
-      console.log("Cities data already fetched, skipping");
-      return;
-    }
-
     isFetching.current = true;
-    lastFetchParams.current = { fetched: true };
     setLoading(true);
     try {
       const respCities = await getAllCities();
-      const respBatches = await getAllBatches();
       setCities(Array.isArray(respCities) ? respCities : []);
-      setAllBatches(Array.isArray(respBatches) ? respBatches : []);
     } catch (err) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
       console.error(err);
     } finally {
       setLoading(false);
@@ -146,7 +133,6 @@ export default function CitiesPage() {
           <div className="p-6">
             <CityTable
               cities={paginatedCities}
-              batches={allBatches}
               loading={false}
               onEdit={openEdit}
               onDelete={openDelete}
@@ -164,7 +150,6 @@ export default function CitiesPage() {
                   <CityCard
                     key={city.id}
                     city={city}
-                    batches={allBatches}
                     onEdit={openEdit}
                     onDelete={openDelete}
                   />

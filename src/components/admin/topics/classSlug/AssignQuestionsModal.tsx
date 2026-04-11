@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/dialog";
 import { Search, AlertTriangle, ExternalLink, CheckCircle2, Circle, Home, GraduationCap } from 'lucide-react';
 import { LeetCodeIcon, GeeksforGeeksIcon } from '@/components/platform/PlatformIcons';
-import { handleToastError } from "@/utils/toast-system";
 import { AssignQuestionsModalProps } from '@/types/admin/classDetail.types';
 import { Question, QuestionFilters } from '@/types/admin/question.types';
 
@@ -85,7 +84,7 @@ export default function AssignQuestionsModal({ isOpen, onClose, onSuccess, batch
          setBankQuestions(res.data);
          setBankTotalPages(res.pagination.totalPages);
       } catch (err) {
-         handleToastError(err);
+         // Error is handled by API client interceptor
          console.error("Failed to fetch bank questions", err);
       } finally {
          setBankLoading(false);
@@ -120,7 +119,7 @@ export default function AssignQuestionsModal({ isOpen, onClose, onSuccess, batch
          setSelectedQuestions([]);
          onSuccess();
       } catch (err: any) {
-         handleToastError(err);
+         // Error is handled by API client interceptor
          setErrorMsg(err.response?.data?.error || 'Failed to assign questions');
       } finally {
          setSubmitting(false);

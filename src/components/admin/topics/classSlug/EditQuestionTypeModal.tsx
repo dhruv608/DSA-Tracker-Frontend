@@ -12,7 +12,6 @@ import {
    DialogDescription,
 } from "@/components/ui/dialog";
 import { Home, GraduationCap } from 'lucide-react';
-import { handleToastError } from "@/utils/toast-system";
 
 interface EditQuestionTypeModalProps {
    isOpen: boolean;
@@ -48,7 +47,7 @@ export default function EditQuestionTypeModal({ isOpen, onClose, onSuccess, batc
          onClose();
          onSuccess();
       } catch (err: any) {
-         handleToastError(err);
+         // Error is handled by API client interceptor
          alert(err.response?.data?.error || "Failed to update question type");
       } finally {
          setSubmitting(false);

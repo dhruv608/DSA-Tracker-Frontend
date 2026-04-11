@@ -10,7 +10,7 @@ import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { isAdminToken, clearAuthTokens } from '@/lib/auth-utils';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { BruteForceLoader } from '@/components/ui/BruteForceLoader';
-import { handleToastError } from "@/utils/toast-system";
+import { showSuccess } from '@/ui/toast';
 import { SuperAdminUser } from '@/types/superadmin/index.types';
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
@@ -37,7 +37,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         const userData = await getCurrentSuperAdmin();
         setUser(userData.data); // Service returns unwrapped data directly
       } catch (err) {
-        handleToastError(err);
+        // Error is handled by API client interceptor
         console.error('Failed to load superadmin user:', err);
         window.location.href = '/superadmin/login';
       } finally {
@@ -53,6 +53,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       localStorage.removeItem('accessToken');
       document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     }
+    showSuccess('Logged out successfully.');
     window.location.href = '/superadmin/login';
   };
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { glassToast, handleToastError } from "@/utils/toast-system";
+import { showError, showSuccess } from '@/ui/toast';
 import { OnboardingData } from '@/types/student/index.types';
 
 export function useOnboardingModal(onComplete?: () => void) {
@@ -16,9 +16,9 @@ export function useOnboardingModal(onComplete?: () => void) {
   };
 
   const submitOnboarding = async () => {
-    if (!confirmChecked) { 
-      glassToast.error("Please confirm that your usernames are correct."); 
-      return; 
+    if (!confirmChecked) {
+      showError("Please confirm that your usernames are correct.");
+      return;
     }
     
     setLoading(true);
@@ -27,7 +27,7 @@ export function useOnboardingModal(onComplete?: () => void) {
       console.log("Token for onboarding submission:", token ? "exists" : "missing");
       
       if (!token) {
-        glassToast.error("Authentication token missing. Please log in again.");
+        showError("Authentication token missing. Please log in again.");
         return;
       }
       
@@ -56,7 +56,7 @@ export function useOnboardingModal(onComplete?: () => void) {
         console.error("API Error Response:", errorData);
         
         if (res.status === 401) {
-          glassToast.error("Session expired. Please log in again.");
+          showError("Session expired. Please log in again.");
           // Optionally redirect to login
           setTimeout(() => {
             window.location.href = '/login';
@@ -67,7 +67,7 @@ export function useOnboardingModal(onComplete?: () => void) {
         return;
       }
       
-      glassToast.success("Profile completed successfully. Welcome!");
+      showSuccess("Profile completed successfully. Welcome!");
       
       // Dispatch custom event to notify StudentHeader and page to refresh
       window.dispatchEvent(new Event('profileUpdated'));
@@ -78,8 +78,8 @@ export function useOnboardingModal(onComplete?: () => void) {
       }
       
     } catch (err) {
-      handleToastError(err);
-      glassToast.error("Profile verification failed.");
+      // Error is handled by API client interceptor
+      showError("Profile verification failed.");
     } finally {
       setLoading(false);
     }

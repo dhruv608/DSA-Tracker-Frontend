@@ -14,10 +14,12 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { getAllCities, City } from '@/services/city.service';
-import { getAllBatches, Batch } from '@/services/batch.service';
+import { getAllCities } from '@/services/city.service';
+import { getAllBatches } from '@/services/batch.service';
+import { City } from '@/types/superadmin/city.types';
+import { Batch } from '@/types/superadmin/batch.types';
 import { bulkUploadStudents } from '@/services/admin.service';
-import { showSuccess, handleToastError } from '@/utils/toast-system';
+import { showSuccess } from '@/ui/toast';
 import { BulkUploadModalProps, BulkUploadResult, CsvRowData } from '@/types/admin/student.types';
 
 export default function BulkUploadModal({
@@ -55,7 +57,7 @@ export default function BulkUploadModal({
         setCities(citiesData);
         setBatches(batchesData);
       } catch (error) {
-        handleToastError(error);
+        // Error is handled by API client interceptor
         console.error('Failed to fetch data:', error);
       }
     };
@@ -80,15 +82,15 @@ export default function BulkUploadModal({
   // Get unique years for selected city
   const getYearsForCity = useCallback(() => {
     if (!selectedCity) return [];
-    const cityBatches = batches.filter((b: any) => b.city_id === Number(selectedCity));
-    const years = [...new Set(cityBatches.map((b: any) => b.year))];
+    const cityBatches = batches.filter((b: Batch) => b.city_id === Number(selectedCity));
+    const years = [...new Set(cityBatches.map((b: Batch) => b.year))];
     return years.sort((a, b) => b - a); // Sort descending (newest first)
   }, [selectedCity, batches]);
 
   // Get batches for selected city and year
   const getBatchesForCityYear = useCallback(() => {
     if (!selectedCity || !selectedYear) return [];
-    return batches.filter((b: any) => 
+    return batches.filter((b: Batch) => 
       b.city_id === Number(selectedCity) && b.year === Number(selectedYear)
     );
   }, [selectedCity, selectedYear, batches]);
@@ -195,7 +197,7 @@ export default function BulkUploadModal({
         for (let i = 1; i < lines.length; i++) {
           const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
           console.log(`Row ${i} values:`, values);
-          const row: any = {};
+          const row: CsvRowData = {} as CsvRowData;
           
           headers.forEach((header, index) => {
             row[header] = values[index] || '';
@@ -303,11 +305,12 @@ export default function BulkUploadModal({
         onSuccess(result);
       }
 
-      showSuccess('BULK_UPLOAD_SUCCESS', `Successfully uploaded ${result.inserted} students!`);
-    } catch (error: any) {
+      showSuccess(`Successfully uploaded ${result.inserted} students!`);
+    } catch (error) {
+      // Error is handled by API client interceptor
       console.error('Upload failed:', error);
-      handleToastError(error);
-      setValidationError(error.response?.data?.message || 'Upload failed. Please try again.');
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Upload failed. Please try again.';
+      setValidationError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -376,7 +379,7 @@ export default function BulkUploadModal({
                   onChange={handleCityChange}
                   options={[
                     { label: 'Select city...', value: '' },
-                    ...cities.map((city: any) => ({
+                    ...cities.map((city: City) => ({
                       label: city.city_name,
                       value: city.id.toString()
                     }))
@@ -419,7 +422,7 @@ export default function BulkUploadModal({
                   }
                   options={[
                     { label: 'Select batch...', value: '' },
-                    ...getBatchesForCityYear().map((batch: any) => ({
+                    ...getBatchesForCityYear().map((batch: Batch) => ({
                       label: batch.batch_name,
                       value: batch.id.toString()
                     }))

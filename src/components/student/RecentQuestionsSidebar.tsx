@@ -13,9 +13,9 @@ import {
   Loader2,
   Calendar,
 } from "lucide-react";
-import api from "@/lib/api";
+import { apiClient } from '@/api';
 import { useRecentQuestions } from "@/contexts/RecentQuestionsContext";
-import { handleToastError } from "@/utils/toast-system";
+import { showError } from '@/ui/toast';
 import { PaginationState, ApiError } from '@/types/student/index.types';
 
 interface RecentQuestion {
@@ -78,7 +78,7 @@ export function RecentQuestionsSidebar() {
     try {
       const queryDate = date || selectedDate;
       const currentPage = reset ? 1 : page;
-      const response = await api.get(
+      const response = await apiClient.get(
         `/api/students/recent-questions?date=${queryDate}&page=${currentPage}&limit=12`
       );
 
@@ -97,12 +97,11 @@ export function RecentQuestionsSidebar() {
         setPage(prev => prev + 1);
       }
     } catch (err: unknown) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
       const error = err as ApiError;
-      setError(
-        error.response?.data?.error ||
-          "Failed to fetch recent questions"
-      );
+      const errorMsg = error.response?.data?.error || "Failed to fetch recent questions";
+      setError(errorMsg);
+      showError(errorMsg);
     } finally {
       setLoading(false);
       setLoadingMore(false);

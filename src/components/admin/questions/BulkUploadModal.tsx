@@ -16,7 +16,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { bulkUploadQuestions } from '@/services/admin.service';
-import { handleToastError } from "@/utils/toast-system";
 
 // CSV validation interface
 interface CSVRow {
@@ -221,7 +220,8 @@ export default function BulkUploadModal({
       }
       
     } catch (error) {
-      handleToastError(error);
+      // Error is handled by API client interceptor
+      console.error('Upload failed:', error);
     } finally {
       setLoading(false);
     }

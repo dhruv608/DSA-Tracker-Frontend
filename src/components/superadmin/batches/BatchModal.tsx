@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Batch } from '@/services/batch.service';
-import { City } from '@/services/city.service';
+import { Batch } from '@/types/superadmin/batch.types';
+import { City } from '@/types/superadmin/city.types';
 import { Modal } from '@/components/Modal';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ interface BatchModalProps {
   cities: City[];
   onSubmit: (data: BatchSubmitPayload) => Promise<void>;
   submitting: boolean;
+  isLoading?: boolean;
 }
 
 export function BatchModal({ 
@@ -27,7 +28,8 @@ export function BatchModal({
   batch, 
   cities, 
   onSubmit, 
-  submitting 
+  submitting,
+  isLoading 
 }: BatchModalProps) {
   const [formData, setFormData] = useState({ 
     batch_name: '', 
@@ -141,7 +143,7 @@ export function BatchModal({
           onValueChange={(v) =>
             setFormData({ ...formData, city_id: v })
           }
-          disabled={submitting}
+          disabled={submitting || isLoading}
         >
           <SelectTrigger className="
             w-full
@@ -149,7 +151,7 @@ export function BatchModal({
             border border-border/30
             hover:border-primary/40
           ">
-            <SelectValue placeholder="Select City" />
+            <SelectValue placeholder={isLoading ? "Loading cities..." : "Select City"} />
           </SelectTrigger>
 
           <SelectContent className="glass border-border/30">

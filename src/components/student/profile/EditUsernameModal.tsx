@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { X, CheckCircle, XCircle, User, AlertCircle, Shield } from 'lucide-react';
 import { UsernameForm } from '@/types/student/index.types';
 import { useUsernameCheck } from '@/components/student/onboarding/hooks/useUsernameCheck';
-import { toast } from '@/utils/toast';
 
 interface EditUsernameModalProps {
   isOpen: boolean;
@@ -181,20 +180,18 @@ export function EditUsernameModal({
     }
   };
 
-  // HANDLE SAVE WITH TOAST NOTIFICATION
+  // HANDLE SAVE
   const handleSaveWithToast = async () => {
     if (!canSave) {
-      toast.error('Please enter a valid username');
       return;
     }
-    
+
     setIsSaving(true);
     try {
       await handleSaveUsername();
-      toast.success('Username updated successfully!');
       onClose();
     } catch (error) {
-      toast.error('Failed to update username');
+      // Error is handled by API client interceptor
       console.log(error);
     } finally {
       setIsSaving(false);

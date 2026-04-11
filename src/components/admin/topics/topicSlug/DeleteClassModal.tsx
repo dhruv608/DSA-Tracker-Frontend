@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { deleteAdminClass } from '@/services/admin.service';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,7 +26,7 @@ export default function DeleteClassModal({ isOpen, onClose, onSuccess, batchSlug
    const [submitting, setSubmitting] = useState(false);
    const [formError, setFormError] = useState('');
 
-   const handleDelete = async () => {
+   const handleDelete = useCallback(async () => {
       setFormError('');
       setSubmitting(true);
       try {
@@ -38,7 +38,21 @@ export default function DeleteClassModal({ isOpen, onClose, onSuccess, batchSlug
       } finally {
          setSubmitting(false);
       }
-   };
+   }, [batchSlug, topicSlug, classData?.slug, onClose, onSuccess]);
+
+   useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+         if (!isOpen) return;
+         if (e.key === 'Escape') {
+            onClose();
+         }
+         if (e.key === 'Enter' && !submitting) {
+            handleDelete();
+         }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+   }, [isOpen, onClose, submitting, handleDelete]);
 
    return (
       <Dialog open={isOpen} onOpenChange={onClose}>

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { X, Camera, Trash2, Github, Linkedin, Lock } from 'lucide-react';
 import { LeetCodeIcon, GeeksforGeeksIcon } from '@/components/platform/PlatformIcons';
 import { ProfileEditForm, StudentProfile } from '@/types/student/index.types';
-import { toast } from '@/utils/toast';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -43,10 +42,9 @@ export function EditProfileModal({
   const handleSaveWithToast = async () => {
     try {
       await handleSaveProfile();
-      toast.success('Profile updated successfully!');
       onClose();
     } catch (error) {
-      toast.error('Failed to update profile');
+      // Error is handled by API client interceptor
       console.error('Profile update error:', error);
     }
   };

@@ -9,16 +9,13 @@ import { TableSkeleton } from '@/components/TableSkeleton';
 interface BatchTableProps {
   batches: Batch[];
   loading: boolean;
-  cities: { id: number; city_name: string }[];
   onEdit: (batch: Batch) => void;
   onDelete: (batch: Batch) => void;
 }
 
 import { MapPin, Users, Calendar } from "lucide-react";
 
-export function BatchTable({ batches, loading, cities, onEdit, onDelete }: BatchTableProps) {
-  const getCityName = (id: number) =>
-    cities.find(c => c.id === id)?.city_name || "Unknown";
+export function BatchTable({ batches, loading, onEdit, onDelete }: BatchTableProps) {
 
   return (
     <div className=" hover-glow
@@ -125,7 +122,7 @@ export function BatchTable({ batches, loading, cities, onEdit, onDelete }: Batch
               {/* City */}
               <TableCell className="text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  {batch.city?.city_name || getCityName(batch.city_id)}
+                  {batch.city?.city_name || 'Unknown'}
                 </div>
               </TableCell>
 

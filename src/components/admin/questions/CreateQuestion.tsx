@@ -17,7 +17,6 @@ import { InfiniteScrollDropdown } from "@/components/ui/InfiniteScrollDropdown";
 import { AlertTriangle, Plus, Save } from "lucide-react";
 import { createAdminQuestion } from "@/services/admin.service";
 import { CreateQuestionData } from "@/types/admin/question.types";
-import { handleToastError } from "@/utils/toast-system";
 
 interface CreateQuestionProps {
   open: boolean;
@@ -99,7 +98,7 @@ export default function CreateQuestion({
       onSuccess();
       onOpenChange(false);
     } catch (err: any) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
       setError(err.response?.data?.message || "Failed to create question");
     } finally {
       setLoading(false);

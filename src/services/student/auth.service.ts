@@ -1,7 +1,8 @@
-import api from '@/lib/api';
+import { apiClient } from '@/api';
 import { isStudentToken, clearAuthTokens } from '@/lib/auth-utils';
-import { handleToastError, showSuccess } from '@/utils/toast-system';
+import { showSuccess } from '@/ui/toast';
 import { StudentLoginCredentials, StudentRegisterData, ResetPasswordData } from '@/types/student/index.types';
+import { AuthError } from '@/types/student/auth.types';
 
 export const studentAuthService = {
   getCurrentStudent: async () => {
@@ -9,55 +10,55 @@ export const studentAuthService = {
     if (!isStudentToken()) {
       clearAuthTokens(); // Clear invalid tokens
       const error = new Error('Access denied. Students only.');
-      (error as any).response = { status: 403, data: { error: 'Access denied. Students only.' } };
+      const authError = error as AuthError;
+      authError.response = { status: 403, data: { error: 'Access denied. Students only.' } };
       throw error;
     }
 
-    const response = await api.get('/api/students/me');
+    const response = await apiClient.get('/api/students/me');
     return response.data;
   },
 
   login: async (credentials: StudentLoginCredentials) => {
-    const res = await api.post('/api/auth/student/login', credentials);
+    const res = await apiClient.post('/api/auth/student/login', credentials);
     // Check if response is undefined (network error handled by interceptor)
     if (!res) {
       return undefined;
     }
-    showSuccess('Login');
+    showSuccess('Let’s get started');
     return res.data;
   },
 
   register: async (data: StudentRegisterData) => {
-    const res = await api.post('/api/auth/student/register', data);
+    const res = await apiClient.post('/api/auth/student/register', data);
     showSuccess('Register');
     return res.data;
   },
 
   logout: async () => {
-    const res = await api.post('/api/auth/student/logout');
-    showSuccess('Logout');
+    const res = await apiClient.post('/api/auth/student/logout');
     return res.data;
   },
 
   googleLogin: async (idToken: string) => {
-    const res = await api.post('/api/auth/google-login', { idToken });
-    showSuccess('Login');
+    const res = await apiClient.post('/api/auth/google-login', { idToken });
+    showSuccess('Let’s get started');
     return res.data;
   },
 
   forgotPassword: async (email: string) => {
-    const res = await api.post('/api/auth/forgot-password', { email });
-    showSuccess('Email Sent', 'Password reset email sent!');
+    const res = await apiClient.post('/api/auth/forgot-password', { email });
+    showSuccess('Password reset email sent!');
     return res.data;
   },
 
   resetPassword: async (data: ResetPasswordData) => {
-    const res = await api.post('/api/auth/reset-password', data);
+    const res = await apiClient.post('/api/auth/reset-password', data);
     return res.data;
   },
 
   verifyOtp: async (email: string, otp: string) => {
-    const res = await api.post('/api/auth/verify-otp', { email, otp });
+    const res = await apiClient.post('/api/auth/verify-otp', { email, otp });
     return res.data;
   }
 };

@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, ShieldAlert, Lock, Mail, Loader2, Sparkles, LogIn } from 'lucide-react';
 import { loginSuperAdmin } from '@/services/auth.service';
+import { handleError } from '@/errors';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { handleToastError } from "@/utils/toast-system";
-import { Input } from '@/components/ui/input'; // Assuming you have your custom Input component
 
 export default function SuperAdminLoginPage() {
   const router = useRouter();
@@ -32,7 +31,8 @@ export default function SuperAdminLoginPage() {
       
       router.push('/superadmin');
     } catch (err: unknown) {
-      handleToastError(err);
+      // Show toast for invalid credentials
+      handleError(err, { context: 'Login' });
     } finally {
       setLoading(false);
     } 

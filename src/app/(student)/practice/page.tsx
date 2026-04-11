@@ -8,7 +8,6 @@ import { Pagination } from '@/components/Pagination';
 import { PracticeResults } from '@/components/student/practice/PracticeResults';
 import { PracticeFilters as PracticeFiltersComponent } from '@/components/student/practice/PracticeFilters';
 import { PracticeHeader } from '@/components/student/practice/PracticeHeader';
-import { handleToastError } from "@/utils/toast-system";
 import { PracticeQuestion, PracticeFilterOptions } from '@/types/student/index.types';
 
 export default function PracticePage() {
@@ -74,7 +73,7 @@ export default function PracticePage() {
       router.replace(`?${params.toString()}`, { scroll: false });
 
     } catch (e) {
-      handleToastError(e);
+      // Error is handled by API client interceptor
       console.error("Failed to fetch practice questions", e);
     } finally {
       setLoading(false);

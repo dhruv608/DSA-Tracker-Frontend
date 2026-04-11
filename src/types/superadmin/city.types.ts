@@ -15,4 +15,6 @@ export interface City {
   city_name: string;
   createdAt?: string;
   updatedAt?: string;
+  total_batches?: number;
+  total_students?: number;
 }

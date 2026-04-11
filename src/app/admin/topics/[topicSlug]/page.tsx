@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAdminStore } from '@/store/adminStore';
-import api from '@/lib/api';
+import { apiClient } from '@/api';
 import CreateClassModal from '@/components/admin/topics/topicSlug/CreateClassModal';
 import EditClassModal from '@/components/admin/topics/topicSlug/EditClassModal';
 import DeleteClassModal from '@/components/admin/topics/topicSlug/DeleteClassModal';
@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { ClassesTableShimmer } from '@/components/admin/topics/topicSlug/ClassesTableShimmer';
 import { Pagination } from '@/components/Pagination';
-import { handleToastError } from "@/utils/toast-system";
 import { Class } from '@/types/admin/index.types';
 
 export default function AdminClassesPage() {
@@ -76,11 +75,11 @@ export default function AdminClassesPage() {
         limit: limit.toString(),
         ...(search && { search })
       });
-      const response = await api.get(`/api/admin/${selectedBatch.slug}/topics/${topicSlug}/classes?${params}`);
+      const response = await apiClient.get(`/api/admin/${selectedBatch.slug}/topics/${topicSlug}/classes?${params}`);
       setClassesList(response.data.data || []);
       setTotalRecords(response.data.pagination?.total || 0);
     } catch (err) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
       console.error("Failed to fetch classes", err);
     } finally {
       setLoading(false);
@@ -167,7 +166,10 @@ export default function AdminClassesPage() {
       <CreateClassModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        onSuccess={fetchClasses}
+        onSuccess={() => {
+          lastFetchParams.current = { page: 0, limit: 0, search: '' }; // Reset to force refetch
+          fetchClasses();
+        }}
         batchSlug={selectedBatch!.slug}
         topicSlug={topicSlug}
       />
@@ -175,7 +177,10 @@ export default function AdminClassesPage() {
       <EditClassModal
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
-        onSuccess={fetchClasses}
+        onSuccess={() => {
+          lastFetchParams.current = { page: 0, limit: 0, search: '' }; // Reset to force refetch
+          fetchClasses();
+        }}
         batchSlug={selectedBatch!.slug}
         topicSlug={topicSlug}
         classData={selectedClass}
@@ -184,7 +189,10 @@ export default function AdminClassesPage() {
       <DeleteClassModal
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
-        onSuccess={fetchClasses}
+        onSuccess={() => {
+          lastFetchParams.current = { page: 0, limit: 0, search: '' }; // Reset to force refetch
+          fetchClasses();
+        }}
         batchSlug={selectedBatch!.slug}
         topicSlug={topicSlug}
         classData={selectedClass}
@@ -198,6 +206,7 @@ export default function AdminClassesPage() {
         }}
         onSuccess={() => {
           setIsEditOpen(false);
+          lastFetchParams.current = { page: 0, limit: 0, search: '' }; // Reset to force refetch
           fetchClasses();
         }}
         batchSlug={selectedBatch!.slug}

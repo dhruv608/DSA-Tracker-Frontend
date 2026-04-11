@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { getAllBatches, createBatch, updateBatch, deleteBatch, Batch } from '@/services/batch.service';
-import { getAllCities, City } from '@/services/city.service';
+import { City } from '@/types/superadmin/city.types';
+import { getPublicCities } from '@/services/public.service';
 import { Pagination } from '@/components/Pagination';
 import { DeleteModal } from '@/components/DeleteModal';
 import { BatchHeader } from '@/components/superadmin/batches/BatchHeader';
@@ -11,7 +12,6 @@ import { BatchTable } from '@/components/superadmin/batches/BatchTable';
 import { BatchCard } from '@/components/superadmin/batches/BatchCard';
 import { BatchModal } from '@/components/superadmin/batches/BatchModal';
 import { BatchShimmer } from '@/components/superadmin/batches/BatchShimmer';
-import { handleToastError, showSuccess, showDeleteSuccess } from "@/utils/toast-system";
 import { BatchSubmitPayload } from '@/types/superadmin/index.types';
 
 export default function BatchesPage() {
@@ -39,35 +39,26 @@ export default function BatchesPage() {
 
   const [submitting, setSubmitting] = useState(false);
   
-  // Refs for preventing double API calls
+  // Modal loading state - for cities dropdown data
+  const [isModalDataLoading, setIsModalDataLoading] = useState(false);
+  
+  // Ref to prevent concurrent API calls
   const isFetching = useRef(false);
-  const lastFetchParams = useRef<{ fetched: boolean }>({ fetched: false });
 
   const fetchData = async () => {
-    // Skip if already fetching
+    // Skip if already fetching (prevents concurrent calls only)
     if (isFetching.current) {
       console.log("Already fetching batches data, skipping duplicate call");
       return;
     }
 
-    // Check if data was already fetched
-    if (lastFetchParams.current.fetched) {
-      console.log("Batches data already fetched, skipping");
-      return;
-    }
-
     isFetching.current = true;
-    lastFetchParams.current = { fetched: true };
     setLoading(true);
     try {
-      const [batchesRes, citiesRes] = await Promise.all([
-        getAllBatches().catch(() => []),
-        getAllCities().catch(() => [])
-      ]);
+      const batchesRes = await getAllBatches().catch(() => []);
       setBatches(Array.isArray(batchesRes) ? batchesRes : []);
-      setCities(Array.isArray(citiesRes) ? citiesRes : []);
     } catch (err) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
       console.error(err);
     } finally {
       setLoading(false);
@@ -79,17 +70,6 @@ export default function BatchesPage() {
     fetchData();
   }, []);
 
-  const openCreate = () => {
-    setModalMode('create');
-    setTargetBatch(null);
-    setModalOpen(true);
-  };
-
-  const openEdit = (batch: Batch) => {
-    setModalMode('edit');
-    setTargetBatch(batch);
-    setModalOpen(true);
-  };
 
   const openDelete = (batch: Batch) => {
     setTargetBatch(batch);
@@ -144,11 +124,48 @@ export default function BatchesPage() {
     return Array.from(years).sort((a, b) => b - a);
   }, [batches]);
 
+  // Extract unique cities from batches for filter dropdown
+  const uniqueCities = useMemo(() => {
+    const cityMap = new Map<number, City>();
+    batches.forEach(b => {
+      if (b.city && !cityMap.has(b.city.id)) {
+        cityMap.set(b.city.id, { id: b.city.id, city_name: b.city.city_name });
+      }
+    });
+    return Array.from(cityMap.values());
+  }, [batches]);
+
   const paginatedBatches = useMemo(() => {
     return filtered.slice((currentPage - 1) * limit, currentPage * limit);
   }, [filtered, currentPage, limit]);
 
-  const getCityName = (id: number) => cities.find(c => c.id === id)?.city_name || 'Unknown';
+  const fetchModalData = async () => {
+    if (cities.length > 0) return;
+    
+    setIsModalDataLoading(true);
+    try {
+      const citiesRes = await getPublicCities();
+      setCities(citiesRes);
+    } catch (err) {
+      console.error("Failed to load cities", err);
+    } finally {
+      setIsModalDataLoading(false);
+    }
+  };
+
+  const openCreate = async () => {
+    setModalMode('create');
+    setTargetBatch(null);
+    await fetchModalData();
+    setModalOpen(true);
+  };
+
+  const openEdit = async (batch: Batch) => {
+    setModalMode('edit');
+    setTargetBatch(batch);
+    await fetchModalData();
+    setModalOpen(true);
+  };
 
   if (loading) {
     return <BatchShimmer viewMode={viewMode} />;
@@ -178,7 +195,6 @@ export default function BatchesPage() {
             <BatchTable
               batches={paginatedBatches}
               loading={false}
-              cities={cities}
               onEdit={openEdit}
               onDelete={openDelete}
             />
@@ -195,7 +211,6 @@ export default function BatchesPage() {
                   <BatchCard
                     key={batch.id}
                     batch={batch}
-                    cityName={batch.city?.city_name || getCityName(batch.city_id)}
                     onEdit={openEdit}
                     onDelete={openDelete}
                   />
@@ -224,6 +239,7 @@ export default function BatchesPage() {
         cities={cities}
         onSubmit={handleSubmit}
         submitting={submitting}
+        isLoading={isModalDataLoading}
       />
 
       <DeleteModal

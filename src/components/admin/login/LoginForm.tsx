@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, LogIn, Lock, Mail } from 'lucide-react';
 import { BruteForceLoader } from '@/components/ui/BruteForceLoader';
 import { loginAdmin } from '@/services/auth.service';
+import { handleError } from '@/errors';
 import { Button } from '@/components/ui/button';
-import { handleToastError } from "@/utils/toast-system";
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -30,8 +30,9 @@ export default function LoginForm() {
 
       // Full reload to re-mount admin layout with fresh auth state
       window.location.href = '/admin';
-    } catch (err: any) {
-      handleToastError(err);
+    } catch (err) {
+      // Show toast for invalid credentials
+      handleError(err, { context: 'Login' });
     } finally {
       setLoading(false);
     }

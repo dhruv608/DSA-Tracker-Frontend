@@ -1,7 +1,7 @@
-import api from '@/lib/api';
+import { apiClient } from '@/api';
 import { isStudentToken, clearAuthTokens } from '@/lib/auth-utils';
-import { handleToastError, showSuccess } from '@/utils/toast-system';
 import { PracticeFilters } from '@/types/student/index.types';
+import { AuthError } from '@/types/student/auth.types';
 
 export const studentPracticeService = {
   getQuestions: async (filters: PracticeFilters = {}) => {
@@ -9,7 +9,8 @@ export const studentPracticeService = {
     if (!isStudentToken()) {
       clearAuthTokens(); // Clear invalid tokens
       const error = new Error('Access denied. Students only.');
-      (error as any).response = { status: 403, data: { error: 'Access denied. Students only.' } };
+      const authError = error as AuthError;
+      authError.response = { status: 403, data: { error: 'Access denied. Students only.' } };
       throw error;
     }
 
@@ -23,7 +24,7 @@ export const studentPracticeService = {
     if (filters.page) params.append('page', String(filters.page));
     if (filters.limit) params.append('limit', String(filters.limit));
 
-    const res = await api.get(`/api/students/addedQuestions?${params.toString()}`);
+    const res = await apiClient.get(`/api/students/addedQuestions?${params.toString()}`);
     return res.data; // expects { questions: [...], totalPages: N }
   }
 };

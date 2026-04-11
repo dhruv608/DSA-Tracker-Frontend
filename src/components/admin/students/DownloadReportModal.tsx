@@ -14,15 +14,23 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { getAllCities, City } from '@/services/city.service';
-import { getAllBatches, Batch } from '@/services/batch.service';
-import { showSuccess, handleToastError } from '@/utils/toast-system';
-import api from '@/lib/api';
+import { getAllCities } from '@/services/city.service';
+import { getAllBatches } from '@/services/batch.service';
+import { City } from '@/types/superadmin/city.types';
+import { Batch } from '@/types/superadmin/batch.types';
+import { DeleteModal } from '@/components/DeleteModal';
+import { showSuccess } from '@/ui/toast';
+import { apiClient } from '@/api';
+
+interface DownloadReportModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
 
 export default function DownloadReportModal({
   open,
   onOpenChange,
-}: any) {
+}: DownloadReportModalProps) {
 
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<string>('');
@@ -45,7 +53,7 @@ export default function DownloadReportModal({
         setCities(citiesData);
         setBatches(batchesData);
       } catch (error) {
-        handleToastError(error);
+        // Error is handled by API client interceptor
         console.error('Failed to fetch data:', error);
       }
     };
@@ -70,15 +78,15 @@ export default function DownloadReportModal({
   // Get unique years for selected city
   const getYearsForCity = useCallback(() => {
     if (!selectedCity) return [];
-    const cityBatches = batches.filter((b: any) => b.city_id === Number(selectedCity));
-    const years = [...new Set(cityBatches.map((b: any) => b.year))];
+    const cityBatches = batches.filter((b: Batch) => b.city_id === Number(selectedCity));
+    const years = [...new Set(cityBatches.map((b: Batch) => b.year))];
     return years.sort((a, b) => b - a); // Sort descending (newest first)
   }, [selectedCity, batches]);
 
   // Get batches for selected city and year
   const getBatchesForCityYear = useCallback(() => {
     if (!selectedCity || !selectedYear) return [];
-    return batches.filter((b: any) => 
+    return batches.filter((b: Batch) => 
       b.city_id === Number(selectedCity) && b.year === Number(selectedYear)
     );
   }, [selectedCity, selectedYear, batches]);
@@ -101,8 +109,8 @@ export default function DownloadReportModal({
     setLoading(true);
 
     try {
-      // Call the download API using axios
-      const response = await api.post('/api/admin/student/reportdownload', {
+      // Call the download API
+      const response = await apiClient.post('/api/admin/student/reportdownload', {
         batch_id: Number(selectedBatch)
       });
 
@@ -124,22 +132,22 @@ export default function DownloadReportModal({
       window.URL.revokeObjectURL(url);
 
       // Show success toast
-      showSuccess('FILE_DOWNLOADED', 'Report downloaded successfully!');
+      showSuccess('Report downloaded successfully!');
       
       // Close modal
       handleClose();
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Download error:', error);
       
       // Extract error message
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          error.message || 
+      const errorMessage = (error as { response?: { data?: { message?: string; error?: string } }; message?: string })?.response?.data?.message || 
+                          (error as { response?: { data?: { message?: string; error?: string } }; message?: string })?.response?.data?.error || 
+                          (error as { message?: string })?.message || 
                           'Download failed. Please try again.';
       
-      // Show error toast
-      handleToastError(errorMessage);
+      // Error is handled by API client interceptor - keep console log for debugging
+      console.error('Download error:', errorMessage);
       
     } finally {
       setLoading(false);
@@ -188,7 +196,7 @@ export default function DownloadReportModal({
               onChange={handleCityChange}
               options={[
                 { label: 'Select city...', value: '' },
-                ...cities.map((city: any) => ({
+                ...cities.map((city: City) => ({
                   label: city.city_name,
                   value: city.id.toString()
                 }))
@@ -231,7 +239,7 @@ export default function DownloadReportModal({
               }
               options={[
                 { label: 'Select batch...', value: '' },
-                ...getBatchesForCityYear().map((batch: any) => ({
+                ...getBatchesForCityYear().map((batch: Batch) => ({
                   label: batch.batch_name,
                   value: batch.id.toString()
                 }))

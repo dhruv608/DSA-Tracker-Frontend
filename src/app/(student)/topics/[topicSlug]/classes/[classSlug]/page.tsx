@@ -13,7 +13,6 @@ import { ClassQuestions } from '@/components/student/classes/ClassQuestions';
 import { ClassDetailsShimmer } from '@/components/student/classes/ClassDetailsShimmer';
 import { Pagination } from '@/components/Pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { handleToastError } from "@/utils/toast-system";
 import { PracticeQuestion } from '@/types/student/index.types';
 
 interface ClassData {
@@ -75,7 +74,7 @@ export default function ClassDetailsPage() {
       const data = await studentClassService.getClassDetailsWithPagination(topicSlug, classSlug, queryParams.toString());
       setClassData(data);
     } catch (e) {
-      handleToastError(e);
+      // Error is handled by API client interceptor
       console.error("Class detail fetch error", e);
       router.push(`/topics/${topicSlug}`);
     } finally {

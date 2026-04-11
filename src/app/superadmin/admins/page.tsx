@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { Admin } from '@/types/common/api.types';
-import { getAllCities, City } from '@/services/city.service';
-import { getAllBatches, Batch } from '@/services/batch.service';
+import { City } from '@/types/superadmin/city.types';
+import { Batch } from '@/types/superadmin/batch.types';
+import { getPublicCities, getPublicBatches } from '@/services/public.service';
 import { Pagination } from '@/components/Pagination';
 import { DeleteModal } from '@/components/DeleteModal';
 import { AdminHeader } from '@/components/superadmin/admins/AdminHeader';
@@ -12,9 +13,8 @@ import { AdminModal } from '@/components/superadmin/admins/AdminModal';
 import { AdminCard } from '@/components/superadmin/admins/AdminCard';
 import { AdminFilters } from '@/components/superadmin/admins/AdminFilters';
 import { AdminShimmer } from '@/components/superadmin/admins/AdminShimmer';
-import { handleToastError, showSuccess, showDeleteSuccess } from "@/utils/toast-system";
 import { createAdmin, deleteAdmin, getAllAdmins, updateAdmin } from '@/services/superadmin.service';
-import { AdminCreateData, AdminSubmitPayload } from '@/types/superadmin/index.types';
+import { AdminCreateData } from '@/types/superadmin/index.types';
 import { getAdminRoles } from '@/services/admin.service';
 
 export default function AdminsPage() {
@@ -43,39 +43,30 @@ export default function AdminsPage() {
 
   const [submitting, setSubmitting] = useState(false);
   
-  // Refs for preventing double API calls
+  // Modal loading state - for cities/batches dropdown data
+  const [isModalDataLoading, setIsModalDataLoading] = useState(false);
+  
+  // Ref to prevent concurrent API calls
   const isFetching = useRef(false);
-  const lastFetchParams = useRef<{ fetched: boolean }>({ fetched: false });
 
   const fetchData = async () => {
-    // Skip if already fetching
+    // Skip if already fetching (prevents concurrent calls only)
     if (isFetching.current) {
       console.log("Already fetching admins data, skipping duplicate call");
       return;
     }
 
-    // Check if data was already fetched
-    if (lastFetchParams.current.fetched) {
-      console.log("Admins data already fetched, skipping");
-      return;
-    }
-
     isFetching.current = true;
-    lastFetchParams.current = { fetched: true };
     setLoading(true);
     try {
-      const [adminsRes, citiesRes, batchesRes, rolesRes] = await Promise.all([
+      const [adminsRes, rolesRes] = await Promise.all([
         getAllAdmins().catch(() => []),
-        getAllCities().catch(() => []),
-        getAllBatches().catch(() => []),
         getAdminRoles().catch(() => [])
       ]);
       setAdmins(Array.isArray(adminsRes) ? adminsRes : []);
-      setCities(Array.isArray(citiesRes) ? citiesRes : []);
-      setBatches(Array.isArray(batchesRes) ? batchesRes : []);
       setRoles(Array.isArray(rolesRes) ? rolesRes : []);
     } catch (err) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
       console.error(err);
     } finally {
       setLoading(false);
@@ -87,15 +78,35 @@ export default function AdminsPage() {
     fetchData();
   }, []);
 
-  const openCreate = () => {
+  const fetchModalData = async () => {
+    if (cities.length > 0 && batches.length > 0) return;
+    
+    setIsModalDataLoading(true);
+    try {
+      const [citiesRes, batchesRes] = await Promise.all([
+        getPublicCities(),
+        getPublicBatches()
+      ]);
+      setCities(citiesRes);
+      setBatches(batchesRes);
+    } catch (err) {
+      console.error("Failed to load modal data", err);
+    } finally {
+      setIsModalDataLoading(false);
+    }
+  };
+
+  const openCreate = async () => {
     setModalMode('create');
     setTargetAdmin(null);
+    await fetchModalData();
     setModalOpen(true);
   };
 
-  const openEdit = (admin: Admin) => {
+  const openEdit = async (admin: Admin) => {
     setModalMode('edit');
     setTargetAdmin(admin);
+    await fetchModalData();
     setModalOpen(true);
   };
 
@@ -216,6 +227,7 @@ export default function AdminsPage() {
         roles={roles}
         onSubmit={handleSubmit}
         submitting={submitting}
+        isLoading={isModalDataLoading}
       />
 
       <DeleteModal

@@ -1,6 +1,6 @@
-import api from '@/lib/api';
+import { apiClient } from '@/api';
 import { isStudentToken, clearAuthTokens } from '@/lib/auth-utils';
-import { handleToastError, showSuccess } from '@/utils/toast-system';
+import { AuthError } from '@/types/student/auth.types';
 
 export const studentLeaderboardService = {
   getLeaderboard: async (filters: { city?: string; year?: number; type?: string } = {}, search?: string) => {
@@ -8,7 +8,8 @@ export const studentLeaderboardService = {
     if (!isStudentToken()) {
       clearAuthTokens(); // Clear invalid tokens
       const error = new Error('Access denied. Students only.');
-      (error as any).response = { status: 403, data: { error: 'Access denied. Students only.' } };
+      const authError = error as AuthError;
+      authError.response = { status: 403, data: { error: 'Access denied. Students only.' } };
       throw error;
     }
 
@@ -18,7 +19,7 @@ export const studentLeaderboardService = {
       username: search // Backend expects 'username' in request body
     };
     
-    const res = await api.post('/api/students/leaderboard', requestBody);
+    const res = await apiClient.post('/api/students/leaderboard', requestBody);
     return res.data;
   }
 };

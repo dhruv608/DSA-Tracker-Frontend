@@ -1,7 +1,9 @@
 "use client";
 
+import { BatchSelection } from "@/types/common/selection.types";
+
 interface HeaderProps {
-  selectedBatch: any;
+  selectedBatch: BatchSelection;
 }
 
 export default function Header({ selectedBatch }: HeaderProps) {

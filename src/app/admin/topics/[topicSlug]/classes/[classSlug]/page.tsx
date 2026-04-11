@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAdminStore } from '@/store/adminStore';
-import api from '@/lib/api';
+import { apiClient } from '@/api';
 import {
    removeQuestionFromClass
 } from '@/services/admin.service';
@@ -17,7 +17,6 @@ import {
    BookOpen,
 } from 'lucide-react';
 import { Pagination } from '@/components/Pagination';
-import { handleToastError } from "@/utils/toast-system";
 import { DeleteModal } from '@/components/DeleteModal';
 import { ClassAssignedQuestion, ApiError } from '@/types/admin/index.types';
 
@@ -90,14 +89,14 @@ export default function AdminClassDetailsPage() {
          const params: { page: number; limit: number; search?: string } = { page, limit };
          if (searchQuery) params.search = searchQuery;
 
-         const response = await api.get(`/api/admin/${selectedBatch.slug}/topics/${topicSlug}/classes/${classSlug}/questions`, { params });
+         const response = await apiClient.get(`/api/admin/${selectedBatch.slug}/topics/${topicSlug}/classes/${classSlug}/questions`, { params });
          const data = response.data;
          // Backend returns { message: "...", data: [...], pagination: {...} }
          setAssignedQuestions(data.data || []);
          setAssignedTotalPages(data.pagination?.totalPages || 1);
          setAssignedTotalCount(data.pagination?.total || 0);
       } catch (err: unknown) {
-         handleToastError(err);
+         // Error is handled by API client interceptor
          console.error("Failed to fetch assigned questions", err);
          // If current deeply tracked class does not exist in active batch context, redirect out safely.
          const error = err as ApiError;
@@ -135,11 +134,12 @@ export default function AdminClassDetailsPage() {
          setSubmitting(true);
          const q = deletingQuestion.question || deletingQuestion;
          await removeQuestionFromClass(selectedBatch!.slug, topicSlug, classSlug, q.id);
+         lastFetchAssignedParams.current = { page: 0, limit: 0, search: '', topicSlug: '', classSlug: '' }; // Reset to force refetch
          fetchAssigned();
          setIsDeleteOpen(false);
          setDeletingQuestion(null);
       } catch (err: unknown) {
-         handleToastError(err);
+         // Error is handled by API client interceptor
          const error = err as ApiError;
          alert(error.response?.data?.error || "Failed to remove question");
       } finally {
@@ -206,7 +206,10 @@ export default function AdminClassDetailsPage() {
          <AssignQuestionsModal
          isOpen={isAssignOpen}
          onClose={() => setIsAssignOpen(false)}
-         onSuccess={fetchAssigned}
+         onSuccess={() => {
+            lastFetchAssignedParams.current = { page: 0, limit: 0, search: '', topicSlug: '', classSlug: '' }; // Reset to force refetch
+            fetchAssigned();
+         }}
          batchSlug={selectedBatch!.slug}
          topicSlug={topicSlug}
          classSlug={classSlug}
@@ -216,7 +219,10 @@ export default function AdminClassDetailsPage() {
          <EditQuestionTypeModal
          isOpen={isEditTypeOpen}
          onClose={() => setIsEditTypeOpen(false)}
-         onSuccess={fetchAssigned}
+         onSuccess={() => {
+            lastFetchAssignedParams.current = { page: 0, limit: 0, search: '', topicSlug: '', classSlug: '' }; // Reset to force refetch
+            fetchAssigned();
+         }}
          batchSlug={selectedBatch!.slug}
          topicSlug={topicSlug}
          classSlug={classSlug}

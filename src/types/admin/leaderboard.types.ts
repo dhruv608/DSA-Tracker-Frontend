@@ -6,6 +6,7 @@ export interface LeaderboardEntry {
   rank: number;
   student_id: number;
   student_name: string;
+  name?: string;
   username: string;
   enrollment_id: string;
   total_solved: number;
@@ -13,9 +14,16 @@ export interface LeaderboardEntry {
   medium_solved: number;
   hard_solved: number;
   streak: number;
+  max_streak?: number;
   last_solved_at?: string;
   city?: string;
+  city_name?: string;
   batch_name?: string;
+  batch_year?: number;
+  profile_image_url?: string;
+  global_rank?: number;
+  city_rank?: number;
+  score?: number;
 }
 
 export interface LeaderboardData {

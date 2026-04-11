@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { handleToastError } from "@/utils/toast-system";
 
 export function useLocalStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(() => {
@@ -8,7 +7,8 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      handleToastError(error);
+      // Silently fail on localStorage parse error
+      console.error('localStorage parse error:', error);
       return initialValue;
     }
   });
@@ -21,8 +21,8 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
       }
     } catch (error) {
-      handleToastError(error);
-      console.error(error);
+      // Silently fail on localStorage set error
+      console.error('localStorage set error:', error);
     }
   };
 

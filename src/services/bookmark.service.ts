@@ -1,5 +1,5 @@
-import api from '@/lib/api';
-import { handleToastError, showSuccess } from '@/utils/toast-system';
+import { apiClient } from '@/api';
+import { showSuccess } from '@/ui/toast';
 import { Bookmark, BookmarksResponse, BookmarkRequest } from '@/types/student/index.types';
 
 export const bookmarkService = {
@@ -16,42 +16,27 @@ export const bookmarkService = {
     if (params.sort) queryParams.append('sort', params.sort);
     if (params.filter) queryParams.append('filter', params.filter);
 
-    const res = await api.get(`/api/students/bookmarks?${queryParams.toString()}`);
+    const res = await apiClient.get(`/api/students/bookmarks?${queryParams.toString()}`);
     return res.data.data;
   },
 
   // Add new bookmark
   addBookmark: async (data: BookmarkRequest): Promise<{ id: number; question_id: number; description: string | null; created_at: string }> => {
-    try {
-      const res = await api.post('/api/students/bookmarks', data);
-      showSuccess('Bookmark added successfully!');
-      return res.data.data;
-    } catch (error) {
-      handleToastError(error);
-      throw error;
-    }
+    const res = await apiClient.post('/api/students/bookmarks', data);
+    showSuccess('Bookmark added successfully!');
+    return res.data.data;
   },
 
   // Update bookmark description
   updateBookmark: async (questionId: number, description: string): Promise<{ id: number; question_id: number; description: string; created_at: string; updated_at: string }> => {
-    try {
-      const res = await api.put(`/api/students/bookmarks/${questionId}`, { description });
-      showSuccess('Bookmark updated successfully!');
-      return res.data.data;
-    } catch (error) {
-      handleToastError(error);
-      throw error;
-    }
+    const res = await apiClient.put(`/api/students/bookmarks/${questionId}`, { description });
+    showSuccess('Bookmark updated successfully!');
+    return res.data.data;
   },
 
   // Delete bookmark
   deleteBookmark: async (questionId: number): Promise<void> => {
-    try {
-      await api.delete(`/api/students/bookmarks/${questionId}`);
-      showSuccess('Bookmark removed successfully!');
-    } catch (error) {
-      handleToastError(error);
-      throw error;
-    }
+    await apiClient.delete(`/api/students/bookmarks/${questionId}`);
+    showSuccess('Bookmark removed successfully!');
   }
 };

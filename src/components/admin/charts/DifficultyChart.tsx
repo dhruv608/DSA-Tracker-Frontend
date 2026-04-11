@@ -8,7 +8,17 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export default function DifficultyChart({ data }: any) {
+interface DifficultyData {
+  easy?: number;
+  medium?: number;
+  hard?: number;
+}
+
+interface DifficultyChartProps {
+  data: DifficultyData | undefined;
+}
+
+export default function DifficultyChart({ data }: DifficultyChartProps) {
   const chartData = [
     { name: "Easy", value: data?.easy || 0 },
     { name: "Medium", value: data?.medium || 0 },

@@ -27,7 +27,6 @@ import { TopicsSection } from '@/components/student/home/TopicsSection';
 
 import { TopicsSectionShimmer } from '@/components/student/home/TopicsSectionShimmer';
 
-import { handleToastError } from "@/utils/toast-system";
 import { Topic, User, StudentDataResponse, DashboardStats } from '@/types/student/index.types';
 
 
@@ -113,11 +112,8 @@ export default function StudentHomePage() {
       });
 
     } catch (e) {
-
-      handleToastError(e);
-
+      // Error is handled by API client interceptor
       console.error("Error refreshing user data", e);
-
     } finally {
       isFetching.current = false;
     }
@@ -147,18 +143,9 @@ export default function StudentHomePage() {
         await fetchTopicsOnly();
 
       } catch (e) {
-
-        handleToastError(e);
-
+        // Error is handled by API client interceptor
         console.error("Dashboard data fetch error", e);
-
-        // Handle auth error
-        const error = e as { response?: { status?: number } };
-        if (error.response?.status === 401) {
-          localStorage.removeItem('accessToken');
-          window.location.href = '/login';
-        }
-
+        // Auth errors are handled by API interceptor (auto-redirect on 401)
       } finally {
 
         setLoading(false);

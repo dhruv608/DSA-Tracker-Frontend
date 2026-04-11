@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogIn, Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 import { studentAuthService } from '@/services/student/auth.service';
-import { handleToastError } from "@/utils/toast-system";
+import { StudentLoginResponse } from '@/types/student/auth.types';
 import { GoogleAuthButton } from './components/GoogleAuthButton';
 import { BruteForceLoader } from '@/components/ui/BruteForceLoader';
+import { handleError } from '@/errors';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const processPostLogin = (u: any) => {
+  const processPostLogin = (u: StudentLoginResponse['user']) => {
     if (!u.leetcode_id || !u.gfg_id || !u.username) {
       localStorage.setItem('onboardingUser', JSON.stringify(u));
       router.push('/onboarding');
@@ -42,14 +43,16 @@ export default function LoginPage() {
       const isEmail = emailOrUsername.includes('@');
       const payload = isEmail ? { email: emailOrUsername, password } : { username: emailOrUsername, password };
 
-      const data = await studentAuthService.login(payload);
+      const data: StudentLoginResponse = await studentAuthService.login(payload);
       if (data?.accessToken) {
         localStorage.setItem('accessToken', data.accessToken);
         document.cookie = `accessToken=${data.accessToken}; path=/; secure; samesite=strict`;
         processPostLogin(data.user);
       }
     } catch (err) {
-      handleToastError(err);
+      console.log(err)
+      // Use new error handling system - shows toast for INVALID_CREDENTIALS
+      handleError(err, { context: 'Login' });
     } finally {
       setLoading(false);
     }

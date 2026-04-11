@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { studentProfileService } from '@/services/student/profile.service';
 import { studentAuthService } from '@/services/student/auth.service';
-import { ErrorHandler } from '@/lib/error-handler';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import {ProfileDataState, CurrentUserState, ApiError} from '@/types/student/index.types';
@@ -20,8 +19,8 @@ import { ProblemSolvingStats } from '@/components/student/profile/ProblemSolving
 import ActivityHeatmap from '@/components/student/profile/ActivityHeatmap';
 import { RecentActivity } from '@/components/student/profile/RecentActivity';
 import TopicProgressModal from '@/components/student/topics/TopicProgressModal';
-import { handleToastError, showSuccess, showDeleteSuccess, glassToast } from '@/utils/toast-system';
-import { toast } from '@/utils/toast';
+import { showSuccess } from '@/ui/toast';
+import { getErrorMessage } from '@/errors';
 
 
 
@@ -150,24 +149,16 @@ export default function PublicProfilePage() {
 
     } catch (error: unknown) {
 
-      handleToastError(error);
-
+      // Error is handled by API client interceptor
       if (error instanceof Error) {
-
         if (error.message === "Access denied. Students only.") {
-
           setCurrentUser(null);
-
           return;
-
         }
-
       }
 
     } finally {
-
       setAuthChecked(true);
-
     }
 
   };
@@ -226,31 +217,20 @@ export default function PublicProfilePage() {
       setImageRemoved(false);
 
     } catch (err: unknown) {
-
-      const apiError = err as ApiError;
-
-      const userError = ErrorHandler.handle(apiError, 'fetchProfileByUsername');
-
-
+      // Get user-friendly error message
+      const errorMessage = getErrorMessage(err, { context: 'fetchProfileByUsername' });
 
       // Check if it's a student not found error
-
+      const apiError = err as ApiError;
       const isStudentNotFoundError =
+        apiError?.response?.status === 404 ||
+        (err as { code?: string })?.code === 'STUDENT_PROFILE_NOT_FOUND' ||
+        errorMessage === "Student not found";
 
-        apiError?.response?.status === 404 ||           // HTTP status
-
-        (err as { code?: string })?.code === 'STUDENT_PROFILE_NOT_FOUND' || // Custom error code from service
-
-        userError.message === "Student not found";       // Fallback message
-
-      setProfileError(userError.message);
-
+      setProfileError(errorMessage);
     } finally {
-
       setLoading(false);
-
       isFetching.current = false;
-
     }
 
   };
@@ -266,15 +246,10 @@ export default function PublicProfilePage() {
 
 
     // Check if user can edit before proceeding
-
     if (!canEdit()) {
-
-      handleToastError({ message: 'You do not have permission to edit this profile.' });
-
+      // Permission error - component handles this directly
       if (fileInputRef.current) fileInputRef.current.value = '';
-
       return;
-
     }
 
 
@@ -282,15 +257,10 @@ export default function PublicProfilePage() {
     // Validate file type (no videos)
 
     const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-
     if (!validImageTypes.includes(file.type)) {
-
-      handleToastError({ message: 'Please select a valid image file (JPG, PNG, GIF, WebP). Videos are not allowed.' });
-
+      // Validation error - component handles this directly
       if (fileInputRef.current) fileInputRef.current.value = '';
-
       return;
-
     }
 
 
@@ -373,10 +343,8 @@ export default function PublicProfilePage() {
 
       } catch (e) {
 
-        handleToastError(e);
-
-        console.log('Token decode failed:', e);
-
+        // Error is handled by API client interceptor
+        console.log(e)
       }
 
     }
@@ -397,8 +365,6 @@ export default function PublicProfilePage() {
 
       setSavingProfile(true);
 
-
-
       // Check what needs to be updated
 
       const needsImageUpload = selectedImage !== null;
@@ -406,74 +372,41 @@ export default function PublicProfilePage() {
       const needsImageDelete = imageRemoved;
 
       const needsProfileUpdate =
-
         editForm.github !== originalEditForm.github ||
-
         editForm.linkedin !== originalEditForm.linkedin;
-
-
 
       // Make API calls only for what changed
 
       if (needsImageUpload) {
-
         await studentProfileService.updateProfileImage(selectedImage);
-
       }
-
-
 
       if (needsImageDelete) {
-
         await studentProfileService.deleteProfileImage();
-
       }
-
-
 
       if (needsProfileUpdate) {
-
         await studentProfileService.updateProfileDetails({
-
           github: editForm.github,
-
           linkedin: editForm.linkedin
-
         });
-
       }
-
-
 
       // Refresh profile data and close modal
 
       await fetchProfileByUsername();
-
       setShowEditModal(false);
-
-
 
       // Trigger StudentHeader refresh
 
       window.dispatchEvent(new CustomEvent('profileUpdated'));
 
+      // Show success message
 
-
-      // Show success message based on what was updated
-
-      const updates = [];
-
-      if (needsImageUpload) updates.push('Profile image');
-
-      if (needsImageDelete) updates.push('Profile image removed');
-
-      if (needsProfileUpdate) updates.push('Profile details');
+      showSuccess('Profile updated successfully!');
     } catch (error) {
-
-      handleToastError(error);
-
-      ErrorHandler.showAlert(error, 'handleSaveProfile');
-
+      // Error is handled by API client interceptor
+      console.log(error)
     } finally {
       setSavingProfile(false);
     }
@@ -487,104 +420,39 @@ export default function PublicProfilePage() {
     try {
 
       if (!usernameForm.username.trim()) {
-
-        toast.error('Username cannot be empty');
-
         return;
-
       }
-
-
 
       const localStorageToken = localStorage.getItem('accessToken');
-
       const cookieToken = document.cookie.split('; ').find(row => row.startsWith('accessToken='))?.split('=')[1];
-
       const token = localStorageToken || cookieToken;
 
-
-
       if (!token) {
-
-        toast.error('Please log in to update your username.');
-
         setTimeout(() => {
-
           window.location.href = '/login';
-
         }, 1000);
-
         return;
-
       }
 
-
-
       await studentProfileService.updateProfileDetails({
-
         username: usernameForm.username.trim()
-
       });
 
-
-
       await fetchProfileByUsername();
-
       setShowUsernameEditModal(false);
-
-
-
 
       window.dispatchEvent(new CustomEvent('profileUpdated'));
 
-
-
       const newUsername = usernameForm.username.trim();
-
       if (newUsername !== username) {
-
         window.location.href = `/profile/${newUsername}`;
-
       }
 
+      showSuccess('Username updated successfully!');
     } catch (error: unknown) {
-
-      handleToastError(error);
-
-      if (error instanceof Error) {
-
-        if (error.message === 'Token refresh failed' ||
-
-          error.message.includes('401') ||
-
-          error.message.includes('Unauthorized')) {
-
-          toast.error('Your session has expired. Please log in again to update your username.');
-
-          localStorage.removeItem('accessToken');
-
-          document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-
-          setTimeout(() => {
-
-            window.location.href = '/login';
-
-          }, 2000);
-
-          return;
-
-        }
-
-      }
-
-
-
-      const apiError = error as ApiError;
-
-      ErrorHandler.showAlert(apiError, 'handleSaveUsername');
-
+      // Error is handled by API client interceptor
+      console.log(error)
     }
-
   };
 
 
@@ -600,18 +468,10 @@ export default function PublicProfilePage() {
   const confirmDeleteImage = () => {
 
     // Check if user can edit before proceeding
-
     if (!canEdit()) {
-
-      handleToastError({ message: 'You do not have permission to edit this profile.' });
-
       setShowDeleteConfirm(false);
-
       return;
-
     }
-
-
 
     // Preview-only: update state to show removal, no API call yet
 

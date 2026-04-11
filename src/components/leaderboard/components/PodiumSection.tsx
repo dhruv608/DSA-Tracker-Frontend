@@ -3,8 +3,15 @@
 import React from "react";
 import { PodiumCard } from "./PodiumCard";
 import { PodiumShimmer } from "./PodiumShimmer";
+import { LeaderboardEntry } from "@/types/admin/leaderboard.types";
 
-export default function PodiumSection({ top3, loading, selectedCity }: any) {
+interface PodiumSectionProps {
+  top3: LeaderboardEntry[];
+  loading: boolean;
+  selectedCity: string;
+}
+
+export default function PodiumSection({ top3, loading, selectedCity }: PodiumSectionProps) {
   if (loading) {
     return <PodiumShimmer />;
   }

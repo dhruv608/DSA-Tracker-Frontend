@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getAdminBatchTopics } from "@/services/admin.service";
 import { Topic, TopicsResponse } from "@/types/admin/topic.types";
-import { handleToastError, showSuccess } from '@/utils/toast-system';
 
 type UseTopicsParams = {
   batchSlug?: string;
@@ -71,7 +70,7 @@ export function useTopics({
         setTotalRecords(data.length);
       }
     } catch (err) {
-      handleToastError(err);
+      // Error is handled by API client interceptor
       console.error("Failed to fetch topics", err);
     } finally {
       setLoading(false);
@@ -83,10 +82,16 @@ export function useTopics({
     fetchTopics();
   }, [fetchTopics]);
 
+  // Refetch function that resets params cache to force fresh data
+  const refetch = useCallback(() => {
+    lastFetchParams.current = { page: 0, limit: 0, search: '', sortBy: '' };
+    fetchTopics();
+  }, [fetchTopics]);
+
   return {
     topics,
     loading,
     totalRecords,
-    refetch: fetchTopics,
+    refetch,
   };
 }

@@ -9,7 +9,6 @@ import Stats from "@/components/admin/dashboard/Stats";
 import Graph from "@/components/admin/dashboard/Graph";
 import QuickAction from "@/components/admin/dashboard/QuickAction";
 import DashboardShimmer from "@/components/admin/dashboard/Shimmer";
-import { handleToastError } from "@/utils/toast-system";
 import { AdminStats, ApiError } from '@/types/admin/index.types';
 
 export default function AdminDashboardPage() {
@@ -30,7 +29,7 @@ export default function AdminDashboardPage() {
         const data = await getAdminStats(selectedBatch.id);
         if (isMounted) setStats(data);
       } catch (err: unknown) {
-        handleToastError(err);
+        // Error is handled by API client interceptor
         if (isMounted) {
           const error = err as ApiError;
           setError(error.response?.data?.message || "Failed to fetch stats");

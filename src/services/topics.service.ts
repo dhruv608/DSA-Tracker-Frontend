@@ -1,4 +1,4 @@
-import api from '@/lib/api';
+import { apiClient } from '@/api';
 import { Topic } from '@/types/admin/index.types';
 
 export interface TopicsResponse {
@@ -29,7 +29,7 @@ export const topicsService = {
       queryParams.append('search', search);
     }
 
-    const response = await api.get(`/api/topics?${queryParams.toString()}`);
+    const response = await apiClient.get(`/api/topics?${queryParams.toString()}`);
     return response.data;
   }
 };

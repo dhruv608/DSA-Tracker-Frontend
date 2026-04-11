@@ -6,13 +6,12 @@ import { Calendar, Layers, MapPin, Users } from 'lucide-react';
 
 interface BatchCardProps {
   batch: Batch;
-  cityName: string;
   onEdit: (batch: Batch) => void;
   onDelete: (batch: Batch) => void;
 }
 
 
-export function BatchCard({ batch, cityName, onEdit, onDelete }: BatchCardProps) {
+export function BatchCard({ batch, onEdit, onDelete }: BatchCardProps) {
   return (
     <div className="
       glass hover-glow
@@ -76,7 +75,7 @@ export function BatchCard({ batch, cityName, onEdit, onDelete }: BatchCardProps)
           <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-muted-foreground">City</span>
           <span className="text-foreground font-medium truncate">
-            {cityName}
+            {batch.city?.city_name || 'Unknown'}
           </span>
         </div>
 

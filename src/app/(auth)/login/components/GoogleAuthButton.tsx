@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { studentAuthService } from '@/services/student/auth.service';
 import { useLocalStorage } from '../../shared/hooks/useLocalStorage';
 import { toast } from 'sonner';
+import { StudentLoginResponse } from '@/types/student/auth.types';
 
 export function GoogleAuthButton() {
   const router = useRouter();
@@ -11,7 +12,7 @@ export function GoogleAuthButton() {
   const [error, setError] = useState('');
   const [, setOnboardingUser] = useLocalStorage('onboardingUser', null);
 
-  const processPostLogin = (u: any) => {
+  const processPostLogin = (u: StudentLoginResponse['user']) => {
     if (!u.leetcode_id || !u.gfg_id || !u.username) {
       localStorage.setItem('onboardingUser', JSON.stringify(u));
       router.push('/onboarding');

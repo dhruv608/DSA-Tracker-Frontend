@@ -2,13 +2,14 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CalendarDays, ExternalLink, Flame } from 'lucide-react';
+import { ExternalLink, Flame } from 'lucide-react';
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
+import { LeaderboardEntry } from '@/types/admin/leaderboard.types';
 import { useRouter } from 'next/navigation';
 
 interface LeaderboardTableRowProps {
-  entry: any;
+  entry: LeaderboardEntry;
   selectedCity: string;
 }
 
@@ -16,9 +17,6 @@ export const LeaderboardTableRow: React.FC<LeaderboardTableRowProps> = ({ entry,
   // Determine rank value and label based on city selection
   const isGlobalView = selectedCity === 'all';
   const rankValue = isGlobalView ? (entry.global_rank || 0) : (entry.city_rank || 0);
-
-
-  const router = useRouter();
 
   return (
     <TableRow className={`backdrop-blur-sm scrollbar-none hover:bg-muted/40 transition-all duration-200 hover:scale-[1.002] cursor-default  bg-primary/2 hover:bg-primary/12 rounded-2xl`}>
@@ -29,8 +27,8 @@ export const LeaderboardTableRow: React.FC<LeaderboardTableRowProps> = ({ entry,
           <div className={`w-10 h-10 rounded-full overflow-hidden border border-border shadow-sm group-hover:border-primary/50 transition-colors`}>
             {entry.profile_image_url ?
               <Image 
-                src={entry.profile_image_url} 
-                alt={entry.name} 
+                src={entry.profile_image_url || ''} 
+                alt={entry.name || entry.username || 'Student'} 
                 width={40} 
                 height={40}
                 className="w-full h-full object-cover"
@@ -71,10 +69,10 @@ export const LeaderboardTableRow: React.FC<LeaderboardTableRowProps> = ({ entry,
 
       <TableCell className="text-center">
         <div className="flex justify-center">
-          {entry.max_streak > 0 ? (
-            <div className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm transition-all duration-300 group-hover:scale-110 ${entry.max_streak >= 5 ? 'bg-red-500/15 text-red-500 border border-red-500/30' : 'bg-orange-500/15 text-orange-500 border border-orange-500/30'}`}>
-              <Flame className={`w-3.5 h-3.5 ${entry.max_streak >= 5 ? 'animate-bounce text-red-500' : 'text-orange-500'}`} />
-              {entry.max_streak}
+          {(entry.max_streak || 0) > 0 ? (
+            <div className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm transition-all duration-300 group-hover:scale-110 ${(entry.max_streak || 0) >= 5 ? 'bg-red-500/15 text-red-500 border border-red-500/30' : 'bg-orange-500/15 text-orange-500 border border-orange-500/30'}`}>
+              <Flame className={`w-3.5 h-3.5 ${(entry.max_streak || 0) >= 5 ? 'animate-bounce text-red-500' : 'text-orange-500'}`} />
+              {entry.max_streak || 0}
             </div>
           ) : (
             <span className="text-muted-foreground/50 text-xs font-medium">-</span>

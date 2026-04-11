@@ -1,9 +1,17 @@
 "use client";
 
+import { ReactNode } from "react";
 import { Users, BookOpen, Layers, HelpCircle } from "lucide-react";
+import { AdminStats } from "@/types/admin/dashboard.types";
 
 interface StatsProps {
-  stats: any;
+  stats: AdminStats | null;
+}
+
+interface StatCardProps {
+  title: string;
+  value: number | string | undefined;
+  icon: ReactNode;
 }
 
 export default function Stats({ stats }: StatsProps) {
@@ -17,7 +25,7 @@ export default function Stats({ stats }: StatsProps) {
   );
 }
 
-function StatCard({ title, value, icon }: any) {
+function StatCard({ title, value, icon }: StatCardProps) {
   return (
     <div className="glass  hover-glow rounded-2xl p-6 flex items-center gap-4">
 
