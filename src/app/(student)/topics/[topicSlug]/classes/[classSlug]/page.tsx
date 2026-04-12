@@ -11,8 +11,8 @@ import { ClassBackNav } from '@/components/student/classes/ClassBackNav';
 import { ClassHeader } from '@/components/student/classes/ClassHeader';
 import { ClassQuestions } from '@/components/student/classes/ClassQuestions';
 import { ClassDetailsShimmer } from '@/components/student/classes/ClassDetailsShimmer';
+import { ClassFilterBar } from '@/components/student/classes/ClassFilterBar';
 import { Pagination } from '@/components/Pagination';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PracticeQuestion } from '@/types/student/index.types';
 
 interface ClassData {
@@ -134,42 +134,11 @@ return (
     />
 
     {/* 🔥 FILTER BAR */}
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 p-4 rounded-2xl glass bg-background/40 backdrop-blur-xl">
-
-      {/* LEFT */}
-      <div className="flex items-center gap-4">
-
-
-        <Select value={filter} onValueChange={handleFilterChange}>
-          <SelectTrigger className="h-9 rounded-2xl bg-muted border border-border px-3">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Questions</SelectItem>
-            <SelectItem value="solved">Solved</SelectItem>
-            <SelectItem value="unsolved">Unsolved</SelectItem>
-          </SelectContent>
-        </Select>
-
-      </div>
-
-      {/* RIGHT */}
-      <div className=" text-primary flex items-center gap-1">
-
-        <span className="text-xs ">
-          Showing
-        </span>
-
-        <span className="text-xs font-medium   ">
-          {pagination?.total || 0}
-        </span>
-
-        <span className="text-xs ">
-          questions
-        </span>
-
-      </div>
-    </div>
+    <ClassFilterBar
+      filter={filter}
+      onFilterChange={handleFilterChange}
+      totalQuestions={pagination?.total || 0}
+    />
 
     {/* QUESTIONS */}
     <ClassQuestions

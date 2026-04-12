@@ -4,7 +4,6 @@ import { useParams } from 'next/navigation';
 import { studentProfileService } from '@/services/student/profile.service';
 import { studentAuthService } from '@/services/student/auth.service';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
 import {ProfileDataState, CurrentUserState, ApiError} from '@/types/student/index.types';
 import { EditProfileModal } from '@/components/student/profile/EditProfileModal';
 import { EditUsernameModal } from '@/components/student/profile/EditUsernameModal';
@@ -12,6 +11,7 @@ import { DeleteImageModal } from '@/components/student/profile/DeleteImageModal'
 import { ProfilePageShimmer } from '@/components/student/profile/shimmers';
 import { ProfileHeader } from '@/components/student/profile/ProfileHeader';
 import { ProfileNotFound } from '@/components/student/profile/ProfileNotFound';
+import { ProfileErrorState } from '@/components/student/profile/ProfileErrorState';
 import { OverviewStats } from '@/components/student/profile/OverviewStats';
 import { ProfileInfo } from '@/components/student/profile/ProfileInfo';
 import { SocialLinks } from '@/components/student/profile/SocialLinks';
@@ -21,6 +21,7 @@ import { RecentActivity } from '@/components/student/profile/RecentActivity';
 import TopicProgressModal from '@/components/student/topics/TopicProgressModal';
 import { showSuccess } from '@/ui/toast';
 import { getErrorMessage } from '@/errors';
+import { useCanEditProfile } from '@/hooks/useCanEditProfile';
 
 
 
@@ -59,6 +60,12 @@ export default function PublicProfilePage() {
   const [currentUser, setCurrentUser] = useState<CurrentUserState | null>(null);
 
   const [authChecked, setAuthChecked] = useState(false);
+
+  const canEdit = useCanEditProfile({
+    authChecked,
+    currentUser,
+    profileStudent: profileData?.student,
+  });
 
   const [showTopicProgressModal, setShowTopicProgressModal] = useState(false);
 
@@ -246,8 +253,7 @@ export default function PublicProfilePage() {
 
 
     // Check if user can edit before proceeding
-    if (!canEdit()) {
-      // Permission error - component handles this directly
+    if (!canEdit) {
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -288,72 +294,6 @@ export default function PublicProfilePage() {
     // Clear file input
 
     if (fileInputRef.current) fileInputRef.current.value = '';
-
-  };
-
-
-
-  const canEdit = () => {
-
-    if (!authChecked) return false;
-
-    if (!currentUser) return false;
-
-    if (currentUser?.error === "Access denied. Students only.") return false;
-
-    if (!profileData?.student) return false;
-
-
-
-    const isOwner1 = currentUser?.data?.id === profileData.student.id;
-
-    const isOwner2 = currentUser?.data?.username === profileData.student.username;
-
-
-
-    const token = localStorage.getItem('accessToken') || document.cookie.split('; ').find(row => row.startsWith('accessToken='))?.split('=')[1];
-
-    let tokenUsername = null;
-
-
-
-    if (token) {
-
-      try {
-
-        const base64Url = token.split('.')[1];
-
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-
-        const jsonPayload = decodeURIComponent(
-
-          atob(base64)
-
-            .split('')
-
-            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-
-            .join('')
-
-        );
-
-        const decoded = JSON.parse(jsonPayload);
-
-        tokenUsername = decoded.email?.split('@')[0];
-
-      } catch (e) {
-
-        // Error is handled by API client interceptor
-        console.log(e)
-      }
-
-    }
-
-
-
-    const isOwner5 = tokenUsername === profileData.student.username;
-
-    return isOwner1 || isOwner2 || isOwner5;
 
   };
 
@@ -468,7 +408,7 @@ export default function PublicProfilePage() {
   const confirmDeleteImage = () => {
 
     // Check if user can edit before proceeding
-    if (!canEdit()) {
+    if (!canEdit) {
       setShowDeleteConfirm(false);
       return;
     }
@@ -498,35 +438,7 @@ export default function PublicProfilePage() {
   // Only show generic error page for non-student-not-found errors
 
   if (profileError && !profileError.includes("Student not found")) {
-
-    return (
-
-      <div className="text-center py-20">
-
-        <div className="max-w-md mx-auto">
-
-          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-
-            <X className="w-8 h-8 text-red-500" />
-
-          </div>
-
-          <h2 className="text-2xl font-bold text-foreground mb-2">Unable to Load Profile</h2>
-
-          <p className="text-muted-foreground mb-6">{profileError}</p>
-
-          <Button onClick={() => window.location.reload()} variant="outline">
-
-            Try Again
-
-          </Button>
-
-        </div>
-
-      </div>
-
-    );
-
+    return <ProfileErrorState error={profileError} />;
   }
 
 
@@ -569,7 +481,7 @@ export default function PublicProfilePage() {
 
         student={student}
 
-        canEdit={canEdit()}
+        canEdit={canEdit}
 
         onEditProfile={() => setShowEditModal(true)}
 
@@ -611,7 +523,7 @@ export default function PublicProfilePage() {
 
             student={student}
 
-            canEdit={canEdit()}
+            canEdit={canEdit}
 
             onEditSocialLinks={() => setShowEditModal(true)}
 

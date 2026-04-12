@@ -7,20 +7,10 @@ import { Admin } from '@/types/common/api.types';
 import { getAdminLeaderboard } from '@/services/admin.service';
 import { LeaderboardTable } from '@/components/leaderboard/components/LeaderboardTable';
 import { FilterBar } from '@/components/leaderboard/components/FilterBar';
-import { EvaluationModal } from '@/components/leaderboard/components/EvaluationModal';
-import { TimerLeaderboard } from '@/components/leaderboard/components/TimerLeaderboard';
+import { AdminLeaderboardHeader } from '@/components/leaderboard/components/AdminLeaderboardHeader';
 import PodiumSection from '@/components/leaderboard/components/PodiumSection';
 import { LeaderboardData, ApiError, BatchSelection } from '@/types/admin/index.types';
-
-// Hook for Debounce
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
-}
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 export default function AdminLeaderboardPage() {
   
@@ -33,7 +23,7 @@ export default function AdminLeaderboardPage() {
   const [cityYearMap, setCityYearMap] = useState<Record<string, Set<number>>>({});
   // Query & Filters
   const [lSearch, setLSearch] = useState(searchParams.get('search') || '');
-  const debouncedSearch = useDebounce(lSearch, 400);
+  const debouncedSearch = useDebouncedValue(lSearch, 400);
 
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
   const [limit, setLimit] = useState(Number(searchParams.get('limit')) || 5);
@@ -252,43 +242,10 @@ export default function AdminLeaderboardPage() {
 
   return (
      <div className="flex flex-col mx-auto  w-full pb-12  -m-3">
-      {/* header  */}
-      <div className="glass backdrop-blur-2xl mb-5 px-6 py-4 rounded-2xl flex items-center justify-between">
-
-        {/* LEFT */}
-        <div className="flex flex-col gap-2">
-
-          {/* TITLE ROW */}
-          <div className="flex items-center gap-3 flex-wrap">
-
-            <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              Admin <span className="text-primary">Leaderboard</span>
-            </h2>
-
-            {/* Modal aligned properly */}
-            <div className="shrink-0">
-              <EvaluationModal />
-            </div>
-
-          </div>
-
-          {/* SUBTEXT */}
-          <p className="text-muted-foreground text-sm  inline-flex items-center p-0 m-0 rounded-md w-fit">
-            Analytics driven precisely by backend mapping constraints.
-          </p>
-
-        </div>
-
-        {/* RIGHT */}
-        <div className="shrink-0">
-          <TimerLeaderboard
-            lastUpdated={leaderboardData?.last_calculated}
-            refreshInterval={4}
-            onRefresh={() => handleRefresh(true)}
-          />
-        </div>
-
-      </div>
+      <AdminLeaderboardHeader
+        lastCalculated={leaderboardData?.last_calculated}
+        onRefresh={() => handleRefresh(true)}
+      />
 
        {/* Filter  */}
       <FilterBar
