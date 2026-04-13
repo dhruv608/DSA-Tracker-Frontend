@@ -1,5 +1,5 @@
 import { apiClient } from '@/api';
-import { isStudentToken, clearAuthTokens } from '@/lib/auth-utils';
+import { isStudentToken } from '@/lib/auth-utils';
 import { showSuccess } from '@/ui/toast';
 import { StudentLoginCredentials, StudentRegisterData, ResetPasswordData } from '@/types/student/index.types';
 import { AuthError } from '@/types/student/auth.types';
@@ -8,7 +8,7 @@ export const studentAuthService = {
   getCurrentStudent: async () => {
     // Check if we have a student token before making the request
     if (!isStudentToken()) {
-      clearAuthTokens(); // Clear invalid tokens
+      // Don't clear tokens - the token may be valid but just not a student token (e.g. admin)
       const error = new Error('Access denied. Students only.');
       const authError = error as AuthError;
       authError.response = { status: 403, data: { error: 'Access denied. Students only.' } };
