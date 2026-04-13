@@ -467,12 +467,6 @@ button:focus {
   animation: gradientMove 12s ease infinite;
 }
 
-
-
-
-
-
-
 @font-face {
   font-family: 'Lufga';
   src: url('/fonts/lufga/LufgaThin.ttf') format('truetype');

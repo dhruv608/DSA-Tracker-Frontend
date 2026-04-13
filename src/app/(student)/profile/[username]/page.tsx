@@ -94,25 +94,17 @@ export default function PublicProfilePage() {
 
 
       // Only try to fetch current user if we have a valid student token
-
-      if (localStorage.getItem('accessToken') || document.cookie.split('; ').find(row => row.startsWith('accessToken='))) {
-
+      // Admin tokens should not call getCurrentStudent() as it will fail
+      const { isStudentToken } = await import('@/lib/auth-utils');
+      if (isStudentToken()) {
         await fetchCurrentUser().catch(() => {
-
           // Silently fail auth check - profile should still be viewable
-
           setCurrentUser(null);
-
           setAuthChecked(true);
-
         });
-
       } else {
-
         setCurrentUser(null);
-
         setAuthChecked(true);
-
       }
 
     };
