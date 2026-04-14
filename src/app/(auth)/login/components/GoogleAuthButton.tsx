@@ -29,7 +29,7 @@ export function GoogleAuthButton() {
     setError('');
 
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const redirectUri = encodeURIComponent('http://localhost:3000/auth/callback');
+    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
     const scope = encodeURIComponent('openid email profile');
     
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +

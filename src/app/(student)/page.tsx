@@ -116,39 +116,21 @@ export default function StudentHomePage() {
   useEffect(() => {
 
     const fetchDashboardData = async () => {
-
       try {
-
         const token = localStorage.getItem('accessToken');
-
         if (!token) {
-
           window.location.href = '/login';
-
           return;
-
         }
-
-
-
         await fetchTopicsOnly();
-
       } catch (e) {
         // Error is handled by API client interceptor
         console.error("Dashboard data fetch error", e);
         // Auth errors are handled by API interceptor (auto-redirect on 401)
       }
-
     };
-
-
-
     fetchDashboardData();
-
-
-
     // Listen to profile updates (e.g., from onboarding) to refresh dashboard stats dynamically
-
     window.addEventListener('profileUpdated', fetchTopicsOnly);
 
     return () => window.removeEventListener('profileUpdated', fetchTopicsOnly);
@@ -181,7 +163,7 @@ export default function StudentHomePage() {
 
       </div>
 
-    
+  
 
   );
 
