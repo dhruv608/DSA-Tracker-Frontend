@@ -8,7 +8,7 @@ import { BatchSelection, CitySelection } from '../common/index.types';
 export interface StudentFormData {
   name: string;
   email: string;
-  username: string;
+  username?: string;
   password?: string;
   enrollment_id: string;
   batch_id?: number;
@@ -19,7 +19,7 @@ export interface StudentFormData {
 export interface StudentSubmitPayload {
   name: string;
   email: string;
-  username: string;
+  username?: string;
   password?: string;
   enrollment_id: string;
   batch_id?: number;

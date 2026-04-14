@@ -3,10 +3,7 @@
 import { motion } from "framer-motion";
 
 type Props = {
-  data: {
-    classwork?: number;
-    homework?: number;
-  };
+  data: Record<string, number> | undefined;
 };
 
 export default function TypeChart({ data }: Props) {
@@ -83,7 +80,7 @@ export default function TypeChart({ data }: Props) {
         {/* CENTER */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <motion.div
-            className="text-2xl font-semibold text-white"
+            className="text-2xl font-semibold text-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >

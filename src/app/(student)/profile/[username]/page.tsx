@@ -184,17 +184,11 @@ export default function PublicProfilePage() {
       setProfileData(data);
 
       const formValues = {
-
         name: data?.student?.name || '',
-
         github: data?.student?.github || '',
-
         linkedin: data?.student?.linkedin || '',
-
         leetcode: data?.student?.leetcode || '',
-
         gfg: data?.student?.gfg || ''
-
       };
 
       setEditForm(formValues);

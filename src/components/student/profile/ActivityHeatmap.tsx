@@ -101,7 +101,7 @@ export default function ActivityHeatmap({
 
   return (
     <div className="glass backdrop-blur-sm p-6 rounded-[var(--radius-lg)] border border-[var(--border)] w-full">
-
+     
       {/* Header */}
       <div className="flex justify-between items-center ">
         <h3 className="font-bold mb-6 flex items-center gap-2 text-[var(--text-base)] text-[var(--foreground)]">
@@ -115,12 +115,12 @@ export default function ActivityHeatmap({
 
         {/* Week Labels (FIXED ALIGNMENT) */}
         <div className="relative w-8 text-[13px] text-[var(--muted-foreground)] ">
-          <span className="absolute top-[42px]">Mon</span>
+          <span className="absolute top-[42px] ">Mon</span>
           <span className="absolute top-[76px]">Wed</span>
           <span className="absolute top-[112px]">Fri</span>
         </div>
 
-        <div className="flex flex-col w-full">
+        <div className="flex flex-col w-full ms-5">
 
           {/* Months (PERFECT ALIGNMENT) */}
           <div className="flex mb-2 text-[11px] text-[var(--muted-foreground)]">
@@ -132,7 +132,7 @@ export default function ActivityHeatmap({
           </div>
 
           {/* Grid (PERFECT SPACING) */}
-          <div className="flex w-full justify-between">
+          <div className="flex w-full justify-between ">
             {weeks.map((week, wi) => (
               <div key={wi} className="flex flex-col gap-[4px] flex-1 items-center">
                 {Array.from({ length: 7 }).map((_, di) => {
@@ -143,7 +143,6 @@ export default function ActivityHeatmap({
 
                   const key = date.toLocaleDateString("en-CA");
                   const count = dataMap.get(key) ?? 0;
-
                   return (
                     <div
                       key={di}
@@ -151,7 +150,7 @@ export default function ActivityHeatmap({
                     w-[14px] h-[14px] rounded-[3px]
                     ${getColor(count)}
                     transition-all duration-200
-                    hover:scale-110 hover:z-10
+                    hover:scale-100 hover:z-10
                     cursor-pointer
                   `}
                       onMouseEnter={(e) => {
@@ -161,7 +160,7 @@ export default function ActivityHeatmap({
                           : `${count} submissions on ${key}`;
                         setTooltip({
                           x: rect.left + rect.width / 2,
-                          y: rect.top,
+                          y: rect.top - 8, // 8px spacing above the element
                           text: tooltipText,
                         });
                       }}
@@ -188,15 +187,12 @@ export default function ActivityHeatmap({
       {/* Legend */}
       <div className="flex items-center gap-2 mt-3 text-xs text-[var(--muted-foreground)]">
         <span>Less</span>
-
         <div className="w-[14px] h-[14px] bg-[var(--muted)] border border-[var(--border)] rounded-[3px]" />
         <div className="w-[14px] h-[14px] bg-[rgba(204,255,0,0.2)] rounded-[3px]" />
         <div className="w-[14px] h-[14px] bg-[rgba(204,255,0,0.4)] rounded-[3px]" />
         <div className="w-[14px] h-[14px] bg-[rgba(204,255,0,0.7)] rounded-[3px]" />
         <div className="w-[14px] h-[14px] bg-[var(--primary)] rounded-[3px]" />
-
         <span>More</span>
-        
         <span className="ml-4 text-[var(--muted-foreground)]">|</span>
         
         <div className="w-[14px] h-[14px] bg-blue-100/50 border border-blue-200/50 rounded-[3px]" />

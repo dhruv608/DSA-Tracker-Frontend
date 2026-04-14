@@ -139,8 +139,8 @@
   --card-foreground: #0F172A;
   --popover: #FFFFFF;
   --popover-foreground: #0F172A;
-  --primary: #CCFF00;
-  --logo: #0F1117;
+  --primary: #BDFF00;
+  --logo: #64748B;
   --primary-foreground: #000000;
   --secondary: #F1F5F9;
   --secondary-foreground: #475569;
@@ -466,6 +466,12 @@ button:focus {
   background-size: 200% 200%;
   animation: gradientMove 12s ease infinite;
 }
+
+
+
+
+
+
 
 @font-face {
   font-family: 'Lufga';

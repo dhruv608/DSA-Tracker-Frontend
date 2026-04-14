@@ -31,14 +31,14 @@ export function PracticeFilters({
 
     {/* 🔍 SEARCH */}
     <div className="relative mb-5 rounded-2xl">
-      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
+      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground" />
 
       <input
         type="text"
         placeholder="Search questions..."
         value={filters.search}
         onChange={(e) => handleFilterChange("search", e.target.value)}
-        className="w-full pl-10! pr-4! py-3! rounded-2xl bg-transparent! border border-border/40 
+        className="w-full pl-10! pr-4! py-3! rounded-2xl dark:bg-transparent! border border-border/40 
         text-sm outline-none placeholder:text-white
         focus:border-primary/40 focus:ring-2 focus:ring-primary/20 
         transition-all"

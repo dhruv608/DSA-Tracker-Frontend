@@ -16,7 +16,7 @@ export default function CustomTooltip({ x, y, text }: TooltipProps) {
         bg-black/90 text-white
         backdrop-blur-md
         pointer-events-none
-        transform -translate-x-1/2 -translate-y-3
+        transform 
         transition-all duration-150
         animate-in fade-in zoom-in-95
         shadow-lg

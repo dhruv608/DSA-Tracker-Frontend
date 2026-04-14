@@ -17,7 +17,7 @@ export const LevelEnum = z.enum(["EASY", "MEDIUM", "HARD"]);
 export const createQuestionSchema = z.object({
   question_name: z.string().min(1, "Question name is required"),
   question_link: z.string().url("Question link must be a valid URL"),
-  topic_id: z.number().int().positive("Topic is required"),
+  topic_id: z.number().int().min(1, "Topic is required"),
   platform: PlatformEnum,
   level: LevelEnum,
 });

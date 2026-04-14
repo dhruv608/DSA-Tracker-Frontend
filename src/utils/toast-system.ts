@@ -139,4 +139,10 @@ export const glassToast = {
   },
 };
 
+// Helper function to handle errors
+export const handleToastError = (error: any, customMessage?: string) => {
+  const errorMessage = customMessage || error?.message || 'An error occurred';
+  glassToast.error(errorMessage);
+};
+
 export default glassToast;

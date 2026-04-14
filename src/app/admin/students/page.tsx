@@ -51,8 +51,8 @@ export default function AdminStudentsPage() {
     defaultValues: {
       name: '',
       email: '',
-      username: '',
-      password: '',
+      username: undefined,
+      password: undefined,
       enrollment_id: '',
       batch_id: selectedBatch?.id || 0,
       leetcode_id: '',
@@ -66,7 +66,7 @@ export default function AdminStudentsPage() {
     defaultValues: {
       name: '',
       email: '',
-      username: '',
+      username: undefined,
       enrollment_id: '',
       leetcode_id: '',
       gfg_id: '',
@@ -211,8 +211,8 @@ export default function AdminStudentsPage() {
     createForm.reset({
       name: '',
       email: '',
-      username: '',
-      password: '',
+      username: undefined,
+      password: undefined,
       enrollment_id: '',
       batch_id: selectedBatch?.id || 0,
       leetcode_id: '',
@@ -221,7 +221,7 @@ export default function AdminStudentsPage() {
     editForm.reset({
       name: '',
       email: '',
-      username: '',
+      username: undefined,
       enrollment_id: '',
       leetcode_id: '',
       gfg_id: '',
@@ -240,7 +240,7 @@ export default function AdminStudentsPage() {
     editForm.reset({
       name: s.name,
       email: s.email,
-      username: s.username,
+      username: s.username || undefined,
       enrollment_id: s.enrollment_id || '',
       leetcode_id: s.leetcode_id || '',
       gfg_id: s.gfg_id || '',

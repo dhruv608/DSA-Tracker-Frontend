@@ -25,12 +25,12 @@ export default function TopicFilter({ search, onSearchChange, sortBy, onSortChan
 
          {/* SEARCH */}
          <div className="relative w-full sm:max-w-md ">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground w-4 h-4" />
             <Input
                placeholder="Search topics..."
                value={search}
                onChange={(e) => onSearchChange(e.target.value)}
-               className="pl-9! w-full h-11! rounded-2xl bg-transparent! placeholder:text-white border! border-border/60! focus-visible:ring-primary/40"
+               className="pl-9! w-full h-11! rounded-2xl dark:bg-transparent! placeholder:text-white border! border-border/60! focus-visible:ring-primary/40"
             />
          </div>
 

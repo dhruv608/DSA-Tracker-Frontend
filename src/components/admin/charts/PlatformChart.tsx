@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 type Props = {
-  data: {
+  data?: {
     leetcode?: number;
     gfg?: number;
     interviewbit?: number;

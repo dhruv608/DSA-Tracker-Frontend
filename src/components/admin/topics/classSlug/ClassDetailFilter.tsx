@@ -16,12 +16,12 @@ export default function ClassDetailFilter({ search, onSearchChange, assignedTota
          <div className="flex items-center justify-between  px-5 py-4  border-border/60  ">
 
             <div className="relative flex-1 max-w-sm group">
-               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white pointer-events-none transition group-focus-within:text-primary " />
+               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground pointer-events-none transition group-focus-within:text-primary " />
                <Input
                   placeholder="Search classes..."
                   value={search}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  className="h-10! w-full pl-9! pr-9! rounded-2xl! bg-transparent!   focus:ring-2 focus:ring-primary/20 focus:bg-accent/60   transition-all placeholder:text-white   "
+                  className="h-10! w-full pl-9! pr-9! rounded-2xl! dark:bg-transparent!   focus:ring-2 focus:ring-primary/20 focus:bg-accent/60   transition-all placeholder:text-white   "
                />
             </div>
 

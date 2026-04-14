@@ -20,14 +20,12 @@ export function HeroSection() {
       <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
 
         {/* 📝 LEFT SIDE (TEXT) */}
-
-
         <div className="flex flex-col justify-center items-start text-left gap-3 max-w-2xl">
 
           {/* TAG */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20 text-xs font-semibold text-[var(--accent-primary)] uppercase tracking-wider backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--logo)]/10 border border-[var(--logo)]/20 text-xs font-semibold text-[var(--logo)] uppercase tracking-wider backdrop-blur-sm">
             <Zap className="w-4 h-4" />
-            Your Coding Portal
+            <p>Your Coding Portal</p>
           </div>
 
           {/* BRAND */}
@@ -65,7 +63,7 @@ export function HeroSection() {
             <Button
               asChild
               size="lg"
-              className="h-12 px-8 font-semibold rounded-2xl border border-white/10 bg-primary/10! text-primary!  hover:bg-white/10 transition-all"
+              className="h-12 px-8 font-semibold rounded-2xl border border-foreground/10 bg-logo/10! text-logo!  hover:bg-white/10 transition-all"
             >
               <Link href="/practice">
                 <PenTool className="w-5 h-5 mr-2" />

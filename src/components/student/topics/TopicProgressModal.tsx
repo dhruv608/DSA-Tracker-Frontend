@@ -9,7 +9,6 @@ import {
   Award,
   BookOpen,
   Filter,
-  X,
   GitBranch,
   Database,
   Network,
@@ -25,6 +24,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { BatchSelection } from '@/types/student/index.types';
 
 interface Topic {
@@ -104,11 +110,17 @@ export default function TopicProgressModal({
     return topics;
   };
 
-  const getColor = (progress: number) => {
-    if (progress < 30) return "from-red-500 to-rose-500";
-    if (progress < 70) return "from-yellow-400 to-orange-500";
-    return "from-lime-400 to-green-500";
-  };
+ const colorMap: Record<string, string> = {
+  hard: "bg-hard",
+  medium: "bg-medium",
+  easy: "bg-easy",
+};
+
+const getColor = (progress: number) => {
+  if (progress < 30) return "hard";
+  if (progress < 70) return "medium";
+  return "easy";
+};
 
   const getTopicIcon = (name: string) => {
     const n = name.toLowerCase();
@@ -119,39 +131,28 @@ export default function TopicProgressModal({
     return <Database className="w-4 h-4" />;
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className=" fixed inset-0 z-50 flex items-center justify-center">
-      {/* BACKDROP */}
-      <div
-        className="absolute  inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* MODAL */}
-      <div className="relative w-[95vw] no-scrollbar max-w-250 h-[85vh] backdrop-blur-3xl rounded-2xl shadow-xl flex flex-col overflow-hidden">
-
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="w-[95vw] max-w-[50%]! h-[90vh] max-h-[85vh] backdrop-blur-3xl p-0 overflow-hidden">
         {/* HEADER */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
-          <div>
-            <div className="text-xl font-bold flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-primary" />
-              Topic Progress
+        <DialogHeader className="px-6 py-4 border-b border-border/50">
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                Topic Progress
+              </DialogTitle>
+              {loading ? (
+                <Skeleton className="h-4 w-48 rounded-md mt-1" />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {data?.student?.name} • {data?.student?.batch?.name || data?.student?.batch?.batch_name || 'No batch'}
+                </p>
+              )}
             </div>
-            {loading ? (
-              <Skeleton className="h-4 w-48 rounded-md mt-1" />
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {data?.student?.name} • {data?.student?.batch?.name || data?.student?.batch?.batch_name || 'No batch'}
-              </p>
-            )}
+            <DialogClose />
           </div>
-
-          <button onClick={onClose}>
-            <X />
-          </button>
-        </div>
+        </DialogHeader>
 
         {/* BODY */}
         <div className="flex flex-col flex-1 overflow-hidden p-6 gap-6">
@@ -279,9 +280,7 @@ export default function TopicProgressModal({
                     {/* PROGRESS */}
                     <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
                       <div
-                        className={`h-full rounded-full bg-gradient-to-r ${getColor(
-                          progress
-                        )} transition-all duration-700`}
+                        className={`h-full rounded-full ${colorMap[getColor(progress)]} transition-all duration-700`}
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -291,8 +290,8 @@ export default function TopicProgressModal({
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

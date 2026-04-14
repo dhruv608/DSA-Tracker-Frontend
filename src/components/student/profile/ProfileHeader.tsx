@@ -63,7 +63,7 @@ export function ProfileHeader({
                             {canEdit && onEditUsername && (
                                 <button
                                     onClick={onEditUsername}
-                                    className="-mt-4 p-1 rounded-lg hover:bg-[var(--accent-primary)]/20 transition text-[var(--accent-primary)]"
+                                    className=" p-1 rounded-lg hover:bg-[var(--accent-primary)]/20 transition text-[var(--accent-primary)]"
                                 >
                                     <Edit3 className="w-3 h-3" />
                                 </button>

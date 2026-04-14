@@ -17,7 +17,7 @@ export function FilterBar({
       {/* LEFT SECTION - SEARCH */}
       <div className="flex-1">
         <div className="relative !w-90 max-w-[420px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground w-4 h-4" />
           <Input 
               placeholder="Search by name and username..." 
               value={lSearch}

@@ -28,12 +28,12 @@ export default function StudentsFilter({
     <div className="glass backdrop-blur-2xl mb-5 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-center">
       {/* SEARCH */}
       <div className="relative w-full sm:max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white w-4 h-4" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground w-4 h-4" />
         <Input
           placeholder="Search by name or email..."
           value={sSearch}
           onChange={(e) => { setSSearch(e.target.value); setPage(1); }}
-          className="pl-9! w-full h-11! rounded-2xl! bg-transparent! placeholder:text-white"
+          className="pl-9! w-full h-11! rounded-2xl! dark:bg-transparent! placeholder:text-white"
         />
       </div>
 

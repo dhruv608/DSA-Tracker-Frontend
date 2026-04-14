@@ -78,9 +78,14 @@ export function InfiniteScrollDropdown({
             search,
           });
 
-        setTopics((prev) =>
-          isReset ? res.topics : [...prev, ...res.topics]
-        );
+        setTopics((prev) => {
+          const newTopics = isReset ? res.topics : [...prev, ...res.topics];
+          // Deduplicate by topic.id
+          const uniqueTopics = Array.from(
+            new Map(newTopics.map(topic => [topic.id, topic])).values()
+          );
+          return uniqueTopics;
+        });
 
         setHasMore(res.pagination.hasNextPage);
         setCurrentPage(page);

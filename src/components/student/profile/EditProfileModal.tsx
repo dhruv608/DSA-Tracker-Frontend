@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { X, Camera, Trash2, Github, Linkedin, Lock } from 'lucide-react';
 import { LeetCodeIcon, GeeksforGeeksIcon } from '@/components/platform/PlatformIcons';
 import { ProfileEditForm, StudentProfile } from '@/types/student/index.types';
@@ -37,7 +39,6 @@ export function EditProfileModal({
   imagePreview,
   imageRemoved,
 }: EditProfileModalProps) {
-  if (!isOpen) return null;
 
   const handleSaveWithToast = async () => {
     try {
@@ -57,26 +58,20 @@ export function EditProfileModal({
   };
 
   return (
-    <div className="fixed inset-0 glass backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-2xl  w-full max-w-md shadow-2xl overflow-hidden">
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-border">
-          <h2 className="text-lg font-semibold tracking-tight">Edit Profile</h2>
-          <button
-            onClick={onClose}
-            className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md overflow-hidden p-0">
+        <DialogHeader className="px-6 py-4 border-b border-border">
+          <DialogTitle className="text-lg font-semibold tracking-tight">Edit Profile</DialogTitle>
+          <DialogDescription className="hidden">Update your profile information</DialogDescription>
+          
+        </DialogHeader>
 
         <div className="p-5 space-y-4">
 
           {/* Profile Image */}
           <div className="flex flex-col items-center gap-2">
-            <div className="relative  ">
-              <div className="w-20 h-20 rounded-full   overflow-hidden shadow-md">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
                 {imagePreview ? (
                   <img src={imagePreview} alt="Profile Preview" className="w-full h-full object-cover" />
                 ) : imageRemoved ? (
@@ -132,13 +127,23 @@ export function EditProfileModal({
             <label className="text-sm font-medium flex items-center gap-1.5">
                GitHub URL
             </label>
-            <input
+            <Input
               type="url"
               value={editForm.github}
               onChange={(e) => setEditForm({ ...editForm, github: e.target.value })}
               onKeyDown={handleKeyDown}
               placeholder="https://github.com/username"
-              className="w-full border border-border px-3 py-2 rounded-2xl bg-background text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              className="w-full rounded-2xl"
+              style={{
+                height: 'var(--spacing-lg)',
+                border: '1px solid var(--border)',
+                backgroundColor: 'hsl(var(--background))',
+                color: 'hsl(var(--foreground))',
+                fontSize: 'var(--text-base)',
+                padding: '16px 20px',
+                outline: 'none',
+                transition: 'all 0.2s ease',
+              }}
             />
           </div>
 
@@ -147,13 +152,23 @@ export function EditProfileModal({
             <label className="text-sm font-medium flex items-center gap-1.5">
               LinkedIn URL
             </label>
-            <input
+            <Input
               type="url"
               value={editForm.linkedin}
               onChange={(e) => setEditForm({ ...editForm, linkedin: e.target.value })}
               onKeyDown={handleKeyDown}
               placeholder="https://linkedin.com/in/username"
-              className="w-full border border-border px-3 py-2 rounded-2xl bg-background text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              className="w-full rounded-2xl"
+              style={{
+                height: 'var(--spacing-lg)',
+                border: '1px solid var(--border)',
+                backgroundColor: 'hsl(var(--background))',
+                color: 'hsl(var(--foreground))',
+                fontSize: 'var(--text-base)',
+                padding: '16px 20px',
+                outline: 'none',
+                transition: 'all 0.2s ease',
+              }}
             />
           </div>
 
@@ -183,18 +198,19 @@ export function EditProfileModal({
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-2">
+        </div>
+
+        <DialogFooter className="p-5 pt-1">
+          <div className="flex gap-2 w-full">
             <Button onClick={handleSaveWithToast} disabled={savingProfile} className="flex-1">
               {savingProfile ? 'Saving…' : 'Save Changes'}
             </Button>
-            <Button onClick={onClose} variant="outline" className="flex-1">
+            <Button onClick={onClose} variant="outline" size="default" className="flex-1 py-5!">
               Cancel
             </Button>
           </div>
-
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

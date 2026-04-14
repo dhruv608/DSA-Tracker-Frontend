@@ -128,15 +128,12 @@ export default function AssignQuestionsModal({ isOpen, onClose, onSuccess, batch
 
    return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-         <DialogContent className="max-w-[600px] h-[90vh] overflow-auto no-scrollbar flex flex-col p-0 rounded-2xl border border-border bg-background/95 backdrop-blur-xl">
+         <DialogContent className="max-w-[600px] h-[90vh] overflow-hidden flex flex-col p-0 rounded-2xl border border-border bg-background/95 backdrop-blur-xl">
             <div className="p-6 border-border shrink-0 space-y-4">
                <DialogHeader className="space-y-1">
                   <DialogTitle className="text-xl font-semibold">
-                     Assign Questions
+                     Assign <span className='text-primary'>Questions</span>
                   </DialogTitle>
-                  <DialogDescription className="text-sm text-muted-foreground">
-                     Search the Global Question Bank to append assignments to this class block.
-                  </DialogDescription>
                </DialogHeader>
 
                {errorMsg && (
@@ -185,7 +182,7 @@ export default function AssignQuestionsModal({ isOpen, onClose, onSuccess, batch
                   </Select>
                </div>
 
-               <div className="p-3 bg-primary/5 border border-primary/20 rounded-2xl">
+               <div className="p-3  bg-primary/5 border border-primary/20 rounded-2xl">
                   <p className="text-sm text-primary font-medium flex items-center gap-2">
                      <AlertTriangle className="w-4 h-4" />
                      Showing questions only for this topic

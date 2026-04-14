@@ -11,7 +11,12 @@ export interface AdminStats {
   total_classes: number;
   questions_by_level?: Record<string, number>;
   questions_by_type?: Record<string, number>;
-  questions_by_platform?: Record<string, number>;
+  questions_by_platform?: {
+    leetcode?: number;
+    gfg?: number;
+    interviewbit?: number;
+    other?: number;
+  };
 }
 
 export interface DashboardHeaderProps {

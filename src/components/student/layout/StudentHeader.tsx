@@ -19,6 +19,7 @@ import { useRecentQuestions } from '@/contexts/RecentQuestionsContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { studentAuthService } from '@/services/student/auth.service';
 import { showSuccess } from '@/ui/toast';
+import Logo from '@/components/Logo';
 
 // Drawer Component
 const Drawer = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
@@ -146,7 +147,7 @@ export default function StudentHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 backdrop-blur-sm h-16 flex items-center  lg:px-10" style={{ boxShadow: 'var(--shadow-sm)' }}>
+      <header className="sticky top-0 z-50 backdrop-blur-sm  h-16 flex items-center lg:px-10"  style={{ boxShadow: 'var(--shadow-sm)' }}>
         <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
 
           {/* Left Side - Hamburger Menu + Logo */}
@@ -160,17 +161,9 @@ export default function StudentHeader() {
               <Menu className="w-5 h-5 text-foreground" />
             </button>
 
-            {/* Logo - Clean text-only branding */}
-            <Link href="/" >
-              <h1
-                className="font-sans  text-xl font-bold text-logo transition-all duration-300 group-hover:shadow-[0_0_20px_var(--hover-glow)]"
-                style={{ fontSize: 'var(--text-lg)', letterSpacing: '-0.025em' }}
-              >
-                <span className="text-2xl md:text-2xl font-bold leading-[1.05] tracking-tight">
-                  <span className="text-foreground">Brute</span>
-                  <span className="text-(--accent-primary) ">Force</span>
-                </span>
-              </h1>
+            {/* Logo */}
+            <Link href="/" className="-mt-5 hover:opacity-90 transition-opacity">
+              <Logo />
             </Link>
           </div>
 
@@ -197,13 +190,11 @@ export default function StudentHeader() {
                   className={`
           relative flex items-center gap-2
           px-3 py-1.5 rounded-full text-sm font-medium
-
           transition-all duration-200 ease-in-out
-
           ${isActive
                       ? `
                 text-primary-foreground 
-                bg-primary
+                bg-primary 
                 shadow-[0_0_15px_var(--hover-glow)]
               `
                       : `

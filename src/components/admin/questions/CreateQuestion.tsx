@@ -156,7 +156,10 @@ export default function CreateQuestion({
                 </Label>
                 <InfiniteScrollDropdown
                   value={form.watch('topic_id')?.toString() || ""}
-                  onValueChange={(value) => form.setValue('topic_id', parseInt(value) || 0)}
+                  onValueChange={(value) => {
+                    form.setValue('topic_id', parseInt(value) || 0);
+                    form.trigger('topic_id');
+                  }}
                   placeholder="Select topic"
                   searchPlaceholder="Search topics..."
                   className="h-11"
@@ -177,7 +180,10 @@ export default function CreateQuestion({
                     <button
                       key={lvl}
                       type="button"
-                      onClick={() => form.setValue('level', lvl as "EASY" | "MEDIUM" | "HARD")}
+                      onClick={() => {
+                        form.setValue('level', lvl as "EASY" | "MEDIUM" | "HARD");
+                        form.trigger('level');
+                      }}
                       className={`flex-1 py-2 text-xs font-semibold rounded transition-all ${form.watch('level') === lvl
                           ? "bg-primary text-primary-foreground shadow-sm"
                           : "text-muted-foreground hover:bg-muted"
@@ -196,9 +202,10 @@ export default function CreateQuestion({
                 </Label>
                 <Select
                   value={form.watch('platform') || "LEETCODE"}
-                  onChange={(val: string | number) =>
-                    form.setValue('platform', val.toString() as "LEETCODE" | "GFG" | "INTERVIEWBIT" | "OTHER")
-                  }
+                  onChange={(val: string | number) => {
+                    form.setValue('platform', val.toString() as "LEETCODE" | "GFG" | "INTERVIEWBIT" | "OTHER");
+                    form.trigger('platform');
+                  }}
                   options={[
                     { label: "LeetCode", value: "LEETCODE" },
                     { label: "GeeksforGeeks", value: "GFG" },

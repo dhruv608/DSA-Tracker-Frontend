@@ -18,13 +18,13 @@ export default function ClassFilter({ search, onSearchChange, totalRecords }: Cl
             {/* SEARCH */}
             <div className="relative flex-1 max-w-sm ">
 
-               <Search className=" absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4  text-white  pointer-events-none  transition group-focus-within:text-primary " />
+               <Search className=" absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4  text-foreground  pointer-events-none  transition group-focus-within:text-primary " />
 
                <Input
                   placeholder="Search classes..."
                   value={search}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  className=" h-10! pl-9! pr-9! rounded-2xl! focus:ring-2 bg-transparent! placeholder:text-white focus:ring-primary/20  focus:bg-accent/60   transition-all   "
+                  className=" h-10! pl-9! pr-9! rounded-2xl! focus:ring-2 dark:bg-transparent! placeholder:text-white focus:ring-primary/20  focus:bg-accent/60   transition-all   "
                />
             </div>
             {/* COUNT BADGE */}

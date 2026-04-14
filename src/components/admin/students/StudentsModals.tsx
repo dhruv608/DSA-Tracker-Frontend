@@ -77,10 +77,14 @@ export default function StudentsModals({
 }: StudentsModalsProps) {
   const formPassword = createForm.watch('password') || '';
   const passwordValidation = usePasswordValidation(formPassword);
-  const isPasswordValid = formPassword ? passwordValidation.meetsMinimumRequirements(formPassword) : true;
   
   const createFormErrors = createForm.formState.errors;
   const editFormErrors = editForm.formState.errors;
+
+  // Debug: Log form state to identify validation issues
+  console.log('Form is valid:', createForm.formState.isValid);
+  console.log('Form errors:', createFormErrors);
+  console.log('Form values:', createForm.getValues());
   return (
     <>
       {/* CREATE MODAL */}
@@ -244,9 +248,10 @@ export default function StudentsModals({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={submitting || !createForm.formState.isValid || !isPasswordValid}
+                  disabled={submitting || !createForm.formState.isValid}
                   className="h-11 w-full font-semibold bg-primary text-black hover:opacity-90 transition-all"
                 >
+                  
                   {submitting ? "Adding..." : "Add Student"}
                 </Button>
               </DialogFooter>

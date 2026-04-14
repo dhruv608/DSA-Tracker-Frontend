@@ -7,8 +7,8 @@ import { z } from "zod";
 export const createStudentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email format"),
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  password: z.string().min(8, "Password must be at least 8 characters").optional().or(z.literal("")),
+  username: z.string().optional(),
+  password: z.union([z.string().min(8, "Password must be at least 8 characters"), z.literal("")]).optional(),
   enrollment_id: z.string().min(1, "Enrollment ID is required"),
   batch_id: z.number().int().positive("Batch is required"),
   leetcode_id: z.string().optional(),
@@ -22,7 +22,7 @@ export const createStudentSchema = z.object({
 export const updateStudentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email format"),
-  username: z.string().min(3, "Username must be at least 3 characters"),
+  username: z.string().optional(),
   enrollment_id: z.string().min(1, "Enrollment ID is required"),
   leetcode_id: z.string().optional(),
   gfg_id: z.string().optional(),

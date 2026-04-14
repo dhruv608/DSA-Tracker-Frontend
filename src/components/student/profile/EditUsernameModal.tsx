@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { X, CheckCircle, XCircle, User, AlertCircle, Shield } from 'lucide-react';
 import { UsernameForm } from '@/types/student/index.types';
 import { useUsernameCheck } from '@/components/student/onboarding/hooks/useUsernameCheck';
@@ -47,7 +49,7 @@ export function EditUsernameModal({
     // 2️⃣ Same as existing username ✅
     if (username === original) {
       setUsernameStatus("same");
-      return; 
+      return;
     }
 
     // 3️⃣ Length validation
@@ -75,10 +77,6 @@ export function EditUsernameModal({
     );
   }, [debouncedUsername, checkUsername, currentUsername]);
 
-  // CONDITIONAL RENDER - Don't render if not open
-  if (!isOpen) {
-    return null;
-  }
 
   // INPUT HANDLER - Same logic as OnboardingStep1
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,47 +215,56 @@ export function EditUsernameModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-2xl border border-border w-full max-w-sm shadow-xl">
-        <div className="flex items-center justify-between p-6 border-border">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="max-w-sm overflow-hidden p-0" showCloseButton={false}>
+        <DialogHeader className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-primary" />
-            </div>
             <div>
-              <h2 className="text-xl font-bold">Edit Username</h2>
-              <p className="text-xs text-muted-foreground">Update your profile identifier</p>
+              <DialogTitle className="text-xl font-bold">Edit <span className='text-primary' >Username</span></DialogTitle>
+              <DialogDescription className="text-xs">Update your profile identifier</DialogDescription>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClose}
-            className="h-8 w-8 p-0 hover:bg-muted"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+          <DialogClose asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClose}
+              className="absolute top-4 right-4 h-8 w-8 p-0 hover:bg-muted"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </DialogClose>
+        </DialogHeader>
 
-        <div className="p-6 space-y-4">
+        <div className="px-6 space-y-4 ">
           <div className="space-y-2">
             <label className="text-sm font-medium flex items-center gap-2">
-              <User className="w-4 h-4 text-muted-foreground" />
               Username
             </label>
             <div className="relative group">
-              <input
+              <Input
                 type="text"
                 value={usernameForm.username}
                 onChange={handleUsernameChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Enter new username"
-                className={`${getInputStyles()} group-focus-within:shadow-lg pl-10`}
+                className={`${getInputStyles()} group-focus-within:shadow-lg !pl-10`}
+                style={{
+                  height: 'var(--spacing-lg)',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border)',
+                  backgroundColor: 'hsl(var(--background))',
+                  color: 'hsl(var(--foreground))',
+                  fontSize: 'var(--text-base)',
+                  padding: '16px 20px',
+                  outline: 'none',
+                  transition: 'all 0.2s ease',
+                }}
               />
-              
+
               {/* LEFT ICON */}
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              
+
               {/* RIGHT ICON - Same logic as OnboardingStep1 */}
               {(usernameStatus === "available" || usernameStatus === "same") && (
                 <CheckCircle
@@ -268,30 +275,32 @@ export function EditUsernameModal({
 
               {(usernameStatus === "taken" ||
                 usernameStatus === "invalid") && (
-                <XCircle
-                  size={18}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500"
-                />
-              )}
+                  <XCircle
+                    size={18}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500"
+                  />
+                )}
 
             </div>
-            
+
             {/* STATUS MESSAGE */}
             <div className="min-h-[20px] transition-all duration-300">
               <div key={usernameStatus} className="animate-fade-in">
                 {getStatusMessage()}
               </div>
             </div>
-            
-            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 p-2 rounded-lg">
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 p-2  rounded-2xl">
               <Shield className="w-3 h-3" />
               <span>This will be your unique identifier for profile URLs</span>
             </div>
           </div>
+        </div>
 
-          <div className="flex gap-2 pt-2">
-            <Button 
-              onClick={handleSaveWithToast} 
+        <DialogFooter className="!p-6 !pt-2 border-0! ">
+          <div className="flex gap-2 w-full">
+            <Button
+              onClick={handleSaveWithToast}
               className="flex-1"
               disabled={!canSave || isPending || isSaving}
             >
@@ -305,30 +314,12 @@ export function EditUsernameModal({
                 </>
               )}
             </Button>
-            <Button onClick={handleCancel} variant="outline" className="flex-1">
+            <Button onClick={handleCancel}  className="flex-1 bg-background! border border-border text-foreground!">
               Cancel
             </Button>
           </div>
-        </div>
-      </div>
-      
-      {/* ANIMATION - Same as OnboardingStep1 */}
-      <style jsx>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(-4px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.25s ease-out;
-        }
-      `}</style>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

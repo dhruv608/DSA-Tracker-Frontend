@@ -59,7 +59,7 @@ export function GoogleAuthButton() {
       </svg>
     </div>
     
-    <span className='text-white'>Continue with Google</span>
+    <span className='text-foreground'>Continue with Google</span>
   </button>
 
   {/* Error Message */}
