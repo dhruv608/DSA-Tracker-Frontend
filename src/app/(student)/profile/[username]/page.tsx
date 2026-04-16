@@ -359,9 +359,7 @@ export default function PublicProfilePage() {
         return;
       }
 
-      await studentProfileService.updateProfileDetails({
-        username: usernameForm.username.trim()
-      });
+      await studentProfileService.updateUsername(usernameForm.username.trim());
 
       await fetchProfileByUsername();
       setShowUsernameEditModal(false);

@@ -18,6 +18,7 @@ export function StudentLoginForm() {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const isSubmitting = React.useRef(false);
 
   const form = useForm<LoginStudentInput>({
     resolver: zodResolver(loginStudentSchema),
@@ -39,11 +40,15 @@ export function StudentLoginForm() {
   };
 
   const handleLogin = async (values: LoginStudentInput) => {
+    if (isSubmitting.current) return;
+    isSubmitting.current = true;
+
     const emailOrUsername = values.email || values.username || '';
 
     if (emailOrUsername.includes('@')) {
       if (!emailOrUsername.endsWith('@pwioi.com')) {
         setEmailError("Please sign in with your PW email.");
+        isSubmitting.current = false;
         return;
       }
     }
@@ -66,6 +71,7 @@ export function StudentLoginForm() {
       handleError(err, { context: 'Login' });
     } finally {
       setLoading(false);
+      isSubmitting.current = false;
     }
   };
 

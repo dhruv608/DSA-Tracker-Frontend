@@ -13,7 +13,12 @@ export default function AuthCallback() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    let hasRun = false;
+
     const handleGoogleCallback = async () => {
+      if (hasRun) return;
+      hasRun = true;
+
       try {
         setLoading(true);
         setError('');

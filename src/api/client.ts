@@ -59,6 +59,21 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Concurrency tracking for refresh token
+let isRefreshing = false;
+let failedQueue: Array<{ resolve: (token: string) => void, reject: (error: any) => void }> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token as string);
+    }
+  });
+  failedQueue = [];
+};
+
 // Response Interceptor - Smart error handling with token refresh
 apiClient.interceptors.response.use(
   (response) => response,
@@ -100,6 +115,19 @@ apiClient.interceptors.response.use(
 
       originalRequest._retry = true;
 
+      if (isRefreshing) {
+        return new Promise(function(resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return apiClient(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      isRefreshing = true;
+
       try {
         const res = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh-token`,
@@ -113,12 +141,16 @@ apiClient.interceptors.response.use(
             document.cookie = `accessToken=${res.data.accessToken}; path=/`;
           }
           originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
+          processQueue(null, res.data.accessToken);
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
+        processQueue(refreshError, null);
         // Refresh failed → Logout
         executeLogout();
         return Promise.reject(handleErrorSilent(refreshError));
+      } finally {
+        isRefreshing = false;
       }
     }
 

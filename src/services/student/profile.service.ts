@@ -44,5 +44,10 @@ export const studentProfileService = {
     // Use the new PUT /api/students/me endpoint for updating current student profile
     const res = await apiClient.put('/api/students/me', data);    
     return res.data;
+  },
+
+  updateUsername: async (username: string) => {
+    const res = await apiClient.patch('/api/students/username', { username });
+    return res.data;
   }
 };

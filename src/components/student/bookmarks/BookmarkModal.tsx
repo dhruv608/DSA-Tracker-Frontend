@@ -79,11 +79,6 @@ export const BookmarkModal: React.FC<BookmarkModalProps> = ({
                 {question.level} 
               </span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{getPlatformShort(question.platform)}</span>
-              <span>•</span>
-              <span>{question.type === 'HOMEWORK' ? 'HW' : 'CW'}</span>
-            </div>
           </div>
 
           {/* FORM */}
